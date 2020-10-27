@@ -1,8 +1,8 @@
-# Natural Selection v3.2.2
+# Natural Selection v3.2.3
 
 [![Build Status](https://travis-ci.org/ENSL/NS.svg?branch=develop)](https://travis-ci.org/ENSL/NS)
 
-This is a complete rebuild of the game [Natural Selection] for Windows, Linux, and OS X. It includes updates and fixes by pierow, Prefix, fmoraw, Bacsu, puzl, and others.
+This is a complete rebuild of the game [Natural Selection] for Windows, Linux, and OS X. It includes updates and fixes by Alien, pierow, Prefix, fmoraw, Bacsu, and others.
 
 ## Downloads
 
@@ -18,22 +18,146 @@ A fresh install of NS comes with updated config files containing everything you 
 
 If you wish to experience the game's default settings and binds from NS 3.2 you can type `exec olddefaults.cfg` in console before loading a map. A file named `backupb4old.cfg` will be saved with your previous settings if you wish to return to those after.  Note that gamma ramp is no longer a working feature, so brightness will be a slightly different than it originally was, but the game was always very dark by default and still is with that config.
 
-## Changes
+## Changes from ENSL
 
 Updates include:
-
-- Linux and OS X support
-- Natural Selection Launcher for installing and updating the game
-- Widescreen support (now expands FOV up to 16:9 aspect instead of cutting it off)
-- Many FPS dependencies fixed, including jetpack acceleration, so the game can now be fairly played at 200+ FPS
-- Perfect jump timing no longer required for bunnyhopping (server adjustable via sv_jumpmode)
-- New minimal HUD (work in progress) and the Nine Legends HUD can be selected through advanced options or hud_style and hud_mapstyle
-- New crosshair system that can be adjusted through the advanced options and cl_cross commands (Thanks [OpenAG](https://github.com/YaLTeR/OpenAG))
-- Ambient sounds can be changed in advanced options or via cl_ambientsound
-- Raw input and sensitivity scaling options now available
-- Spectator overlay is now transparent and shows health/armor
-- Numerous bug fixes for things that broke from recent updates to Half-Life
-- The observatory has now a spherical detection like the sensory chamber
+Changelog1
+Attempted to add new pistol (TEC / PistolB) however it appears Babblers is overwriting it somehow
+HMG Spread 8degrees --> 7degrees
+HMG range 6000 --> 8192
+HMG deploy time 0.6 --> 0.7 seconds
+Grenade Launcher damage 125 --> 110
+Sv_jumpmode 2 fixed so autohop now works
+AirAccelerate can now be edited freely
+Slow down while holding USE key reduced from 70% to 10% per tick
+Gorge move speed increased from 170 to 180
+Gorge health increased from 150 to 160
+Gorge's bile bomb can now deal 10% of it's damage against enemy player's armor (deals no damage against player health)
+Advanced Armory health reduced from 4000 to 3500
+Catalyst attack speed bonus +25% --> +0%
+Catalyst move speed bonus +25% --> +30%
+Catalyst reload and deploy speed boost is 25%
+Catalysts now restore 50 armor and clear parasites and cleanse webbing and stun, also buffs HMG reload/deploy time, doubles build speed and welder repair speed
+Onos stomp rate of fire increased from 1.5 to 2.25 seconds and stomp projectile speed reduced from 600 to 350, projectile lifetime increased from 1.2 to 1.8 seconds, energy cost increased to 35%
+Bug fixed: With 4 hives the aliens would lose the bonus armor from having 3 hives, this has been fixed and now they gain an extra 50% armor ontop of that having 4 hives
+HMG can't be fired for 2.5 seconds during deploy time but reduced to only 0.6 seconds if you have cat packed, same idea super faster reload for hmg if u have cat pack
+Welder can now cleanse webbing and can destroy nearby webs
+Recycling resource refund also now takes into account whether the structure is electrified or an advanced turret factory
+Knife now features lethality, damage increases against target by 1% per 1% of the target's missing health
+[3:48 PM] Alien: Changelog2
+- Welder can now build structures and constructs 50% faster than normal
+Welder now recharges your armor for 5% of repairing dealt
+Lerk ground speed increased from 175 to 230
+Lerk max speed reduced from 650 to 450
+Lerk spike damage 16 --> 13
+Lerk flap energy cost reduced from 2.5% to 2%, increases up to 4.5% while travelling at max speed
+Lerk cost reduced from 30 to 27
+Lerk umbra energy cost increased from 30% to 36%
+Marines now move 60 ups faster while unencumbered
+Weapon weights increased by 125% for encumbrance
+Hand grenades can be restocked when empty at the Advanced Armory (20 second cooldown)
+Hand grenades now deal x2 damage vs structures
+Alien redemption cooldown increased from 20 to 50 seconds
+Alien regeneration now grants 3%/defense level + 3/defense level of regen once every 2 seconds (this replaces innate regeneration)
+(The only change to alien regeneration talent is the " 3/defense level " component, everything else is unmodified)
+Essentially the regeneration change increases life regen for Regeneration Skulks by 100%, Regeneration Lerks by 50%, Regeneration Gorges by 30%, Regeneration Fades and Onos by <10%
+Hand Grenades now stun for 1 seconds (removed)
+Nano pack item added (soon to be removed since not working with metamod)
+Primal Scream, Catalyst and Webbed effect text messages no longer blink
+The command cl_showspeed 1 no longer requires sv_cheats 1 to be used
+Marines backward movement is no longer slowed by 60%, now slowed by an exponential (slow scales from 0% up to 55% slow)
+Marine bhop move speed has been capped to 350 without a jetpack, air speed capped to 800 with a jetpack, duck bhop speed capped to 250
+Skulk bhop move speed has been capped to 900 and will receive a gradual slow above 600 (675 and 975 with max celerity)
+Gorge bhop move speed has been capped to 300
+Fade and onos bhop move speed limited too
+Command r_detailtextures readded
+[4:03 PM] Alien: Changelog3
+(0 = no res on kills, 1 = classic rng, 2 = anti snowball team res, 3 = anti snowball kdr, 1 res per kill, 5 = bounty, setting it to a decimal will give that exact amount of res every kill)
+New CVars for bhop, AdvArmory restocking nades and kill reward systems
+KillReward CVar added, allowing control over how resources are granted upon killing a player
+Default kill rewards now use Bounty, gain 1 res + 1 res per each frag a player has upon killing them, reset frags on death
+StickyChambers amxx mod breaks advanced chambers???
+Fixed bug where buildings that had a Z coordinate 2000 below the Z axis would be incapable of being recycled or upgraded
+Armory resupply code restructured to fix the "can't resupply while missing health but full ammo" bug
+Electrified TFs and RTs can no longer attack while recycling and will no longer appear to be electrified
+AutoSwap CVar added, allowing disabling auto swap on weapon pickup (currently server wide)
+Welder now deals x2 damage vs structures
+Marine's Pistols are now dropped on death
+Extra zoom levels for marine minimap added
+WallStrafe CVar added, allows disabling or enabling wall strafing bug
+[4:18 PM] Alien: Welder damage 15
+[2:11 AM] Alien: Jetpack max air speed is now 625
+[2:16 AM] Alien: Shotgun max range increased from 700 to 8192
+[2:31 AM] Alien: Catalyst 30 armor
+[2:32 AM] Alien: Observatory detection radius reduced from 900 to 800
+[2:32 AM] Alien: 20 second cooldown on restocking nades
+[2:32 AM] Alien: Bhop is now allowed for downward paths if your max speed is 250 or greater
+[3:13 AM] Alien: Sentry Turret range increased from 800 to 900
+Sentry Turret health increased from 1300 to 1500
+[3:16 AM] Alien: Heavy Machinegun cost increased from 15 to 20
+[3:38 AM] Alien: Skulk walljump speed buffed from 340 to 400 and walljump speed is now affected by celerity
+[3:41 AM] Alien: Ladder ejection speed reduced from 270 to 200
+[3:42 AM] Alien: Ladder climbing speed increased from 120 to 140
+[12:56 AM] Alien: Using a Movement Chamber cleanses Parasite (change only effects Alien vs Alien gamemode)
+[1:00 AM] Alien: Armory resupply long time standing bug fixed, you can now recover health from an armory if all of your weapons are full ammo and your armory timer is free
+[1:36 AM] Alien: Fade's Acid Rocket now deals x2 damage vs structures
+[1:56 PM] Alien: Onos now take 2.5x as much fall damage
+[2:44 PM] Alien: Extra messages added to HUD display for MOVEMENT, ELECTRIFIED, EXOSKELETON
+[3:17 PM] Alien: Silence volume has been rebalanced from 50/15/0 to 40/20/10 percent of normal volume respectively to level
+[3:42 PM] Alien: Onos digesting move speed nerfed from 90% to 85% of normal speed
+[3:46 PM] Alien: Passive alien structure healing increased from 5/second to 6/second
+[4:22 PM] Alien: Hive spazzing out on taking damage animation fixed
+[4:24 PM] Alien: IPs can now research electrification
+[12:47 AM] Alien: Onos base speed is now 250
+[1:44 PM] Alien: Test LMG damage being affected by bhop_marine
+[9:52 PM] Alien: Armory resupply more bugs fixed and rare issue where restocking nade went on cooldown without giving nades fixed
+[2:36 AM] Alien: New command added: sv_infinite_ammo 0, 1 = shooting does not use ammo, 2 = reloading does not use ammo
+Bug: Infinite ammo currently does not affect the shotgun
+[3:30 PM] Alien: New command added: sv_infinite_jetpack 0, 1 = jetpack does not use fuel
+[5:44 PM] Alien: New command added: sv_infinite_energy 0, 1 = aliens regen energy rapidly
+[1:58 AM] Alien: New upgrade added: Health Nanotech, increases grants regeneration
+[5:14 PM] Alien: Gorge's Healing Spray can now speed up other alien's evolutions (each heal spray speeds up evolutions by 0.85 seconds)
+[11:46 AM] Alien: Pistol fire rate nerfed from 0.2 to 0.25 second delay (Rounds/minute reduced from 300 down to 240)
+[4:28 AM] Alien: Lerk bite now deals x2 damage vs structures
+removed lerk x2 vs structures after some bot testing
+[12:56 PM] Alien: New command added: "sv_golden_deagle 1", damage is doubled with this command
+[1:43 PM] Alien: Onos digestion happens 25% faster now but the healing received for the Onos has been reduced by 30%
+[1:47 PM] Alien: While the Onos is digesting it takes 15% more damage
+[1:58 PM] Alien: what if sentry turret did bonus % of target's hp as damage
+[2:09 PM] Alien: Buildings nobuild radius is now spherical
+Building nobuild radius is now displayed properly for spherical radius (commented out for now)
+[5:40 PM] Alien: Innate regen or defensive regen talent grant +10 life regen if your team has at least 4 hives (added for the rare maps that support 4 hives)
+[5:50 PM] Alien: New command added: "sv_last_stand 1", all buildings, techs, evos take 5 seconds to complete with this command
+[6:16 PM] Alien: if focus increases the energy cost of attacking then perhaps nerf the increase of energy cost it does
+[12:12 AM] Alien: You can customize your primary HUD colours using the commands
+"cl_marinehudcolor_red"
+"cl_marinehudcolor_green"
+"cl_marinehudcolor_blue"
+"cl_alienhudcolor_red"
+"cl_alienhudcolor_green"
+"cl_alienhudcolor_blue"
+[1:58 PM] Alien: Onos can no longer devour other Onos in AVA
+[1:58 PM] Alien: Focus gorge spit now travels faster
+[1:58 PM] Alien: Bile bomb can now destroy dropped items
+[1:59 PM] Alien: Longjump module is now precached and can now be spawned in or used by mods without crashing the game
+[1:59 PM] Alien: Erroneous move speed increase while walking near walls fixed (Strafing into a wall increased move speed by up to 50%)
+[1:59 PM] Alien: Skulk walljump speed now affected by celerity
+[2:02 PM] Alien: KillReward CVar added, allowing control over how resources are granted upon killing a player
+Default kill rewards now use Bounty, gain 1 res + 1 res per each frag a player has upon killing them, reset frags on death
+Welder can now cleanse webbing and can destroy nearby webs
+Welder can now build structures and constructs 50% faster than normal
+Welder now recharges your armor for 5% of repairing dealt
+sv_airaccelerate can now be edited freely, allowing surfs maps to work in NS
+Catalysts now clear parasites and cleanse webbing and stuns
+Primal Scream, Catalyst and Webbed effect text messages no longer blink
+The command cl_showspeed 1 no longer requires sv_cheats 1 to be used
+Command r_detailtextures readded
+Electrified TFs and RTs can no longer attack while recycling and will no longer appear to be electrified
+AutoSwap CVar added, allowing disabling auto swap on weapon pickup (currently server wide)
+Welder now deals x2 damage vs structures
+Marine's Pistols are now dropped on death
+Extra zoom levels for marine minimap added
+- 
 
 ## Bugs
 - Process hangs on exit sometimes
