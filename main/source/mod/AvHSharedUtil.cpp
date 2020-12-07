@@ -741,6 +741,7 @@ bool AvHSHUGetIsDroppableOnRTs(AvHMessageID inMessageID)
 		case BUILD_HMG:
 		case BUILD_GRENADE_GUN:
 		case BUILD_CAT:
+		case BUILD_NANO:
 		case BUILD_HEAVY:
 		case BUILD_JETPACK:
 		case BUILD_RESOURCES:
@@ -872,8 +873,9 @@ void AvHSHUGetMinBuildRadiusViolations(AvHMessageID inMessageID, vec3_t& inLocat
 			        vec3_t theXYInLocation = inLocation;
                     vec3_t theXYTheLocation = theLocation;
 
-                    theXYInLocation.z = 0;
-                    theXYTheLocation.z = 0;
+					//commented out these lines from Flayra as it prevents placing buildings on floors above them
+                    //theXYInLocation.z = 0;
+                    //theXYTheLocation.z = 0;
 
                     float theDistance = VectorDistance((float*)&theXYInLocation, (float*)&theXYTheLocation);
 					// : 0000291
@@ -1132,6 +1134,10 @@ bool AvHSHUGetBuildTechClassName(AvHMessageID inMessageID, char*& outClassName)
 		outClassName = kwsGenericAmmo;
 		break;
 
+	case BUILD_NANO:
+		outClassName = kwsNano;
+		break;
+		
 	case BUILD_WELDER:
 		outClassName = kwsWelder;
 		break;
@@ -1382,6 +1388,7 @@ bool AvHSHUGetIsBuildTech(AvHMessageID inMessageID)
 	case BUILD_AMMO:
 	case BUILD_HEALTH:
     case BUILD_CAT:
+	case BUILD_NANO:
 	case BUILD_WELDER:
     case BUILD_MINES:
 	case BUILD_SHOTGUN:
@@ -1722,6 +1729,12 @@ bool AvHSHUGetSizeForTech(AvHMessageID inMessageID, Vector& outMinSize, Vector& 
 		break;
 
     case BUILD_CAT:
+		outMinSize = kCatalystMinSize;
+		outMaxSize = kCatalystMaxSize;
+		theSuccess = true;
+		break;
+
+	case BUILD_NANO:
 		outMinSize = kCatalystMinSize;
 		outMaxSize = kCatalystMaxSize;
 		theSuccess = true;
@@ -2165,6 +2178,10 @@ char* AvHSHUGetBuildTechModelName(AvHMessageID inMessageID)
         theModelName = kCatalystModel;
         break;
 
+	case BUILD_NANO:
+		theModelName = kNanoModel;
+		break;
+
 	case BUILD_HEALTH:
 		theModelName = kHealthModel;
 		break;
@@ -2411,6 +2428,7 @@ bool AvHSHUGetCanBeBuiltOnPlayers(AvHMessageID inMessageID)
 		case BUILD_AMMO:
 		case BUILD_HEALTH:
 		case BUILD_CAT:
+		case BUILD_NANO:
 		case BUILD_MINES:
 		case BUILD_WELDER:
 		case BUILD_SHOTGUN:
