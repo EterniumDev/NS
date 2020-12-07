@@ -132,6 +132,7 @@
 #include "../common/demo_api.h"
 #include "AvHHudConstants.h"
 #include "AvHPlayerUpgrade.h"
+#include "AvHPlayer.h"
 #include "AvHCommanderModeHandler.h"
 #include "../common/ref_params.h"
 #include "AvHTechImpulsePanel.h"
@@ -1558,7 +1559,7 @@ void AvHHud::DrawInfoLocationText()
 
 	// Don't draw time when playing back, it isn't right and not worth breaking backward-compatibility over.
 	// TODO: Draw time next time demo version changes
-	if(!gEngfuncs.pDemoAPI->IsPlayingback() && this->GetHUDUser3() != AVH_USER3_ALIEN_EMBRYO)
+	if(!gEngfuncs.pDemoAPI->IsPlayingback() && (this->GetHUDUser3() != AVH_USER3_ALIEN_EMBRYO || (CVAR_GET_FLOAT("cl_showegg") != 1))) //cl_showegg
 	{
 		// Whether we draw first line or not, increment for second line below
 		theY += this->GetHudStringHeight();
@@ -1963,18 +1964,30 @@ void AvHHud::GetPrimaryHudColor(int& outR, int& outG, int& outB, bool inIgnoreUp
 {
 	if(this->GetIsMarine())
 	{
-		UnpackRGB(outR, outG, outB, RGB_MARINE_BLUE);
+		//UnpackRGB(outR, outG, outB, RGB_MARINE_BLUE); //0 153 255
+		//outR = 0;
+		//outG = 153;
+		//outB = 255;
+		outR = CVAR_GET_FLOAT(kvMarineHudRed);
+		outG = CVAR_GET_FLOAT(kvMarineHudGreen);
+		outB = CVAR_GET_FLOAT(kvMarineHudBlue);
 	}
 	else
-	{
+	{ 
 		// HUD turns green when we're frenzying
-		//if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_PRIMALSCREAM) && !inIgnoreUpgrades)
+		//if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_BUFFED) && !inIgnoreUpgrades)
 		//{
 		//	UnpackRGB(outR, outG, outB, RGB_GREENISH);
 		//}
 		//else
 		//{
-			UnpackRGB(outR, outG, outB, RGB_YELLOWISH);
+			//UnpackRGB(outR, outG, outB, RGB_YELLOWISH);
+			//outR = 255;
+			//outG = 160;
+			//outB = 0;
+		outR = CVAR_GET_FLOAT(kvAlienHudRed);
+		outG = CVAR_GET_FLOAT(kvAlienHudGreen);
+		outB = CVAR_GET_FLOAT(kvAlienHudBlue);
 		//}
 	}
 
@@ -2725,9 +2738,9 @@ void AvHHud::Render()
 
 	// Don't draw the HUD while being digested.
 
-    if (GetIsBeingDigested())
+    if (GetIsBeingDigested() && (CVAR_GET_FLOAT("cl_showdigest") != 0)) //add a client side var to bypass this
 	{
-    
+	//if  {
 		if (this->mDigestingSprite)
         {
             AvHSpriteSetColor(1,1,1);
@@ -2777,6 +2790,10 @@ void AvHHud::Render()
 
 			RenderProgressBar(kProgressBarSprite);
         }
+		else
+		{
+			RenderSpecExtraUI();
+		}
 
     }
 
@@ -2785,19 +2802,91 @@ void AvHHud::Render()
 
 }
 
+
+void AvHHud::RenderSpecExtraUI()
+{
+	static bool speedMeasured = false;
+	if (!mSteamUIActive)
+	{
+		//(*m_pModelsDrawn)++;
+		//int	*m_pStudioModelCount = NULL;
+		//int	*m_pModelsDrawn = NULL;
+		//IEngineStudio.GetModelCounters(&m_pStudioModelCount, &m_pModelsDrawn);
+		//IEngineStudio.GetCurrentEntity();
+
+
+		//if (gHUD.GetServerVariableFloat("sv_cheats") != 0 ) {
+		static int maxSpeed = 0, maxGroundSpeed = 0, maxClimb = 0, maxDive = 0;
+		if (CVAR_GET_FLOAT("cl_showspeed") != 0) {
+
+			// Draw the speedometer.
+			int theR, theG, theB;
+			this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+
+			extern playermove_s* pmove;
+
+			char buffer[1024];
+
+			maxClimb = max(maxClimb, (int)pmove->velocity[2]);
+			maxDive = min(maxDive, (int)pmove->velocity[2]);
+
+			int speed = (int)Length(pmove->velocity);
+
+
+			maxSpeed = max(speed, maxSpeed);
+			//sprintf(buffer, "Speed = %d (%d) %d/%d", speed, maxSpeed, maxClimb, maxDive);
+			sprintf(buffer, "Speed = %d", speed);
+			mFont.DrawString(10, 10, buffer, theR, theG, theB);
+
+			float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+			int realMaxSpeed = pmove->maxspeed;
+			int clientMaxSpeed = pmove->clientmaxspeed;
+
+			maxGroundSpeed = max((int)theGroundSpeed, maxGroundSpeed);
+			sprintf(buffer, "Ground speed = %d (Max %d)", (int)theGroundSpeed, realMaxSpeed);
+			//clientMaxSpeed
+			mFont.DrawString(10, 12 + mFont.GetStringHeight(), buffer, theR, theG, theB);
+			speedMeasured = true;
+		}
+
+		if (CVAR_GET_FLOAT("cl_showpos") != 0) {
+
+			// Draw the speedometer.
+			int theR, theG, theB;
+			this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+
+			extern playermove_s* pmove;
+
+			char bufferb[1024];
+
+			sprintf(bufferb, "pos: %d %d %d", (int)pmove->origin[0], (int)pmove->origin[1], (int)pmove->origin[2]);
+			mFont.DrawString(10, 14 + mFont.GetStringHeight()*2, bufferb, theR, theG, theB);
+
+		}
+
+	}
+}
+
+
 void AvHHud::RenderCommonUI()
 {
 	static bool speedMeasured=false;
     if (!mSteamUIActive)
     {
         
-		if (gHUD.GetServerVariableFloat("sv_cheats") != 0 ) {
+		//if (gHUD.GetServerVariableFloat("sv_cheats") != 0 ) {
 			static int maxSpeed=0, maxGroundSpeed=0, maxClimb=0, maxDive=0;
 			if ( CVAR_GET_FLOAT("cl_showspeed") != 0) {
 
 				// Draw the speedometer.
 				int theR, theG, theB;
 				this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
 
 				extern playermove_s* pmove;
 	        
@@ -2807,14 +2896,20 @@ void AvHHud::RenderCommonUI()
 				maxDive=min(maxDive, (int)pmove->velocity[2]);
 
 				int speed=(int)Length(pmove->velocity);
+				
 
 				maxSpeed=max(speed, maxSpeed);
-				sprintf(buffer, "Speed = %d (%d) %d/%d", speed, maxSpeed, maxClimb, maxDive);
+				//sprintf(buffer, "Speed = %d (%d) %d/%d", speed, maxSpeed, maxClimb, maxDive);
+				sprintf(buffer, "Speed = %d", speed);
 				mFont.DrawString(10, 10, buffer, theR, theG, theB);
 
 				float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
-				maxGroundSpeed=max(theGroundSpeed, maxGroundSpeed);
-				sprintf(buffer, "Ground speed = %d (%d)", (int)theGroundSpeed, maxGroundSpeed);
+				int realMaxSpeed = pmove->maxspeed;
+				int clientMaxSpeed = pmove->clientmaxspeed;
+
+				maxGroundSpeed=max((int)theGroundSpeed, maxGroundSpeed);
+				sprintf(buffer, "Ground speed = %d (Max %d)", (int)theGroundSpeed, realMaxSpeed);
+				//clientMaxSpeed
 				mFont.DrawString(10, 12 + mFont.GetStringHeight(), buffer, theR, theG, theB);
 				speedMeasured = true;
 			}
@@ -2827,7 +2922,26 @@ void AvHHud::RenderCommonUI()
 				maxSpeed=0, maxGroundSpeed=0, maxClimb=0, maxDive=0;
 				speedMeasured = false;
 			}
-         }
+
+
+			
+			if (CVAR_GET_FLOAT("cl_showpos") != 0) {
+
+				// Draw the speedometer.
+				int theR, theG, theB;
+				this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+
+				extern playermove_s* pmove;
+
+				char bufferb[1024];
+
+				sprintf(bufferb, "pos: %d %d %d", (int)pmove->origin[0], (int)pmove->origin[1], (int)pmove->origin[2]);
+				mFont.DrawString(10, 14 + mFont.GetStringHeight() * 2, bufferb, theR, theG, theB);
+				
+			}
+         //}
 
         DrawInfoLocationText();
         DrawHUDStructureNotification();
@@ -2874,7 +2988,7 @@ void AvHHud::RenderCommonUI()
 		    int theSecondOfLastUpdate = (int)this->mTimeOfLastUpdate;
 		    
 		    // Draw blinking primal scream message
-		    if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_BUFFED) && (theSecondOfLastUpdate % 2))
+		    if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_BUFFED))
 		    {
                 if(this->GetIsAlien())
                 {
@@ -2882,13 +2996,77 @@ void AvHHud::RenderCommonUI()
                 }
                 else if(this->GetIsMarine())
                 {
-                    LocalizeString(kCatalysted, theText);
+					LocalizeString(kCatalysted, theText);
                 }
 
                 // Draw it
                 sprintf(theCharArray, "%s", theText.c_str());
                 this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), kPlayerStatusVerticalInset*ScreenHeight(), ScreenWidth(), theCharArray, theR, theG, theB);
 		    }
+
+			// Draw extra messages ETER_HACK
+			/*
+			if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_UPGRADE_9))
+			{
+				// Draw it
+				sprintf(theCharArray, "Exoskeleton");
+				this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), (kPlayerStatusVerticalInset - kPlayerStatusStatusSpacing)*ScreenHeight(), ScreenWidth(), theCharArray, theR, theG, theB);
+			}
+			if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_UPGRADE_11))
+			{
+				// Draw it
+				sprintf(theCharArray, "Electrified");
+				this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), (kPlayerStatusVerticalInset + kPlayerStatusStatusSpacing*2)*ScreenHeight(), ScreenWidth(), theCharArray, theR, theG, theB);
+			}
+			*/
+			if (CVAR_GET_FLOAT("cl_showspotted") != 0) {
+				if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_VIS_SIGHTED))
+				{
+					// Draw it
+					sprintf(theCharArray, "Spotted!");
+					this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), (0.45f)*ScreenHeight(), ScreenWidth(), theCharArray, 255, 0, 0);
+				}
+			}
+			if (CVAR_GET_FLOAT("cl_showdetected") != 0) {
+				if ((GetHasUpgrade(this->GetHUDUpgrades(), MASK_VIS_DETECTED))|| (GetHasUpgrade(this->GetHUDUpgrades(), MASK_SENSORY_NEARBY)))
+				{
+					// Draw it
+					sprintf(theCharArray, "Detected!");
+					this->DrawHudStringCentered((kPlayerStatusHorizontalCenteredInset)*ScreenWidth(), (0.55f)*ScreenHeight(), ScreenWidth(), theCharArray, 255, 0, 0);
+				}
+			}
+			if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_ALIEN_MOVEMENT))
+			{
+				// Draw it
+				sprintf(theCharArray, "Movement Active");
+				this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), (kPlayerStatusVerticalInset + kPlayerStatusStatusSpacing * 3)*ScreenHeight(), ScreenWidth(), theCharArray, theR, theG, theB);
+			}
+
+			//impossible apparently to detect NANO buff without using an upgrade mask
+
+
+			//if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_BUFFED)) {}
+
+			//extern playermove_s* pmove;
+			//extern AvHPlayer* myavhPlayer;
+			//cl_entity_s* theTestPlayer = this->GetVisiblePlayer();
+			//AvHPlayer* myavhPlayer = dynamic_cast<AvHPlayer*>(theTestPlayer);
+			// Draw NANO message 
+			//if (myavhPlayer->GetIsNanoed())
+			//{
+				
+				//if (this->GetIsMarine())
+				//{
+				//	LocalizeString("UNKILLABLE", theText);
+				//}
+
+				// Draw it
+				//sprintf(theCharArray, "%s", theText.c_str());
+				//sprintf(theCharArray, "UNKILLABLE");
+
+				
+				//this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), kPlayerStatusVerticalInset*ScreenHeight(), ScreenWidth(), theCharArray, 255, 30, 30); 
+			//}
 
 		    // Draw parasited indicator
 		    if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_PARASITED))
@@ -2911,7 +3089,7 @@ void AvHHud::RenderCommonUI()
 		    }
 
 		    // Draw blinking "webbed" message
-		    if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_ENSNARED) && (theSecondOfLastUpdate % 2))
+		    if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_ENSNARED))
 		    {
 			    LocalizeString(kWebbed, theText);
 			    sprintf(theCharArray, "%s", theText.c_str());
@@ -2989,7 +3167,7 @@ void AvHHud::RenderCommonUI()
 			    {
 				    float theNormX = theScreenPos.x/ScreenWidth();
 				    float theNormY = theScreenPos.y/ScreenHeight();
-				    if(!this->GetInTopDownMode() || !this->GetIsRegionBlockedByUI(theNormX, theNormY))
+				    if((!this->GetInTopDownMode() || !this->GetIsRegionBlockedByUI(theNormX, theNormY))&&((theIter->GetEventType() != kNumericalInfoHealthEvent)||(CVAR_GET_FLOAT("cl_showdamage") != 0)))
 				    {
 					    float theNumber = theIter->GetNumber();
 					    string thePrependString("+");
@@ -3006,7 +3184,7 @@ void AvHHud::RenderCommonUI()
 						    // The "-" is prepended by MakeStringFromInt when negative
 						    thePrependString = string("");
 					    }
-					    
+						
 					    const char* thePostPendStringToTranslate = NULL;
 					    string thePostPendString;
 					    
@@ -3024,6 +3202,8 @@ void AvHHud::RenderCommonUI()
 					    case kNumericalInfoAmmoEvent:
 						    thePostPendStringToTranslate = kNumericalEventAmmo;
 						    break;
+							//kNumericalInfoArmorEvent
+
 					    }
 					    
 					    if(thePostPendStringToTranslate)
@@ -3148,9 +3328,20 @@ void AvHHud::RenderMiniMap(int inX, int inY, int inWidth, int inHeight)
     AvHOverviewMap& theOverviewMap = gHUD.GetOverviewMap();
 
 	float hudMinimap=CVAR_GET_FLOAT(kvHudMapZoom);
-	hudMinimap=min(3, max(1, hudMinimap));
+	//hudMinimap=min(3, max(1, hudMinimap));
 
-	float zoomScale=(3.0f-hudMinimap);
+	float zoomScale=(4.0f-hudMinimap);
+	/*
+	switch ((int)hudMinimap) 
+	{
+	case 1:
+		break;
+	case 1:
+		break;
+	case 1:
+		break;
+	}
+	*/
 
 	AvHOverviewMap::DrawInfo theDrawInfo;
     
@@ -3187,6 +3378,112 @@ void AvHHud::RenderMarineUI()
 	int theR, theG, theB;
 	this->GetPrimaryHudColor(theR, theG, theB, false, false);
 
+	/*
+	if (CVAR_GET_FLOAT("cl_showhivemarine") != 0) {
+		//ALERT(at_console, "cl_showhivemarine PROC");
+		if (mHiveInfoSprite) //  && (this->mMapMode == MAP_MODE_NS)) // removed check to enable hive with health to be shown in combat
+		{
+			//ALERT(at_console, "cl_showhivemarine MOVINGPROC");
+			int theHiveIndex = 0;
+			MsgFunc_AlienInfo;
+			for (HiveInfoListType::iterator theIter = this->mHiveInfoList.begin(); theIter != this->mHiveInfoList.end(); theIter++, theHiveIndex++)
+			{
+				ALERT(at_console, "cl_showhivemarine MOVINGPROC");
+				// For this hive, figure out which frame to draw
+
+				int theFrame = theIter->mStatus;
+
+				// If under attack, make it blink red
+				int theSecondOfLastUpdate = (int)this->mTimeOfLastUpdate;
+				if (theIter->mUnderAttack && (theSecondOfLastUpdate % 2))
+				{
+					theFrame = kHiveInfoStatusUnderAttack;
+				}
+
+				int theHiveWidth = kHiveNormScreenWidth * ScreenWidth();
+
+				// Draw hive
+				//float theNormX = theHiveWidth;
+				float theNormY = kHiveNormScreenY + kHiveNormScreenVerticalSpacing * theHiveIndex;
+
+				//DrawScaledHUDSprite(this->mHiveInfoSprite, kRenderTransAlpha, 1, theNormX*ScreenWidth, theNormY*ScreenHeight(), kHiveNormScreenWidth*ScreenWidth, kHiveNormScreenHeight*ScreenHeight(), theFrame);
+
+				float x1 = mViewport[0] + mViewport[2] - theHiveWidth;
+				float y1 = mViewport[1] + theNormY * ScreenHeight();
+				float x2 = x1 + theHiveWidth;
+				float y2 = y1 + kHiveNormScreenHeight * ScreenHeight();
+
+				AvHSpriteSetColor(1, 1, 1);
+				AvHSpriteSetRenderMode(kRenderTransTexture);
+				AvHSpriteDraw(mHiveInfoSprite, theFrame, x1, y1, x2, y2, 0, 0, 1, 1);
+
+				//            AvHSpriteSetColor(1,1,1);
+				//            AvHSpriteSetRenderMode(kRenderTransTexture);
+				//			AvHSpriteDraw(mHiveHealthSprite, 0, x1, y1, x1+100, y1+100,  0, 0, 1, 1);
+
+
+							// use the hive sprite height for the hivehealth sprite height and width
+				float theHealthSpriteHeight = (float)(kHiveNormScreenHeight)*ScreenHeight();
+				float theHealthSpriteWidth = theHealthSpriteHeight;
+
+				AvHSpriteSetColor(1, 1, 1);
+				AvHSpriteSetRenderMode(kRenderTransTexture);
+
+				// adjust the position for the sprite -- to the left
+				float w1 = mViewport[0] + mViewport[2] - (kHiveNormScreenWidth + 0.02f)*ScreenWidth();
+
+				AvHSpriteDraw(mHiveHealthSprite, 0, w1, y1, w1 + theHealthSpriteWidth, y1 + theHealthSpriteHeight, 0, 0, 1, 1);
+
+				if (theIter->mStatus > 0) {
+					if (theIter->mHealthPercentage < 100) {
+						AvHSpriteDraw(mHiveHealthSprite, 0, w1, y1, w1 + theHealthSpriteWidth, y1 + theHealthSpriteHeight, 0, 0, 1, 1);
+						AvHSpriteDraw(mHiveHealthSprite, 1,
+							w1, y1 + theHealthSpriteHeight - theHealthSpriteHeight * ((float)(theIter->mHealthPercentage) * 0.92f / 100),
+							w1 + theHealthSpriteWidth, y1 + theHealthSpriteHeight,
+							0, 1 - ((float)(theIter->mHealthPercentage) * 0.92f / 100),
+							1, 1);
+					}
+					else {
+						AvHSpriteDraw(mHiveHealthSprite, 1, w1, y1, w1 + theHealthSpriteWidth, y1 + theHealthSpriteHeight, 0, 0, 1, 1);
+					}
+				}
+
+
+
+				// Draw technology it's supporting
+				AvHMessageID theTechnology = (AvHMessageID)theIter->mTechnology;
+				theFrame = -1;
+				switch (theTechnology)
+				{
+				case ALIEN_BUILD_DEFENSE_CHAMBER:
+					theFrame = 0;
+					break;
+				case ALIEN_BUILD_SENSORY_CHAMBER:
+					theFrame = 3;
+					break;
+				case ALIEN_BUILD_MOVEMENT_CHAMBER:
+					theFrame = 2;
+					break;
+				}
+
+				// Draw it inset
+				if (theFrame >= 0)
+				{
+
+					float x1 = mViewport[0] + mViewport[2] - theHiveWidth + (kHiveTechnologyInsetXScalar*kHiveNormScreenWidth)*ScreenWidth();
+					float y1 = mViewport[1] + (theNormY + kHiveTechnologyInsetYScalar * kHiveNormScreenHeight)*ScreenHeight();
+					float x2 = x1 + kHiveTechnologyInsetWidthScalar * kHiveNormScreenWidth*ScreenWidth();
+					float y2 = y1 + kHiveTechnologyInsetHeightScalar * kHiveNormScreenHeight*ScreenHeight();
+
+					AvHSpriteDraw(mAlienUIUpgradeCategories, theFrame, x1, y1, x2, y2, 0, 0, 1, 1);
+
+				}
+
+			}
+
+		}
+	}
+	*/
 
     if (mMarineTopSprite && (this->mMapMode == MAP_MODE_NS))
     {
@@ -3676,6 +3973,7 @@ void AvHHud::RenderStructureRanges()
 
             AvHSHUGetSizeForUser3(theUser3, theMinSize, theMaxSize);
             float theMaxRadius2 = max(max(theMinSize.x, theMaxSize.x), max(theMinSize.y, theMaxSize.y));
+			//float theMaxRadius2 = max(max(theMinSize.x, theMaxSize.x), max(theMinSize.y, theMaxSize.y), max(theMinSize.z, theMaxSize.z));
 
             AVHHSPRITE theSprite = this->mBuildCircleSprite;
 			// : 0000291 
@@ -3732,12 +4030,12 @@ void AvHHud::RenderStructureRange(vec3_t inOrigin, int inRadius, AVHHSPRITE inSp
 
 void AvHHud::RenderAlienUI()
 {
-
+	
 	const float kAspectRatio = ScreenWidth()/ScreenHeight();
 
     // Draw the embryo overlay if the player is gestating.
-
-    if (GetHUDUser3() == AVH_USER3_ALIEN_EMBRYO)
+	
+    if ((GetHUDUser3() == AVH_USER3_ALIEN_EMBRYO)&&(CVAR_GET_FLOAT("cl_showegg") == 0))
     {
 		if (mMembraneSprite)
 		{
@@ -4379,7 +4677,7 @@ void AvHHud::VidInit(void)
 	//		this->mAlienUILifeforms[i] = SPR_Load(theSpriteName.c_str());
 	//	}
 
-	if (CVAR_GET_FLOAT("hud_style") == 2.0f)
+	if (CVAR_GET_FLOAT("hud_style") == 2.0f) //Nine Legends competitive HUD
 	{
 		this->mAlienUIUpgrades = SPR_Load(kAlienUpgradeSpriteNL);
 		this->mAlienUIEnergySprite = SPR_Load(kAlienEnergySpriteNL);
@@ -4398,7 +4696,7 @@ void AvHHud::VidInit(void)
 		this->mMarineOrderIndicator = SPR_Load(kMarineOrderSpriteNL);
 		this->mMarineUpgradesSprite = SPR_Load(kMarineUpgradesSpriteNL);
 	}
-	else if (CVAR_GET_FLOAT("hud_style") == 1.0f)
+	else if (CVAR_GET_FLOAT("hud_style") == 1.0f) //minimalistic HUD
 	{
 		char theBaseName[128];
 		sprintf(theBaseName, "%s", kAlienUpgradeSprite);
@@ -4427,7 +4725,7 @@ void AvHHud::VidInit(void)
 		this->mMarineOrderIndicator = SPR_Load(kMarineOrderSprite);
 		this->mMarineUpgradesSprite = SPR_Load(kMarineUpgradesSprite);
 	}
-	else
+	else //classic hud
 	{
 		char theBaseName[128];
 		sprintf(theBaseName, "%s", kAlienUpgradeSprite);
