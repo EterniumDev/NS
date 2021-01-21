@@ -1,5 +1,5 @@
 # Natural Selection v3.2.3
-
+Updated by ALIEN BIRD ARMAGEDDON
 
 [![Build Status](https://travis-ci.org/ENSL/NS.svg?branch=develop)](https://travis-ci.org/ENSL/NS)
 
