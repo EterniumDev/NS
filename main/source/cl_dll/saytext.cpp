@@ -31,7 +31,7 @@
 
 float* GetClientColor(int clientIndex);
 
-#define MAX_LINES	5
+#define MAX_LINES	8
 #define MAX_CHARS_PER_LINE	256  /* it can be less than this, depending on char size */
 
 // allow 20 pixels on either side of the text
