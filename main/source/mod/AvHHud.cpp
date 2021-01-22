@@ -6498,7 +6498,9 @@ void AvHHud::UpdateFromEntities(float inCurrentTime)
 							case AVH_USER3_WELD:
 							//case AVH_USER3_COMMANDER_STATION:
 							//case AVH_USER3_HIVE:
-								theAlwaysDraw = true;
+								if (theEntity->fuser1 < 1000.0f) { //1000 is done
+									theAlwaysDraw = true;
+								}
 								break;
 							}
 
