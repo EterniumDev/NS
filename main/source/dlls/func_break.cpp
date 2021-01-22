@@ -575,6 +575,12 @@ int CBreakable :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, f
 	if ( bitsDamageType & DMG_CLUB )
 		flDamage *= 2;
 
+	if (bitsDamageType & NS_DMG_BLAST) //explosive/welder deals x4 damage against breakables
+		flDamage *= 4;
+
+	if (bitsDamageType & DMG_SLASH) //knife does x4 damage against breakables too
+		flDamage *= 2;
+	
 	// Boxes / glass / etc. don't take much poison damage, just the impact of the dart - consider that 10%
 	if ( bitsDamageType & DMG_POISON )
 		flDamage *= 0.1;
