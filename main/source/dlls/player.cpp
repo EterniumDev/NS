@@ -2941,6 +2941,12 @@ void CBasePlayer::PostThink()
 			
 			float flFallDamage = g_pGameRules->FlPlayerFallDamage( this );
 
+			//onos fall damage multiplier
+			if (this->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5)
+			{
+				flFallDamage *= 3.5f; 
+			}
+			
 			if ( flFallDamage > pev->health )
 			{//splat
 				// note: play on item channel because we play footstep landing on body channel
