@@ -4013,7 +4013,7 @@ void AvHGamerules::UpdateServerCommands()
 	//float theAirMove = CVAR_GET_FLOAT("sv_airmove");
 
 	// TODO: Disguises these strings somehow to prevent hacking?
-	SERVER_COMMAND("sv_airaccelerate 10\n");
+	//SERVER_COMMAND("sv_airaccelerate 10\n");
 	//SERVER_COMMAND("sv_airmove 1\n");
 }
 
