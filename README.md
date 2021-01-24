@@ -1,8 +1,6 @@
 # Natural Selection v3.2.3
 Updated by ALIEN BIRD ARMAGEDDON
 
-[![Build Status](https://travis-ci.org/ENSL/NS.svg?branch=develop)](https://travis-ci.org/ENSL/NS)
-
 This is a complete rebuild of the game [Natural Selection] for Windows, Linux, and OS X. It includes updates and fixes by Alien, pierow, Prefix, fmoraw, Bacsu, and others.
 
 ## Downloads
