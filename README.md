@@ -7,9 +7,9 @@ This is a complete rebuild of the game [Natural Selection] for Windows, Linux, a
 
 Install the game using one of the following methods:
 
-**[Natural Selection Launcher](https://github.com/ENSL/NaturalLauncher/releases/)** (recommended for Windows) The launcher can install, update, or repair the game.
+**[Natural Selection Launcher](https://github.com/EterniumDev/NaturalLauncher/releases/)** (recommended for Windows) The launcher can install, update, or repair the game.
 
-**[Manual installation](https://github.com/ENSL/NS/releases)** (Linux / OSX / Windows)
+**[Manual installation](https://github.com/EterniumDev/NS/releases)** (Linux / OSX / Windows)
 
 As the game is a Half-Life mod, Steam and Half-Life installations are required to play the game.
 
