@@ -3923,9 +3923,17 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 		m_rgpPlayerItems[pItem->iItemSlot()] = pItem;
 
 		// should we switch to this item?
-		if ( g_pGameRules->FShouldSwitchWeapon( this, pItem ) )
-		{
-			SwitchWeapon( pItem );
+		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(this);
+		if (thePlayer) {
+			//ALERT(at_console, "player's auto swap is %d \n", thePlayer->mAutoSwapValue);
+			if (thePlayer->mAutoSwapValue == 1 || !thePlayer->m_pActiveItem) //added by alien for cl_autoswap
+			//auto swap regardless if the player doesn't have a weapon out
+			{
+				if (g_pGameRules->FShouldSwitchWeapon(this, pItem))
+				{
+					SwitchWeapon(pItem);
+				}
+			}
 		}
 
 		return TRUE;
