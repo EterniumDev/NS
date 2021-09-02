@@ -330,6 +330,7 @@ AvHGamerules::AvHGamerules() : mTeamA(TEAM_ONE), mTeamB(TEAM_TWO)
     RegisterServerVariable(&avh_blockscripts);
 	RegisterServerVariable(&avh_jumpmode);
 	RegisterServerVariable(&avh_tournamentmode);
+	RegisterServerVariable(&avh_autoswap);
     RegisterServerVariable(&avh_team1damagepercent);
     RegisterServerVariable(&avh_team2damagepercent);
     RegisterServerVariable(&avh_team3damagepercent);
@@ -837,6 +838,17 @@ void AvHGamerules::ClientKill( edict_t *pEntity )
 
 void AvHGamerules::ClientUserInfoChanged(CBasePlayer *pPlayer, char *infobuffer)
 {
+	const char* theAutoSwapValue = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autoswap");
+
+	if (theAutoSwapValue) { //added some extra checks too in case stuff is bad for whatever reason
+		//ALERT(at_console, "client user info changed autoswap is now %s \n", theAutoSwapValue);
+
+		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(pPlayer);
+		if (thePlayer) {
+			thePlayer->mAutoSwapValue = atoi(theAutoSwapValue);
+		}
+	}
+	
 	// NOTE: Not currently calling down to parent CHalfLifeTeamplay 
 }
 
