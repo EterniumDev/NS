@@ -94,6 +94,7 @@ extern cvar_t *violence_ablood;
 extern cvar_t *violence_hgibs;
 extern cvar_t *violence_agibs;
 extern cvar_t avh_killdelay;
+extern cvar_t avh_autoswap;
 extern cvar_t *showtriggers;
 
 extern cvar_t *showtriggers;
@@ -145,5 +146,6 @@ float	ns_cvar_float(const cvar_t *cvar);
 
 #define kvBlockScripts              "mp_blockscripts"
 #define kvJumpMode					"sv_jumpmode"
+#define kvAutoSwap					"sv_autoswap"
 
 #endif
