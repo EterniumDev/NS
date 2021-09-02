@@ -198,6 +198,8 @@ class AvHPlayer : public CBasePlayer, public AvHCloakable, public BalanceChangeL
 public:
 	// AvHPlayer stuff
     AvHPlayer();
+    
+	int			mAutoSwapValue; //added by alien for cl_autoswap
 
 	void			AddDebugEnemyBlip(float inX, float inY, float inZ);
 	void			PrintWeaponListToClient(CBaseEntity *theAvHPlayer);
