@@ -176,6 +176,9 @@ public:
 	CBasePlayerItem *m_pLastItem;
     // Added by mmcguire.
     string_t m_pLastItemName;
+    
+    	//Added by Alien, Used for cl_autoswap
+	int m_iAutoSwap;
 
 
 	// shared ammo slots
