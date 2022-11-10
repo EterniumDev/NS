@@ -215,7 +215,9 @@ bool AvHSelectionHelper::SelectUnitsInRegion(const Vector& inPointOfView, const 
 {
 #ifdef AVH_SERVER
 	// Assumes that entities won't be too far away
-	float theRadius = GetGameRules()->GetMapExtents().GetTopDownCullDistance()*2;
+	//float theRadius = GetGameRules()->GetMapExtents().GetTopDownCullDistance()*2;
+	//Doubled the radius which fixes the bug where buildings very far down couldn't be upgraded, this change may cause unwanted side effects it's currently unknown
+	float theRadius = GetGameRules()->GetMapExtents().GetTopDownCullDistance()*4;
 
 	CBaseEntity* theBaseEntity = NULL;
 	while((theBaseEntity = UTIL_FindEntityInSphere(theBaseEntity, inPointOfView, theRadius)) != NULL)
