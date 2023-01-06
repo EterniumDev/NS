@@ -391,7 +391,7 @@ void AvHDefenseChamber::RegenAliensThink()
 			AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(theBaseEntity);
 			float thePercent=BALANCE_VAR(kDefensiveChamberRegenPercent)/100.0f;
 			float amount=BALANCE_VAR(kDefensiveChamberRegenAmount) + (theBaseEntity->pev->max_health*thePercent);
-			if(thePlayer && thePlayer->IsAlive())
+			if(thePlayer && thePlayer->IsAlive() && !(thePlayer->GetIsBeingDigested()))
 			{
 				if(thePlayer->Heal(amount, true, true))
 				{
@@ -595,6 +595,11 @@ void AvHMovementChamber::TeleportUse(CBaseEntity* inActivator, CBaseEntity* inCa
 	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(inActivator);
 	if(thePlayer && (thePlayer->pev->team == this->pev->team) && (thePlayer->GetUser3() != AVH_USER3_ALIEN_EMBRYO))
 	{
+		// For Alien vs Alien mode
+		// Remove parasite if player has one
+		int& theUser4 = thePlayer->pev->iuser4;
+		SetUpgradeMask(&theUser4, MASK_PARASITED, false);
+
 		if((this->mLastTimeScannedHives == -1) || (gpGlobals->time > (this->mLastTimeScannedHives + kHiveScanInterval)))
 		{
 			this->mTeleportHiveIndex = -1;
