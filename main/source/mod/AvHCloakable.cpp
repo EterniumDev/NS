@@ -1,7 +1,10 @@
 #include "AvHCloakable.h"
+#include "AvHServerVariables.h"
 #include "../dlls/extdll.h"
 #include "../dlls/util.h"
 #include "../util/Balance.h"
+
+#define kTheFadedCloak 0.07f
 
 AvHCloakable::AvHCloakable()
 {
@@ -69,17 +72,24 @@ void AvHCloakable::Update()
 		{
 			// Cloaking
 			newOpacity -= theTimePassed/this->GetCloakTime();
-			// Adjust for movement
-			if ( this->mOpacity < 0.45f && this->mCurrentSpeed > this->mMaxWalkSpeed ) {
-				newOpacity=this->mOpacity;
-				if ( this->mCurrentSpeed > this->mMaxSpeed ) {
-					newOpacity += theTimePassed / this->GetUncloakTime();
-				}
-				else {
-					newOpacity += theTimePassed/this->GetUncloakTime() / 2.0f;
+			if (avh_fadedgamemode.value != 1) {
+				// Adjust for movement
+				if (this->mOpacity < 0.45f && this->mCurrentSpeed > this->mMaxWalkSpeed) {
+					newOpacity = this->mOpacity;
+					if (this->mCurrentSpeed > this->mMaxSpeed) {
+						newOpacity += theTimePassed / this->GetUncloakTime();
+					}
+					else {
+						newOpacity += theTimePassed / this->GetUncloakTime() / 2.0f;
 
+					}
+					newOpacity = min(max(0.0f, newOpacity), 0.45f);
 				}
-				newOpacity = min(max(0.0f, newOpacity), 0.45f);
+			}
+			else {
+				//in The Faded, don't become completely cloaked ever, and don't uncloak while moving
+				//newOpacity = max(0.04f, newOpacity);
+				newOpacity = kTheFadedCloak;
 			}
 		}
 		else 
@@ -125,10 +135,31 @@ void AvHCloakable::Cloak(bool inNoFade)
 
 void AvHCloakable::Uncloak(bool inNoFade)
 {
-	this->mTimeOfLastUncloak = this->GetTime();
-	this->mTimeOfLastCloak = -1;
+	if (avh_fadedgamemode.value != 1) {
+		this->mTimeOfLastUncloak = this->GetTime();
+		this->mTimeOfLastCloak = -1;
+	}
 
 	if(inNoFade)
+	{
+		
+		if (avh_fadedgamemode.value == 1) {
+			this->mOpacity = kTheFadedCloak;
+		}
+		else {
+			this->mOpacity = 1.0f;
+		}
+	}
+}
+
+//the only reason uncloak killed exists is so that in The Faded gamemode you dont remain cloaked upon dying and going back to readyroom
+void AvHCloakable::UncloakKilled(bool inNoFade)
+{
+	this->mTimeOfLastUncloak = this->GetTime();
+	this->mTimeOfLastCloak = -1;
+	
+
+	if (inNoFade)
 	{
 		this->mOpacity = 1.0f;
 	}
