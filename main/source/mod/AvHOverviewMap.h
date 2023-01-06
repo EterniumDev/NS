@@ -58,6 +58,8 @@ public:
     std::list<int> players_alien_team;
     int m_pColorIndex = -1;
     int thePlayerId = -1;
+
+	AvHFont tFont;
                                     AvHOverviewMap();
 
 	void							Clear();

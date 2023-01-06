@@ -87,6 +87,9 @@ void AvHOverviewMap::Init()
 	this->mBlinkTime=0.0f;
 	this->mBlinkOn=false;
 
+	
+	
+
 	mLastUpdateTime = 0;
 }
 
@@ -218,6 +221,10 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 
 
 
+	cl_entity_s* theEntity = gEngfuncs.GetEntityByIndex(entity.mEntityNumber);
+	thePlayerId = theEntity->curstate.number;
+	int team = theEntity->curstate.team;
+
 	if ( entity.mIsUnderAttack && (entity.mTeam == mTeam || gEngfuncs.IsSpectateOnly() ) ) {
 		if ( gpGlobals && (gpGlobals->time > this->mBlinkTime + attackBlinkPeriod) ) {
 			this->mBlinkOn=!mBlinkOn;
@@ -246,19 +253,29 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 		outG = 0.44;
 		outB = 0.61;
 	}
-	else if (entity.mTeam == TEAM_IND) {
-		outR = 0.5;
-		outG = 0.5;
-		outB = 0.5;
-	}
-    else if (entity.mTeam == mTeam && !isStructure)    {
+	
+    else if (team == mTeam && !isStructure)    {
 		
 
-		cl_entity_s* theEntity = gEngfuncs.GetEntityByIndex(entity.mEntityNumber);
-		thePlayerId = theEntity->curstate.number;
-		string test = to_string(entity.mPlayerSlot) + '\n';
+		
+		//string test = to_string(entity.mPlayerSlot) + '\n';
 		//ConsolePrint(test.c_str());
-		if (gHUD.GetServerVariableFloat(kvTournamentMode)) {
+
+		int localPlayerSquad;
+		//int localPlayerTeam;
+
+		if (g_iUser1 == OBS_NONE) {
+			localPlayerSquad = gHUD.GetCurrentSquad();
+			//localPlayerTeam = gHUD.GetHUDTeam();
+		}
+		else {
+			// We don't have access to the squad information for player's
+			// we're spectating.
+			localPlayerSquad = 0;
+			//localPlayerTeam = 0;
+		}
+		
+		if ((gHUD.GetServerVariableFloat(kvTournamentMode)||(CVAR_GET_FLOAT("cl_freeradar") == 1))&& (CVAR_GET_FLOAT("cl_freeradar") != 2)) {
 			switch (entity.mTeam) {
 			case 1:
 				if (std::find(std::begin(players_marine_team), std::end(players_marine_team), thePlayerId) == std::end(players_marine_team)) {
@@ -314,6 +331,33 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 				outG = player_colors[m_pColorIndex][1] / 255.0;
 				outB = player_colors[m_pColorIndex][2] / 255.0;
 				break;
+
+				/*
+				//MVM marines, red team minimap already works fine
+			case 3:
+				m_pColorIndex = std::distance(std::begin(players_marine_team), std::find(std::begin(players_marine_team), std::end(players_marine_team), thePlayerId));
+				m_pColorIndex = m_pColorIndex % player_colors.size();
+				outR = player_colors[m_pColorIndex][0] / 255.0;
+				outG = player_colors[m_pColorIndex][1] / 255.0;
+				outB = player_colors[m_pColorIndex][2] / 250.0;
+
+				//debug_string = "Team: " + to_string(entity.mTeam) + " AltTeam: " + to_string(mTeam) + " PlayerId: " + to_string(thePlayerId) + " Color: " + to_string(player_colors[m_pColorIndex][0]) + " " + to_string(player_colors[m_pColorIndex][1]) + " " + to_string(player_colors[m_pColorIndex][2]) + "\n";
+				//ConsolePrint(debug_string.c_str());
+				break;
+				*/
+
+				//AVA alien
+			case 4:
+				m_pColorIndex = std::distance(std::begin(players_alien_team), std::find(std::begin(players_alien_team), std::end(players_alien_team), thePlayerId));
+				m_pColorIndex = m_pColorIndex % player_colors.size();
+				//outR = player_colors[m_pColorIndex][0] / 255.0;
+				//outG = player_colors[m_pColorIndex][1] / 255.0;
+				//outB = player_colors[m_pColorIndex][2] / 255.0;
+				outR = 0.92;
+				outG = 0.1;
+				outB = 0.47;
+				//ALERT(at_console, "ALIEN AVA STUFF \n", );
+				break;
 			default:
 				outR = 1.0;
 				outG = 1.0;
@@ -326,22 +370,76 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 			outR = 1.0;
 			outG = 1.0;
 			outB = 1.0;
+			//localPlayerTeam
+			if (entity.mIsLocalPlayer) {
+				outR = 1.0;
+				outG = 1.0;
+				outB = 1.0;
+			}
+			/*
+			else if (entity.mTeam == localPlayerTeam) {
+				outR = 1.0;
+				outG = 1.0;
+				outB = 1.0;
+			}
+			
+			else if (entity.mSquadNumber != 0 && entity.mSquadNumber == localPlayerSquad) {
+				outR = 0.0;
+				outG = 1.0;
+				outB = 0.0;
+			}
+			*/
+			else if (team == TEAM_ONE) { //marine blue
+				outR = 0.43; //110
+				outG = 0.70; //180
+				outB = 1.0;  //255
+			}
+			else if (team == TEAM_TWO) { //kharaa orange
+				outR = 0.88;
+				outG = 0.45;
+				outB = 0.00;
+			}
+			else if (team == TEAM_THREE) { //MVM team colour
+				outR = 0.92;
+				outG = 0.1;
+				outB = 0.47;
+			}
+			else if (team == TEAM_FOUR) { //AVA team colour
+				outR = 0.92;
+				outG = 0.1;
+				outB = 0.47;
+			}
 		}
 
 
 
-	
-
-		int localPlayerSquad;
 		
-		if (g_iUser1 == OBS_NONE) {
-			localPlayerSquad = gHUD.GetCurrentSquad();
+		//extern playermove_s* pmove;
+
+		/*
+		tFont.Load("sprites/font_arial");
+		string theText;
+		char bufferb[1024];
+		
+		
+		if ((entity.mEntityNumber >= 1) && (entity.mEntityNumber <= gEngfuncs.GetMaxClients()))
+		{
+			hud_player_info_t thePlayerInfo;
+			gEngfuncs.pfnGetPlayerInfo(entity.mEntityNumber, &thePlayerInfo);
+			if (thePlayerInfo.name)
+			{
+				//outEntityInfoString += thePlayerInfo.name;
+				//theText = thePlayerInfo.name;
+				//sprintf(bufferb, "%s", theText.c_str());
+				sprintf(bufferb, "player loc: %s", thePlayerInfo.name);
+				tFont.DrawString(10, 94 + tFont.GetStringHeight() * 2, bufferb, tR, tG, tB);
+			}
 		}
-		else {
-			// We don't have access to the squad information for player's
-			// we're spectating.
-			localPlayerSquad = 0;
-		}
+		*/
+
+
+
+		
 
 		/*if (mUser3 != AVH_USER3_COMMANDER_PLAYER) {
 			if (entity.mIsLocalPlayer ) {
@@ -356,7 +454,134 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 			}			    
 		}*/
     }
-		else {
+
+	else if (isStructure) {
+		cl_entity_s* theStructEntity = gEngfuncs.GetEntityByIndex(entity.mEntityNumber);
+		int health = entity.mHealth;//theStructEntity->curstate.health;
+		int solid = theStructEntity->curstate.solid;
+		int team = theStructEntity->curstate.team;
+		int teamother = entity.mTeam;
+		int f1 = theStructEntity->curstate.fuser1;
+		int f2 = theStructEntity->curstate.fuser2;
+		int f3 = theStructEntity->curstate.fuser3;
+		int f4 = theStructEntity->curstate.fuser4;
+		int u3 = theStructEntity->curstate.iuser3;
+
+		//const char* theUser3Name = AvHSHUGetClassNameFromUser3((AvHUser3)theStructEntity->curstate.iuser3);
+		
+		/*
+		if ((CVAR_GET_FLOAT("cl_freeradar") == 0)){//&& (theUser3Name != NULL)) {
+			ConsolePrint("--------------------------------\n");
+			//if 
+			//{
+				ConsolePrint(("ENTITY ID : " + to_string(entity.mEntityNumber) + "\n").c_str());
+				ConsolePrint(("ENTITY U3 : " + to_string(u3) + "\n").c_str());
+
+			//}
+			ConsolePrint("--------------------------------\n");
+			ConsolePrint(("health " + to_string(health) + "\n").c_str());
+			ConsolePrint(("team " + to_string(team) + "\n").c_str());
+			ConsolePrint(("teamo " + to_string(teamother) + "\n").c_str());
+			
+			//ConsolePrint(("solid " + to_string(solid) + "\n").c_str());
+			//ConsolePrint(("f1 " + to_string(f1) + "\n").c_str());
+			//ConsolePrint(("f2 " + to_string(f2) + "\n").c_str());
+			//ConsolePrint(("f3 " + to_string(f4) + "\n").c_str());
+			//ConsolePrint(("f4 " + to_string(f4) + "\n").c_str());
+
+
+			//ConsolePrint("--------------------------------\n");
+		}
+		*/
+
+		if (team == TEAM_ONE) { //entity.mTeam does not work for ava
+			if (f1 == 1000) { //marine blue
+				outR = 0.43; //110
+				outG = 0.70; //180
+				outB = 1.0;  //255
+			}
+			else { //marine teal blue
+				outR = 110.0 / 255.0; //110
+				outG = 180.0 / 255.0; //180
+				outB = 255.0 / 255.0;  //255
+			}
+		}
+		else if (team == TEAM_TWO) {
+			if (gHUD.GetServerVariableFloat("sv_balance_ava") == 0) {
+				if (f1 == 1000) { //kharaa orange
+					outR = 0.88;
+					outG = 0.45;
+					outB = 0.00;
+				}
+				else {  //kharaa orange
+					outR = 0.88;
+					outG = 0.45;
+					outB = 0.00;
+				}
+			}
+			else {
+				//kharaa yellow for ava
+				outR = 0.86;
+				outG = 0.67;
+				outB = 0.05;
+			}
+
+		}
+		else if (team == TEAM_THREE) { //MVM team colour for buildings (also used for ava?)
+			/*
+			if (gHUD.GetServerVariableFloat("sv_balance_ava") == 0) { //pink for mvm
+				outR = 0.92;
+				outG = 0.1;
+				outB = 0.47;
+			}
+			else {
+			
+				outR = 0.43;
+				outG = 0.70;
+				outB = 1.0;
+			}
+			*/
+			outR = 0.92;
+			outG = 0.1;
+			outB = 0.47;
+		}
+		else if (team == TEAM_FOUR) { //AVA team colour for buildings
+			outR = 0.92;
+			outG = 0.1;
+			outB = 0.47;
+		}
+		else { //make buildings that are fully built and not part of marines or kharaa, the grey or special pink?
+			/*
+			if (f1 == 1000) {
+				outR = 0.92;
+				outG = 0.1;
+				outB = 0.47;
+			}
+			*/
+			//else {
+				outR = 0.5;
+				outG = 0.5;
+				outB = 0.5;
+			//}
+		}
+		/*
+		else if (entity.mTeam == TEAM_THREE) {
+			outR = 0.92;
+			outG = 0.1;
+			outB = 0.47;
+		}
+		else if (entity.mTeam == TEAM_FOUR) {
+			outR = 0.65;
+			outG = 0.92;
+			outB = 0.0;
+		}
+		*/
+		}
+	else if (entity.mTeam == TEAM_IND) {
+	outR = 0.5;
+	outG = 0.5;
+	outB = 0.5;
+	}
 	/*	if (entity.mTeam == TEAM_ONE) {
 			outR = 0.33;
 			outG = 0.95;
@@ -389,53 +614,8 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 			outG = 0.0;
 			outB = 0.0;
 		}*/
-		if (isStructure) {
-			cl_entity_s* theStructEntity = gEngfuncs.GetEntityByIndex(entity.mEntityNumber);
-			int health = theStructEntity->curstate.health;
-			int solid = theStructEntity->curstate.solid;
-			int f1 = theStructEntity->curstate.fuser1;
-			int f2 = theStructEntity->curstate.fuser2;
-			int f3 = theStructEntity->curstate.fuser3;
-			int f4 = theStructEntity->curstate.fuser4;
-			ConsolePrint("--------------------------------\n");
-			ConsolePrint(("ENTITY ID : " + to_string(entity.mEntityNumber)).c_str());
-			ConsolePrint("--------------------------------\n");
-			ConsolePrint(("health " +to_string(health)+"\n").c_str());
-			ConsolePrint(("solid " + to_string(solid) + "\n").c_str());
-			ConsolePrint(("f1 " + to_string(f1) + "\n").c_str());
-			ConsolePrint(("f2 " + to_string(f2) + "\n").c_str());
-			ConsolePrint(("f3 " + to_string(f4) + "\n").c_str());
-			ConsolePrint(("f4 " + to_string(f4) + "\n").c_str());
-			ConsolePrint("--------------------------------\n");
-	
-
-			if (entity.mTeam == TEAM_ONE) {
-				if (f1 == 1000) {
-					outR = 0.43; //110
-					outG = 0.70; //180
-					outB = 1.0;  //255
-				}
-				else {
-					outR = 200.0/255.0; //110
-					outG = 200.0/255.0; //180
-					outB = 255;  //255
-				}
-			}
-			else if (entity.mTeam == TEAM_TWO) {
-				if (f1 == 1000) {
-					outR = 0.88;
-					outG = 0.45;
-					outB = 0.00;
-				}
-				else {
-					outR = 255.0 / 255.0; //110
-					outG = 200.0 / 255.0; //180
-					outB = 200.0;  //255
-				}
-				
-			}
-		}
-	}
+		
+	//}
 }
 
 void AvHOverviewMap::DrawMiniMapEntity(const DrawInfo& inDrawInfo, const DrawableEntity& inEntity)
@@ -453,6 +633,42 @@ void AvHOverviewMap::DrawMiniMapEntity(const DrawInfo& inDrawInfo, const Drawabl
 
 	if (inEntity.mIsLocalPlayer)
 	{
+		/*
+		int tR = CVAR_GET_FLOAT(kvMarineHudRed);
+		int tG = CVAR_GET_FLOAT(kvMarineHudGreen);
+		int tB = CVAR_GET_FLOAT(kvMarineHudBlue);
+		//extern playermove_s* pmove;
+		
+
+		char bufferb[1024];
+
+		sprintf(bufferb, "player loc: %d %d", this->mWorldPlayerX, this->mWorldPlayerY);
+		tFont.DrawString(10, 94 + tFont.GetStringHeight() * 2, bufferb, tR, tG, tB);
+		*/
+
+		//semi working
+		/*
+		tFont.Load("sprites/font_arial");
+		string theText;
+		char bufferb[1024];
+
+
+		if ((inEntity.mEntityNumber >= 1) && (inEntity.mEntityNumber <= gEngfuncs.GetMaxClients()))
+		{
+			hud_player_info_t thePlayerInfo;
+			gEngfuncs.pfnGetPlayerInfo(inEntity.mEntityNumber, &thePlayerInfo);
+			if (thePlayerInfo.name)
+			{
+				//outEntityInfoString += thePlayerInfo.name;
+				//theText = thePlayerInfo.name;
+				//sprintf(bufferb, "%s", theText.c_str());
+				sprintf(bufferb, "player loc: %s", thePlayerInfo.name);
+				tFont.DrawString(10, 94 + tFont.GetStringHeight() * 2, bufferb, 255,0,0);
+			}
+		}
+		*/
+
+
 		theEntityPosX = this->mWorldPlayerX;
 		theEntityPosY = this->mWorldPlayerY;
 	}
@@ -554,6 +770,49 @@ void AvHOverviewMap::DrawMiniMapEntity(const DrawInfo& inDrawInfo, const Drawabl
             AvHSpriteSetRenderMode(theRenderMode);
             AvHSpriteDraw(theSprite, theFrame, x, y, x + w, y + h, 0, 0, 1, 1);
 		
+			//alien's minimap names
+			//if (inEntity.mIsLocalPlayer)
+			if (CVAR_GET_FLOAT("cl_showminimapname") != 0 && ((mUser3 != AVH_USER3_COMMANDER_PLAYER) || CVAR_GET_FLOAT("cl_showminimapnamescomm") != 0))
+			{
+				tFont.Load("sprites/nl/font_arial"); //font_arialsmall
+				//string theText;
+				char bufferb[1024];
+
+
+				if ((inEntity.mEntityNumber >= 1) && (inEntity.mEntityNumber <= gEngfuncs.GetMaxClients()))
+				{
+					hud_player_info_t thePlayerInfo;
+					gEngfuncs.pfnGetPlayerInfo(inEntity.mEntityNumber, &thePlayerInfo);
+					if (thePlayerInfo.name)
+					{
+						//outEntityInfoString += thePlayerInfo.name;
+						//theText = thePlayerInfo.name;
+						//sprintf(bufferb, "%s", theText.c_str());
+
+						int tR = CVAR_GET_FLOAT(kvMinimapNameRed);
+						int tG = CVAR_GET_FLOAT(kvMinimapNameGreen);
+						int tB = CVAR_GET_FLOAT(kvMinimapNameBlue);
+
+						sprintf(bufferb, "%s", thePlayerInfo.name);
+
+						if (bufferb) {
+							std::string text(bufferb);
+
+							if (CVAR_GET_FLOAT("cl_showminimapname") >= 2) { //3 letter max
+								//strcpy(rgDeathNoticeList[i].szVictim, killed_with.c_str() + 2);
+								//while (text.length() > 3) {
+								//	text[3]
+								//}
+								//bufferb
+								text = text.substr(0, max((int)CVAR_GET_FLOAT("cl_showminimapname"),1));
+							}
+
+							tFont.DrawStringCustom(x +12 - text.length()*3, y - 18, text.c_str(), tR, tG, tB, 0);
+						}
+						
+					}
+				}
+			}
 
         }
 
