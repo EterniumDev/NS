@@ -37,6 +37,22 @@ extern cvar_t*	cl_musicdir;
 #define kvAutoHelp			"cl_autohelp"
 // : 1064 The cl var that controls the display of labelled minimaps
 #define kvLabelMaps			"hud_mapstyle"
+
+// for custom hud color options
+#define kvMarineHudRed			"cl_marinehudcolor_red"
+#define kvMarineHudGreen		"cl_marinehudcolor_green"
+#define kvMarineHudBlue			"cl_marinehudcolor_blue"
+#define kvMinimapNameRed		"cl_minimapnamecolor_red"
+#define kvMinimapNameGreen		"cl_minimapnamecolor_green"
+#define kvMinimapNameBlue		"cl_minimapnamecolor_blue"
+#define kvCommSelectionHudRed	"cl_commselectcolor_red"
+#define kvCommSelectionHudGreen	"cl_commselectcolor_green"
+#define kvCommSelectionHudBlue	"cl_commselectcolor_blue"
+#define kvAlienHudRed			"cl_alienhudcolor_red"
+#define kvAlienHudGreen			"cl_alienhudcolor_green"
+#define kvAlienHudBlue			"cl_alienhudcolor_blue"
+
+
 // :
 // : 0001070 - enables forced gamma ramp loading
 #define kvGammaRamp			"cl_gammaramp"
