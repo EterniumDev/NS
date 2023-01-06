@@ -198,8 +198,12 @@ class AvHPlayer : public CBasePlayer, public AvHCloakable, public BalanceChangeL
 public:
 	// AvHPlayer stuff
     AvHPlayer();
-    
-	int			mAutoSwapValue; //added by alien for cl_autoswap
+
+	//public everything cause my name is alien and i dislike private variables!!! xd jk
+	float				mTimeOfLastResupply;
+	float				mTimeOfLastNadeRestock;
+	float				mTimeGestationStarted;
+	int					mAutoSwapValue; //added by alien for cl_autoswap
 
 	void			AddDebugEnemyBlip(float inX, float inY, float inZ);
 	void			PrintWeaponListToClient(CBaseEntity *theAvHPlayer);
@@ -389,6 +393,9 @@ public:
     bool            GetIsCatalysted() const;
     void            SetIsCatalysted(bool inState, float inTime = 0.0f);
 
+	bool            GetIsNanoed() const;
+	void            SetIsNanoed(bool inState, float inTime = 0.0f);
+
 	bool			Energize(float inEnergyAmount);
 	bool			Heal(float inAmount, bool inPlaySound = true, bool dcHealing = false);
 	bool			Regenerate(float inRegenerationAmount, bool inPlaySound = true, bool dcHealing = false);
@@ -501,8 +508,8 @@ private:
 	bool				GetHasActiveAlienWeaponWithImpulse(AvHMessageID inMessageID) const;
 	bool				GetRandomGameStartedTick(float inApproximateFrameRate);
 	bool				GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string* outErrorMessage = NULL) const;
-	int					GetRelevantWeight(void) const;
-	int					GetRelevantWeightForWeapon(AvHBasePlayerWeapon* inWeapon) const;
+	float				GetRelevantWeight(void) const;
+	float				GetRelevantWeightForWeapon(AvHBasePlayerWeapon* inWeapon) const;
 	void				GetSpeeds(int& outBaseSpeed, int& outUnemcumberedSpeed) const;
 	void				GiveCombatUpgradesOnSpawn();
 	bool				GiveOrderToSelection(AvHOrderType inOrder, Vector inNormRay);
@@ -737,6 +744,11 @@ private:
 	float				mTimeToBeFreeToMove;
     float               mTimeToEndCatalyst;
 
+	bool				mNanoActive;
+	float               mTimeToEndNano;
+
+
+
 	float				mLastTimeInCommandStation;
 	float				mLastTimeCheckedRedemption;
 	float				mLastTimeRedemptionTriggered;
@@ -753,7 +765,7 @@ private:
 
 	float				mTimeLastPlaying;
 
-	float				mTimeGestationStarted;
+	//float				mTimeGestationStarted;
 
 	AvHUser3			mPreviousUser3;
     float               mSavedJetpackEnergy;
@@ -817,7 +829,7 @@ private:
 	float				mTimeOfLastConstructUseAnimation;
 	float				mTimeOfLastConstructUse;
 
-	float				mTimeOfLastResupply;
+	
 
 	float				mTimeOfMetabolizeEnd;
 
@@ -841,6 +853,7 @@ private:
 
     int                 mScore;
     int                 mSavedCombatFrags;
+	int                 mSavedCombatDeaths;
 	float				mLastUpdateTime;
 
 	string				mNetworkAddress;

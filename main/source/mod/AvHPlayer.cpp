@@ -245,6 +245,7 @@
 #include "AvHAlienAbilities.h"
 #include "AvHAlienAbilityConstants.h"
 #include "AvHAlienEquipmentConstants.h"
+#include "AvHServerVariables.h"
 #include "AvHMarineTurret.h"
 #include "AvHSiegeTurret.h"
 #include "AvHBlipConstants.h"
@@ -593,6 +594,9 @@ bool AvHPlayer::BuildTech(AvHMessageID inBuildID, const Vector& inPickRay)
             string theErrorMessage;
             int theCost = 0;
             bool thePurchaseAllowed = this->GetPurchaseAllowed(inBuildID, theCost, &theErrorMessage);
+
+
+
             if(thePurchaseAllowed)
             {
                 // Count how many entities on our team we have in area
@@ -874,6 +878,7 @@ void AvHPlayer::ClearUserVariables()
     this->pev->iuser2 = 0;
     this->pev->iuser3 = 0;
     this->pev->iuser4 = 0;
+	this->pev->eter_hack = 0;
     this->pev->fuser1 = 0;
     this->pev->fuser2 = 0;
     this->pev->fuser3 = 0;
@@ -1035,6 +1040,9 @@ void AvHPlayer :: DropAmmo(char *pszAmmoType, int iAmmoAmt, int iMax, int iWeapo
 	switch(iWeaponID)
 	{
 	case AVH_WEAPON_PISTOL:		  theSubModel = 3; break;
+#ifdef AVH_WEAPON_PISTOLB
+	case AVH_WEAPON_PISTOLB:	  theSubModel = 3; break;
+#endif
 	case AVH_WEAPON_MG:			  theSubModel = 1; break;
 	case AVH_WEAPON_SONIC:		  theSubModel = 0; break;
 	case AVH_WEAPON_HMG:		  theSubModel = 2; break;
@@ -1104,78 +1112,85 @@ bool AvHPlayer::ExecuteAlienMorphMessage(AvHMessageID inMessageID, bool inInstan
     case ALIEN_HIVE_THREE_UNLOCK:
         
         // Now only allow upgrading from level1
-        if(this->GetCanGestate(inMessageID, theErrorMessage))
-        {
-            // Stay as current lifeform by default
-            bool theCheckDucking = true;
-            int theTargetIuser3 = this->pev->iuser3;
-            switch(inMessageID)
-            {
-            case ALIEN_LIFEFORM_ONE:
-                theTargetIuser3 = AVH_USER3_ALIEN_PLAYER1;
-                break;
-            case ALIEN_LIFEFORM_TWO:
-                theTargetIuser3 = AVH_USER3_ALIEN_PLAYER2;
-                break;
-            case ALIEN_LIFEFORM_THREE:
-                theTargetIuser3 = AVH_USER3_ALIEN_PLAYER3;
-                break;
-            case ALIEN_LIFEFORM_FOUR:
-                theTargetIuser3 = AVH_USER3_ALIEN_PLAYER4;
-                break;
-            case ALIEN_LIFEFORM_FIVE:
-                theTargetIuser3 = AVH_USER3_ALIEN_PLAYER5;
-                theCheckDucking = false;
-                break;
-            }
-            
-            int theTargetHull = AvHMUGetHull(theCheckDucking, theTargetIuser3);
-            vec3_t theOrigin;
-            GetNewOrigin((AvHUser3)theTargetIuser3, theCheckDucking, theOrigin); 
-			
-			// removed by  to fix gestating in vents.
-			//theOrigin.z += 5;
-
-            bool theIsEnoughRoom = AvHSUGetIsEnoughRoomForHull(theOrigin, theTargetHull, this->edict());
-			//: try again but higher
-			if(!theIsEnoughRoom)
+		if (!(avh_fadedgamemode.value == 1 && !inInstantaneous && ((inMessageID == ALIEN_LIFEFORM_ONE) ||
+			(inMessageID == ALIEN_LIFEFORM_TWO) || (inMessageID == ALIEN_LIFEFORM_THREE)
+			|| (inMessageID == ALIEN_LIFEFORM_FOUR) || (inMessageID == ALIEN_LIFEFORM_FIVE)))) {
+			if (this->GetCanGestate(inMessageID, theErrorMessage))
 			{
+				// Stay as current lifeform by default
+				bool theCheckDucking = true;
+				int theTargetIuser3 = this->pev->iuser3;
+				switch (inMessageID)
+				{
+				case ALIEN_LIFEFORM_ONE:
+					theTargetIuser3 = AVH_USER3_ALIEN_PLAYER1;
+					break;
+				case ALIEN_LIFEFORM_TWO:
+					theTargetIuser3 = AVH_USER3_ALIEN_PLAYER2;
+					break;
+				case ALIEN_LIFEFORM_THREE:
+					theTargetIuser3 = AVH_USER3_ALIEN_PLAYER3;
+					break;
+				case ALIEN_LIFEFORM_FOUR:
+					theTargetIuser3 = AVH_USER3_ALIEN_PLAYER4;
+					break;
+				case ALIEN_LIFEFORM_FIVE:
+					theTargetIuser3 = AVH_USER3_ALIEN_PLAYER5;
+					theCheckDucking = false;
+					break;
+				}
 
-				theOrigin.z += AvHMUGetOriginOffsetForMessageID(inMessageID);
+				int theTargetHull = AvHMUGetHull(theCheckDucking, theTargetIuser3);
+				vec3_t theOrigin;
+				GetNewOrigin((AvHUser3)theTargetIuser3, theCheckDucking, theOrigin);
 
-				theIsEnoughRoom = AvHSUGetIsEnoughRoomForHull(theOrigin, theTargetHull, this->edict());
+				// removed by  to fix gestating in vents.
+				//theOrigin.z += 5;
+
+				bool theIsEnoughRoom = AvHSUGetIsEnoughRoomForHull(theOrigin, theTargetHull, this->edict());
+				//: try again but higher
+				if (!theIsEnoughRoom)
+				{
+
+					theOrigin.z += AvHMUGetOriginOffsetForMessageID(inMessageID);
+
+					theIsEnoughRoom = AvHSUGetIsEnoughRoomForHull(theOrigin, theTargetHull, this->edict());
+				}
+
+				if (theIsEnoughRoom || inInstantaneous)
+				{
+					if (!theIsEnoughRoom)
+					{
+						int a = 0;
+					}
+					TraceResult tr;
+					Vector vecStart, vecEnd;
+					VectorCopy(this->pev->origin, vecStart);
+					VectorCopy(this->pev->origin, vecEnd);
+					vecEnd[2] -= 100;
+					UTIL_TraceLine(vecStart, vecEnd, ignore_monsters, dont_ignore_glass, NULL, &tr);
+
+					if (tr.flFraction == 1.0f || tr.vecPlaneNormal[2] > 0.7) {
+						this->Evolve(inMessageID, inInstantaneous);
+						theMessageExecuted = true;
+					}
+					else {
+						this->SendMessage(kSurfaceTooSteep);
+					}
+				}
+				else
+				{
+					this->SendMessage(kNeedMoreRoomToGestate);
+				}
 			}
-
-            if(theIsEnoughRoom || inInstantaneous)
-            {
-                if(!theIsEnoughRoom)
-                {
-                    int a = 0;
-                }
-				TraceResult tr;
-				Vector vecStart, vecEnd;
-				VectorCopy(this->pev->origin, vecStart);
-				VectorCopy(this->pev->origin, vecEnd);
-				vecEnd[2]-=100;
-				UTIL_TraceLine(vecStart, vecEnd, ignore_monsters, dont_ignore_glass, NULL, &tr);
-
-				if ( tr.flFraction == 1.0f || tr.vecPlaneNormal[2] > 0.7 ) {
-					this->Evolve(inMessageID, inInstantaneous);
-					theMessageExecuted = true;
-				}
-				else {
-	                this->SendMessage(kSurfaceTooSteep);
-				}
-            }
-            else
-            {
-                this->SendMessage(kNeedMoreRoomToGestate);
-            }
-        }
-        else
-        {
-            this->SendMessage(theErrorMessage.c_str());
-        }
+			else
+			{
+				this->SendMessage(theErrorMessage.c_str());
+			}
+		}
+		else {
+			this->SendMessage("Cannot evolve lifeform during The Faded gamemode");
+		}
         break;
     }
 
@@ -1359,11 +1374,34 @@ bool AvHPlayer::ExecuteMessage(AvHMessageID inMessageID, bool inInstantaneous, b
 				break;
 			case IMPULSE_FLASHLIGHT:
 				// Eat flashlight event.  Add special mode for alien view here?
-				if(!this->mAlienSightActive)
-					PLAYBACK_EVENT_FULL(FEV_HOSTONLY, this->edict(), gAlienSightOnEventID, 0, this->pev->origin, (float *)&g_vecZero, 1.0f, 0.0, 0, 0, 0, 0 );
-				else
-					PLAYBACK_EVENT_FULL(FEV_HOSTONLY, this->edict(), gAlienSightOffEventID, 0, this->pev->origin, (float *)&g_vecZero, 1.0f, 0.0, 0, 0, 0, 0 );
+				if (!this->mAlienSightActive) {
+					PLAYBACK_EVENT_FULL(FEV_HOSTONLY, this->edict(), gAlienSightOnEventID, 0, this->pev->origin, (float *)&g_vecZero, 1.0f, 0.0, 0, 0, 0, 0);
+					SetBits(pev->effects, EF_BRIGHTLIGHT);//EF_DIMLIGHT);
+				}
+				else {
+					PLAYBACK_EVENT_FULL(FEV_HOSTONLY, this->edict(), gAlienSightOffEventID, 0, this->pev->origin, (float *)&g_vecZero, 1.0f, 0.0, 0, 0, 0, 0);
+					ClearBits(pev->effects, EF_BRIGHTLIGHT);//EF_DIMLIGHT);
+					
+				}
 				this->mAlienSightActive = !this->mAlienSightActive;
+
+				/*
+				if (FBitSet(pev->effects, EF_BRIGHTLIGHT))//(FlashlightIsOn())
+				{
+					//FlashlightTurnOff();
+					EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 0.3f, ATTN_NORM, 0, PITCH_NORM);
+					
+					ClearBits(pev->effects, EF_DIMLIGHT);//EF_DIMLIGHT);
+				}
+				else
+				{
+					//FlashlightTurnOn();
+					EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 0.3f, ATTN_NORM, 0, PITCH_NORM);
+					ClearBits(pev->effects, EF_DIMLIGHT);//EF_DIMLIGHT);
+					SetBits(pev->effects, EF_BRIGHTLIGHT);//EF_DIMLIGHT);
+				}
+				*/
+
 				theMessageExecuted = true;
 				break;
 			}
@@ -1857,29 +1895,34 @@ bool AvHPlayer::GetCanCommand(string& outErrorMessage)
     if(!theServerPlayerData || (theServerPlayerData->GetTimeVotedDown() == -1))
     {
         //if(!this->GetCurrentWeaponCannotHolster())
-        if(this->m_pActiveItem)
-        {
-            CBasePlayerWeapon* theCurrentWeapon = (CBasePlayerWeapon *)this->m_pActiveItem->GetWeaponPtr();
-            if(theCurrentWeapon && theCurrentWeapon->CanHolster())
-            {
-                float theLastTime = this->GetLastTimeInCommandStation();
-                if((theLastTime == -1) || (gpGlobals->time > (theLastTime + theCommandStationReuseTime)))
-                {
-                    if(!this->GetIsEnsnared())
-                    {
-                        theCanCommand = true;
-                    }
-                }
-                else
-                {
-                    outErrorMessage = kCommandStationWaitTime;
-                }
-            }
-            else
-            {
-                outErrorMessage = kWeaponPreventingCommandStation;
-            }
-        }
+		if (avh_fadedgamemode.value != 1) {
+			if (this->m_pActiveItem)
+			{
+				CBasePlayerWeapon* theCurrentWeapon = (CBasePlayerWeapon *)this->m_pActiveItem->GetWeaponPtr();
+				if (theCurrentWeapon && theCurrentWeapon->CanHolster())
+				{
+					float theLastTime = this->GetLastTimeInCommandStation();
+					if ((theLastTime == -1) || (gpGlobals->time > (theLastTime + theCommandStationReuseTime)))
+					{
+						if (!this->GetIsEnsnared())
+						{
+							theCanCommand = true;
+						}
+					}
+					else
+					{
+						outErrorMessage = kCommandStationWaitTime;
+					}
+				}
+				else
+				{
+					outErrorMessage = kWeaponPreventingCommandStation;
+				}
+			}
+		}
+		else {
+			outErrorMessage = "Cannot enter command station during The Faded gamemode";
+		}
     }
     else
     {
@@ -2204,6 +2247,8 @@ vec3_t AvHPlayer::GetVisualOrigin() const
     if(this->mInTopDownMode)
     {
         theOrigin[2] = GetGameRules()->GetMapExtents().GetMaxViewHeight();
+		//theOrigin[2] = avh_bhopmarine.value;
+		//pmove->origin[2] = min(max(theMinZ, avh_bhopmarine.value), theMaxZ);
     }
     
     return theOrigin;
@@ -2461,7 +2506,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                             {
                                 // Now make sure we have an unspent upgrade available
                                 AvHTeam* theTeamPointer = this->GetTeamPointer();
-                                if(theTeamPointer && (AvHGetHasFreeUpgradeCategory(theCategory, theTeamPointer->GetAlienUpgrades(), this->pev->iuser4) || GetGameRules()->GetIsCombatMode()))
+                                if(theTeamPointer && (AvHGetHasFreeUpgradeCategory(theCategory, theTeamPointer->GetAlienUpgrades(), this->pev->iuser4) || avh_fadedgamemode.value == 1  || GetGameRules()->GetIsCombatMode()))
                                 {
                                     thePurchaseAllowed = true;
                                 }
@@ -2529,6 +2574,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
         
             case ALIEN_BUILD_RESOURCES:
             case ALIEN_BUILD_HIVE:
+			case ALIEN_BUILD_OFFENSE_CHAMBER:
                 if(theIsBuilder)
                 {
                     thePurchaseAllowed = true;
@@ -2539,6 +2585,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                 }
                 break;
         
+				/*
             case ALIEN_BUILD_OFFENSE_CHAMBER:
                 if(theIsBuilder)
                 {
@@ -2556,6 +2603,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                     theErrorMessage = kMustBeBuilder;
                 }
                 break;
+				*/
         
             // Make sure we have a hive that can provide this tech
             case ALIEN_BUILD_DEFENSE_CHAMBER:
@@ -2710,7 +2758,7 @@ bool AvHPlayer::GetShouldResupplyAmmo()
 							
 							int theCurrentAmmo = this->m_rgAmmo[i];
 
-							if (theCurrentAmmo < theWeaponToGiveTo->GetClipSize()) {
+							if (theCurrentAmmo < (theWeaponToGiveTo->GetClipSize())*2) {
 								theResupply = true;
 							}
                         }
@@ -2839,7 +2887,7 @@ string AvHPlayer::GetPlayerName() const
     return thePlayerName;
 }
 
-int AvHPlayer::GetRelevantWeight(void) const
+float AvHPlayer::GetRelevantWeight(void) const
 {
     float theRelevantWeight = 0;
 
@@ -2856,23 +2904,23 @@ int AvHPlayer::GetRelevantWeight(void) const
         AvHBasePlayerWeapon* theCurrentWeapon = dynamic_cast<AvHBasePlayerWeapon*>(this->m_rgpPlayerItems[i]);
         while(theCurrentWeapon)
         {
-            int theWeight = this->GetRelevantWeightForWeapon(theCurrentWeapon);
+            float theWeight = this->GetRelevantWeightForWeapon(theCurrentWeapon);
 
             // Active items count full, count less when stowed
-            float theMultiplier = (theCurrentWeapon == this->m_pActiveItem) ? 1.0f : .7f;
+            float theMultiplier = (theCurrentWeapon == this->m_pActiveItem) ? 1.0f : .8f;
             theRelevantWeight += theWeight*theMultiplier;
             theCurrentWeapon = dynamic_cast<AvHBasePlayerWeapon*>(theCurrentWeapon->m_pNext);
         }
     }
 
-    return (int)(theRelevantWeight);
+    return theRelevantWeight;
 }
 
-int AvHPlayer::GetRelevantWeightForWeapon(AvHBasePlayerWeapon* inWeapon) const
+float AvHPlayer::GetRelevantWeightForWeapon(AvHBasePlayerWeapon* inWeapon) const
 {
     ASSERT(inWeapon != NULL);
 
-    AvHWeaponID theWeaponID = (AvHWeaponID)inWeapon->m_iId;
+    //AvHWeaponID theWeaponID = (AvHWeaponID)inWeapon->m_iId;
     int theNumRounds = 0;
     if(inWeapon->UsesAmmo())
     {
@@ -2882,7 +2930,7 @@ int AvHPlayer::GetRelevantWeightForWeapon(AvHBasePlayerWeapon* inWeapon) const
         theNumRounds = max(inWeapon->m_iClip + this->m_rgAmmo[theAmmoIndex], 0);
     }
 
-    return GetGameRules()->GetWeightForItemAndAmmo(theWeaponID, theNumRounds);
+    return GetGameRules()->GetWeightForItemAndAmmo(inWeapon->m_iId, theNumRounds);
 }
 
 AvHUser3 AvHPlayer::GetPreviousUser3(bool inIncludeSpectating) const
@@ -3031,6 +3079,14 @@ void AvHPlayer::GetSpeeds(int& outBaseSpeed, int& outUnemcumberedSpeed) const
     }
     else if(this->GetClassType() == AVH_CLASS_TYPE_MARINE)
     {
+		if (GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_10)) //cybernetics upgrade for marines
+		{
+			//const float kStimpackSpeedMultiplier = 1 + BALANCE_VAR(kCatalystSpeedIncrease);
+			//theBaseSpeed *= kStimpackSpeedMultiplier;
+			//theUnencumberedSpeed *= kStimpackSpeedMultiplier;
+			theBaseSpeed += 40;
+			theUnencumberedSpeed += 40;
+		}
         if(this->pev->iuser3 == AVH_USER3_COMMANDER_PLAYER)
         {
             if(this->mInTopDownMode)
@@ -3058,6 +3114,13 @@ void AvHPlayer::GetSpeeds(int& outBaseSpeed, int& outUnemcumberedSpeed) const
             theBaseSpeed *= kStimpackSpeedMultiplier;
             theUnencumberedSpeed *= kStimpackSpeedMultiplier;
         }
+		/*
+		if (avh_fadedgamemode.value == 1) {
+			theBaseSpeed += 20;
+			//theUnencumberedSpeed += 40;
+		}
+		*/
+			
     }
     else if(this->GetClassType() == AVH_CLASS_TYPE_ALIEN)
     {
@@ -3079,7 +3142,7 @@ void AvHPlayer::GetSpeeds(int& outBaseSpeed, int& outUnemcumberedSpeed) const
         // When gestating
         float theAlienBaseSpeed = 0;
         int theSpeedUpgradeAmount = BALANCE_VAR(kAlienCelerityBonus);
-        const float kChargingFactor = 2.0f;
+        const float kChargingFactor = 1.0f + BALANCE_VAR(kChargeSpeed);
 
         switch(this->pev->iuser3)
         {
@@ -3114,6 +3177,10 @@ void AvHPlayer::GetSpeeds(int& outBaseSpeed, int& outUnemcumberedSpeed) const
 //                }
                 break;
         }
+
+		if (this->mNumHives >= 4) {
+			theAlienBaseSpeed += (this->mNumHives - 3)*15;
+		}
 
         theUnencumberedSpeed = theBaseSpeed = theAlienBaseSpeed + (theSpeedUpgradeLevel*theSpeedUpgradeAmount);
 
@@ -3171,11 +3238,17 @@ void AvHPlayer::GetSpeeds(int& outBaseSpeed, int& outUnemcumberedSpeed) const
     }
 
     // If we're a fade using blink, increase our speed massively
-//  if(this->GetIsBlinking())
-//  {
-//      outBaseSpeed *= 10.0f;
-//      outUnemcumberedSpeed = outBaseSpeed;
-//  }
+	if (GetHasUpgrade(this->pev->iuser4, MASK_ALIEN_MOVEMENT) && this->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5)
+	{
+		if (avh_fastonoscharge.value != 0) {
+			outBaseSpeed *= 2.0f;
+			outUnemcumberedSpeed = outBaseSpeed;
+		}
+		else {
+			outBaseSpeed *= 1.1f;
+			outUnemcumberedSpeed = outBaseSpeed;
+		}
+	}
 
 //    if(GetGameRules()->GetIsCombatMode())
 //    {
@@ -3382,6 +3455,7 @@ void AvHPlayer::Init()
     this->mResources = 0;
     this->mScore = 0;
     this->mSavedCombatFrags = 0;
+	this->mSavedCombatDeaths = 0;
 	this->mLastModelIndex = -1;
 #ifdef USE_OLDAUTH
 	this->mCachedAuthenticationMask = -1;
@@ -3511,6 +3585,8 @@ void AvHPlayer::Init()
 
     this->mTimeToBeFreeToMove = -1;
     this->mTimeToEndCatalyst = -1;
+
+	this->mTimeToEndNano = -1;
     
     this->mLastTimeInCommandStation = -1;
     this->mLastTimeRedemptionTriggered = -1;
@@ -3594,6 +3670,7 @@ void AvHPlayer::Init()
     this->mTimeOfLastConstructUseAnimation = 0;
     this->mTimeOfLastConstructUse = -1;
     this->mTimeOfLastResupply = 0;
+	this->mTimeOfLastNadeRestock = 0;
 
     this->mTimeOfMetabolizeEnd = -1;
 
@@ -3983,6 +4060,7 @@ void AvHPlayer::ValidateClientMoveEvents()
                         //}
                     }
 
+
                     // Removed by mmcguire.
                     // This code is no longer needed because the pm_shared code
                     // now ignores ability impulses that come from the console.
@@ -4127,6 +4205,9 @@ void AvHPlayer::HandleTopDownInput()
     // If we are a commander
     if(this->pev->iuser3 == AVH_USER3_COMMANDER_PLAYER)
     {
+
+		
+
 		// Ensure that orders are given through attack2, even though used as +movement
 		theAttackTwoDown = FBitSet(this->mCurrentCommand.buttons, IN_ATTACK2);
 
@@ -4226,6 +4307,9 @@ void AvHPlayer::HandleTopDownInput()
         }
         else if((theMessageID == COMMANDER_MOUSECOORD) || theIsBuildTech || theIsResearchTech || theIsRecycleMessage /*|| (theMessageID == COMMANDER_DEFAULTORDER)*/)
         {
+
+
+
             bool theAttackOnePressed = (theAttackOneDown && !this->mAttackOneDown);
             bool theAttackTwoPressed = (theAttackTwoDown && !this->mAttackTwoDown);
             bool theAttackOneReleased = (!theAttackOneDown && this->mAttackOneDown);
@@ -4396,6 +4480,7 @@ void AvHPlayer::HandleTopDownInput()
             // Check for recycling action
             else if(theIsRecycleMessage)
             {
+				
                 for(EntityListType::iterator theIter = this->mSelected.begin(); theIter != this->mSelected.end(); theIter++)
                 {
                     AvHBaseBuildable* theBuildable = NULL;
@@ -4625,7 +4710,7 @@ void AvHPlayer::Killed( entvars_t *pevAttacker, int iGib )
         
         this->PlayRandomRoleSound(kPlayerLevelDieSoundList);
 
-        this->Uncloak();
+        this->UncloakKilled();
         
         int thePriority = 0;
         bool theIsDramatic = false;
@@ -4763,7 +4848,8 @@ void AvHPlayer::PackDeadPlayerItems(void)
 {
 	//to do - drop everything that's not in the standard loadout + LMG.
     this->DropItem(kwsMachineGun);
-    this->DropItem(kwsShotGun);
+	this->DropItem(kwsPistol);
+	this->DropItem(kwsShotGun);
 	this->DropItem(kwsHeavyMachineGun);
 	this->DropItem(kwsGrenadeGun);
 	this->DropItem(kwsMine);
@@ -5325,6 +5411,8 @@ void AvHPlayer::Research(AvHMessageID inUpgrade, int inEntityIndex)
 
         CBaseEntity* theEntity = AvHSUGetEntityFromIndex(inEntityIndex);
 
+		//ALERT(at_console, "Research Proc \n");
+
         if(theEntity && theTeam && (theEntity->pev->team == this->pev->team))
         {
             AvHResearchManager& theResearchManager = theTeam->GetResearchManager();
@@ -5447,11 +5535,13 @@ void AvHPlayer::InternalDigestionThink()
         // If digestee is alive and still in the game (hasn't disconnected or switched teams)
         if(theDigestee->GetIsRelevant())
         {
-			if(RANDOM_LONG(0, 110) == 0)
+			if(RANDOM_LONG(0, 120) == 0)
 			{
 				// Play digesting sound occasionally
 				EMIT_SOUND(this->edict(), CHAN_AUTO, kDigestingSound, this->GetAlienAdjustedEventVolume(), ATTN_NORM);
 			}
+
+			int theMaxHealth = AvHPlayerUpgrade::GetMaxHealth(theDigestee->pev->iuser4, theDigestee->GetUser3(), this->GetExperienceLevel());
 
             // Do damage to digestee 
             float theTimePassed = gpGlobals->time - this->mTimeOfLastDigestDamage;
@@ -5465,14 +5555,26 @@ void AvHPlayer::InternalDigestionThink()
                     theInflictor = theDevourWeapon->pev;
                 }
 
-				const float theCombatModeScalar = GetGameRules()->GetIsCombatMode() ? BALANCE_VAR(kCombatModeTimeScalar) : 1.0f;
+				//const float theCombatModeScalar = GetGameRules()->GetIsCombatMode() ? BALANCE_VAR(kCombatModeTimeScalar) : 1.0f;
+				float theCombatModeScalar = 1.0f;
+				if (GetGameRules()->GetCheatsEnabled()) {
+					theCombatModeScalar = 0.5f;
+				}
+				else if (GetGameRules()->GetIsCombatMode()) {
+					theCombatModeScalar = BALANCE_VAR(kCombatModeTimeScalar);
+				}
                 theDigestee->pev->takedamage = DAMAGE_YES;
                 float theDamage = theTimePassed*BALANCE_VAR(kDevourDamage)*(1.0f/theCombatModeScalar);
+				if (avh_balance_ava.value == 1)
+				{
+					theDamage += theMaxHealth*0.02f;
+				}
+
                 theDigestee->TakeDamage(theInflictor, this->pev, theDamage, DMG_DROWN);
                 theDigestee->pev->takedamage = DAMAGE_NO;
 
                 // Get health back too
-                this->Heal(theDamage, false);
+                this->Heal(theDamage*0.7f, false);
         
                 this->mTimeOfLastDigestDamage = gpGlobals->time;
             }
@@ -5485,7 +5587,7 @@ void AvHPlayer::InternalDigestionThink()
             theDigestee->TriggerProgressBar(theDigesteeIndex, 3);
             
             // Set fuser3 appropriately
-            int theMaxHealth = AvHPlayerUpgrade::GetMaxHealth(theDigestee->pev->iuser4, theDigestee->GetUser3(), this->GetExperienceLevel());
+            
             float theDigestingScalar = (((float)theMaxHealth - theDigestee->pev->health)/(float)theMaxHealth);
             /*this->pev->fuser3 =*/ theDigestee->pev->fuser3 = theDigestingScalar*kNormalizationNetworkFactor;
 
@@ -5784,16 +5886,26 @@ void AvHPlayer::InternalAlienUpgradesThink()
             AvHAlienUpgradeListType theUpgrades = theTeam->GetAlienUpgrades();
             
             // If player has already decided on the direction to upgrade, spend any extra upgrade levels in that category
-            AvHAddHigherLevelUpgrades(theUpgrades, this->pev->iuser4);
+			if (avh_fadedgamemode.value == 1) {
+				SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_11);
+				SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_13);
+				SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_15);
+			}
+			else {
+				AvHAddHigherLevelUpgrades(theUpgrades, this->pev->iuser4);
+			}
             
-            // If we have more upgrades then we should, remove one randomly
-            int theNumRemoved = AvHRemoveExcessUpgrades(theUpgrades, this->pev->iuser4);
-            if(theNumRemoved > 0)
-            {
-                // Play a sound indicating this has happened
-                this->PlayHUDSound(HUD_SOUND_ALIEN_UPGRADELOST);
-            }
-
+			if (avh_fadedgamemode.value != 1)
+			{
+				// If we have more upgrades then we should, remove one randomly
+				int theNumRemoved = AvHRemoveExcessUpgrades(theUpgrades, this->pev->iuser4);
+				if (theNumRemoved > 0)
+				{
+					// Play a sound indicating this has happened
+					this->PlayHUDSound(HUD_SOUND_ALIEN_UPGRADELOST);
+				}
+			}
+			
             // If we're cloaked, and we no longer have any sensory upgrades, trigger uncloak
             //int theNumSensoryUpgrades = AvHGetNumUpgradesInCategoryInList(theUpgrades, ALIEN_UPGRADE_CATEGORY_SENSORY);
             //if(GetHasUpgrade(this->pev->iuser4, MASK_ALIEN_CLOAKED) && (theNumSensoryUpgrades == 0))
@@ -6130,16 +6242,36 @@ void AvHPlayer::InternalAlienUpgradesRegenerationThink()
 		float theRegenPercentage = BALANCE_VAR(kAlienInnateRegenerationPercentage);
 
 		//  If we have regeneration upgrade, multiply the amount by the regen level
+		//Added by alien, also add the regen level as a flat bonus to increase the effectiveness of regeneration talent on low max hp lifeforms
 		if(theRegenLevel > 0)
 		{
 			theRegenPercentage = BALANCE_VAR(kAlienRegenerationPercentage);
-			theRegenAmount = (theRegenPercentage*theMaxHealth)*theRegenLevel;
+			theRegenAmount = (theRegenPercentage*theMaxHealth)*theRegenLevel + theRegenLevel*3;
+			if (avh_fadedgamemode.value == 1) {
+				theRegenAmount = theRegenAmount * 0.35f;
+			}
 		}
 
-		// Innate regeneration is at a fixed rate
+
+		
+
+		// Innate regeneration is at a fixed percent rate
 		else {
 			theRegenAmount = theRegenPercentage*(float)theMaxHealth;
 		}
+
+		//need to check for 4 hives for bonus regen anyways
+		if (this->mNumHives >= 4) {
+			//ALERT(at_console, "4 HIVES DETECTED");
+			theRegenAmount += (this->mNumHives - 3)*15.0f;
+			//energy regen too
+			this->Energize((this->mNumHives - 3)*0.009f);
+		}
+
+		if ((this->mNumHives == 0 && avh_fadedgamemode.value == 1) || this->GetIsBeingDigested()) {
+			theRegenAmount = 1.0f;
+		}
+
 		// Always do at least 1 health of innate regeneration
 		theRegenAmount=max(theRegenAmount, 1.0f);
 
@@ -6156,7 +6288,7 @@ void AvHPlayer::InternalAlienUpgradesRegenerationThink()
 
         if((this->pev->health < theMaxHealth*BALANCE_VAR(kRedemptionThreshold)) && this->IsAlive())
         {
-            const float kPullBackTime = 20.0f;
+            const float kPullBackTime = 65.0f;
             if((this->mLastTimeRedemptionTriggered == -1) || (gpGlobals->time > (this->mLastTimeRedemptionTriggered + kPullBackTime)))
             {
                 // Chance per second
@@ -6276,13 +6408,13 @@ void AvHPlayer::ProcessEntityBlip(CBaseEntity* inEntity)
 					if( (theEntityIsNearSensory || GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_9)) && !theEntityIsParasited && !GetHasUpgrade(inEntity->pev->iuser4, MASK_DIGESTING))
                     {
                         int theRange = BALANCE_VAR(kScentOfFearRadiusPerLevel);
-                        if(GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_14))
-                        {
-                            theRange *= 2;
-                        }
-                        else if(GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_15))
+                        if(GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_15))
                         {
                             theRange *= 3;
+                        }
+                        else if(GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_14))
+                        {
+                            theRange *= 2;
                         }
                             
                         // ...and blip is within range
@@ -6766,11 +6898,18 @@ void AvHPlayer::InternalMarineThink()
                     theRegenFactor = max(min(theRegenFactor, 1.0f), 0.0f);
                     const float kPowerRegenRate = theRegenFactor*2.0f;
                     
+					/*
                     int theMaxArmor = AvHPlayerUpgrade::GetMaxArmorLevel(this->pev->iuser4, (AvHUser3)this->pev->iuser3);
                     if(this->pev->armorvalue < theMaxArmor)
                     {
                         this->pev->armorvalue = min((float)theMaxArmor, this->pev->armorvalue + kPowerRegenRate*theTimePassed);
                     }
+					*/
+					int theMaxHP = AvHPlayerUpgrade::GetMaxHealth(this->pev->iuser4, (AvHUser3)this->pev->iuser3);
+					if (this->pev->health < theMaxHP)
+					{
+						this->pev->health = min((float)theMaxHP, this->pev->health + kPowerRegenRate * theTimePassed);
+					}
                 }
             }
             this->mLastPowerArmorThink = gpGlobals->time;
@@ -6784,6 +6923,14 @@ void AvHPlayer::InternalMarineThink()
                 this->SetIsCatalysted(false);
             }
         }
+
+		if (this->GetIsNanoed())
+		{
+			if (gpGlobals->time > this->mTimeToEndNano)
+			{
+				this->SetIsNanoed(false);
+			}
+		}
     }
 }
 
@@ -6872,13 +7019,17 @@ void AvHPlayer::InternalMovementThink()
 		float maxpushbackspeedfactor = (float)BALANCE_VAR(kChargeMaxPushbackSpeedFactor);
 		float pushbackfactor = (float)BALANCE_VAR(kChargeMaxPushbackForce);
 
-		// Ensure that we don't push back players in the readyroom
+		// Ensure that we don't do knockback while in the readyroom
 		if (this->GetPlayMode() == PLAYMODE_PLAYING)
 		{
 			// Find all entities around the onos
 			while((theEntity = UTIL_FindEntityInSphere(theEntity, this->pev->origin, radius)) != NULL)
 			{
-				if (theEntity->IsPlayer() && theEntity->IsAlive() && theEntity->entindex() != this->entindex())
+				//make sure to check its not an external classname - by alien but disabled for now
+				//if(!AvHSUGetIsExternalClassName(STRING(theSphereEntity->pev->classname)))
+
+				//if (theEntity->IsPlayer() && theEntity->IsAlive() && theEntity->entindex() != this->entindex())
+				if (theEntity->IsAlive() && theEntity->entindex() != this->entindex())
 				{
 					float distance = VectorDistance(this->pev->origin, theEntity->pev->origin);
 					if (distance >= 0.0f && distance <=radius)
@@ -6918,16 +7069,19 @@ void AvHPlayer::InternalMovementThink()
 						dot=max(dot, 0.4f);
 						if (dot > 0.0f)
 						{
-							ALERT(at_console, "dot=%f direction = {%f, %f, %f}\n", dot, direction[0],direction[1],direction[2]);
-							VectorScale(direction, factor * dot, direction);
-							VectorAdd(theEntity->pev->velocity, direction, theEntity->pev->velocity);
-							if (Length(theEntity->pev->velocity) > theEntity->pev->maxspeed * maxpushbackspeedfactor)
+							//must be a player to get knocked back - by alien but disabled for now
+							if (theEntity->IsPlayer()) 
 							{
-								VectorNormalize(theEntity->pev->velocity);
-								VectorScale(theEntity->pev->velocity, theEntity->pev->maxspeed * maxpushbackspeedfactor, theEntity->pev->velocity);
+								//ALERT(at_console, "dot=%f direction = {%f, %f, %f}\n", dot, direction[0], direction[1], direction[2]);
+								VectorScale(direction, factor * dot, direction);
+								VectorAdd(theEntity->pev->velocity, direction, theEntity->pev->velocity);
+								if (Length(theEntity->pev->velocity) > theEntity->pev->maxspeed * maxpushbackspeedfactor)
+								{
+									VectorNormalize(theEntity->pev->velocity);
+									VectorScale(theEntity->pev->velocity, theEntity->pev->maxspeed * maxpushbackspeedfactor, theEntity->pev->velocity);
+								}
+								theEntity->pev->velocity[2] = max(veriticalLimit, theEntity->pev->velocity[2]);
 							}
-							theEntity->pev->velocity[2] = max(veriticalLimit, theEntity->pev->velocity[2]);
-
 							// Don't do "touch" damage too quickly
 							float theTouchDamageInterval = BALANCE_VAR(kTouchDamageInterval);
 							if((this->mTimeOfLastTouchDamage == -1) || (gpGlobals->time > (this->mTimeOfLastTouchDamage + theTouchDamageInterval)))
@@ -6938,8 +7092,22 @@ void AvHPlayer::InternalMovementThink()
 								float theScalar=0.0f;
 								if(GetGameRules()->CanEntityDoDamageTo(this, theEntity, &theScalar))
 								{
-									float theDamage = BALANCE_VAR(kChargeDamage)*theScalar*theTouchDamageInterval;
-									ALERT(at_console, "doing %f damage\n", theDamage);
+									float theDamage = BALANCE_VAR(kChargeDamage);
+									#ifdef AVH_SERVER
+									if (avh_balance_ava.value == 1)
+									{
+										theDamage *= 1.6f; //60% bonus damage
+									}
+									#endif
+
+									//now that charge deals damage to buildings, multiply this by 4 to deal relevant amounts of damage - by alien
+									if (!(theEntity->IsPlayer()))
+									{
+										theDamage *= 4.0f;
+									}
+
+									theDamage = theDamage*theScalar*theTouchDamageInterval;
+									//ALERT(at_console, "doing %f damage\n", theDamage);
 									theEntity->TakeDamage(theInflictor, this->pev, theDamage, NS_DMG_NORMAL);
 				            
 									if(theEntity->IsPlayer() && !theEntity->IsAlive())
@@ -7197,16 +7365,23 @@ bool AvHPlayer::PayPurchaseCost(int inCost)
 void AvHPlayer::RecalculateSpeed(void)
 {
     // Look at inventory and set speed from weight
-    int theRelevantWeight = this->GetRelevantWeight();
+    float theRelevantWeight = this->GetRelevantWeight();
     
-    int theMaxWeight = GetGameRules()->GetMaxWeight();
+    float theMaxWeight = GetGameRules()->GetMaxWeight();
+
+	//In case I've misconfigured the weights this will ensure that you aren't slowed an unreasonable amount
+	if (theRelevantWeight > theMaxWeight)
+	{
+		theRelevantWeight = theMaxWeight;
+	}
+
 
     int theBaseSpeed, theUnencumberedSpeed;
     this->GetSpeeds(theBaseSpeed, theUnencumberedSpeed);
     this->mMaxWalkSpeed = theUnencumberedSpeed*.75f;
     
     // Calculate the max speed
-    int theMaxSpeed = theUnencumberedSpeed - (theRelevantWeight/(float)theMaxWeight)*(theUnencumberedSpeed - theBaseSpeed);
+    int theMaxSpeed = theUnencumberedSpeed - (theRelevantWeight/theMaxWeight)*(theUnencumberedSpeed - theBaseSpeed);
     theMaxSpeed = max(theMaxSpeed, theBaseSpeed);
     theMaxSpeed = min(theMaxSpeed, theUnencumberedSpeed);
     
@@ -7397,7 +7572,8 @@ void AvHPlayer::SetWeaponsForUser3()
         {
             this->GiveNamedItem(kwsMachineGun);
             this->GiveNamedItem(kwsPistol);
-            this->GiveNamedItem(kwsKnife);
+			//this->GiveNamedItem(kwsPistolB);
+			this->GiveNamedItem(kwsKnife);
 
             if(theTeamHasGrenades)
             {
@@ -7727,7 +7903,12 @@ void AvHPlayer::SetPlayMode(AvHPlayMode inPlayMode, bool inForceSpawn)
     {
         bool theGoingToReadyRoom = (inPlayMode == PLAYMODE_READYROOM);
         this->ResetBehavior(theGoingToReadyRoom);
-        
+
+		//added as part of the faded gamemode to prevent F4ing and remaining cloaked
+		if (avh_fadedgamemode.value == 1) {
+			this->UncloakKilled();
+		}
+
         if(!theGoingToReadyRoom)
         {
             // Clear player
@@ -7736,6 +7917,7 @@ void AvHPlayer::SetPlayMode(AvHPlayMode inPlayMode, bool inForceSpawn)
             this->pev->rendermode = kRenderNormal;
             this->pev->renderfx = kRenderFxNone;
             this->pev->renderamt = 0;
+			
         }
 
         // Clear anim
@@ -7773,6 +7955,7 @@ void AvHPlayer::SetPlayMode(AvHPlayMode inPlayMode, bool inForceSpawn)
             this->pev->frags = 0;
             this->mScore = 0;
             this->mSavedCombatFrags = 0;
+			this->mSavedCombatDeaths = 0;
             this->m_iDeaths = 0;
             this->pev->team = TEAM_IND;
 
@@ -7870,7 +8053,89 @@ void AvHPlayer::SetPlayMode(AvHPlayMode inPlayMode, bool inForceSpawn)
                 }
             }
 
-            theTeam = this->GetTeamPointer();
+			if (avh_fadedgamemode.value == 1)
+			{
+				if (this->GetClassType() == AVH_CLASS_TYPE_MARINE)
+				{
+					//give faded mode human ups like resupply or whatever
+					this->GiveNamedItem("item_genericammo");
+					//this->GiveNamedItem("item_genericammo");
+					this->GiveNamedItem("item_catalyst");
+					this->GiveNamedItem("weapon_welder");
+					this->GiveNamedItem(kwsGrenade);
+
+					AvHTeam* testTeam = this->GetTeamPointer();
+					if (testTeam->GetPlayerCount() <= 3) {
+						GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_ONE, testTeam->GetTeamNumber(), 0, true);
+						GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_ONE, testTeam->GetTeamNumber(), 0, true);
+						//this->GiveTeamUpgrade(RESEARCH_WEAPONS_ONE);
+						//this->GiveTeamUpgrade(RESEARCH_ARMOR_ONE);
+						if (testTeam->GetPlayerCount() <= 2) {
+							GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_TWO, testTeam->GetTeamNumber(), 0, true);
+							GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_TWO, testTeam->GetTeamNumber(), 0, true);
+							//this->GiveTeamUpgrade(RESEARCH_WEAPONS_TWO);
+							//this->GiveTeamUpgrade(RESEARCH_ARMOR_TWO);
+							this->GiveNamedItem("weapon_shotgun");
+							if (testTeam->GetPlayerCount() <= 1) {
+								GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_THREE, testTeam->GetTeamNumber(), 0, true);
+								GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_THREE, testTeam->GetTeamNumber(), 0, true);
+							}
+						}
+					}
+					GetGameRules()->ProcessTeamUpgrade(RESEARCH_HEALTH, testTeam->GetTeamNumber(), 0, true);
+					//this->GiveTeamUpgrade(RESEARCH_ELECTRICAL);
+					//this->GiveTeamUpgrade(RESEARCH_HEALTH);
+
+				}
+				else {
+					//this is the alien player faded
+					//this->GiveCombatUpgradesOnSpawn();
+					this->GiveCombatModeUpgrade(ALIEN_LIFEFORM_FOUR, true);
+					
+					this->GiveCombatModeUpgrade(ALIEN_EVOLUTION_ONE, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_EVOLUTION_ONE);
+					this->GiveCombatModeUpgrade(ALIEN_EVOLUTION_TWO, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_EVOLUTION_TWO);
+					this->GiveCombatModeUpgrade(ALIEN_EVOLUTION_SEVEN, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_EVOLUTION_SEVEN);
+					this->GiveCombatModeUpgrade(ALIEN_EVOLUTION_EIGHT, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_EVOLUTION_EIGHT);
+					this->GiveCombatModeUpgrade(ALIEN_EVOLUTION_TEN, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_EVOLUTION_TEN);
+					this->GiveCombatModeUpgrade(ALIEN_EVOLUTION_TWELVE, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_EVOLUTION_TWELVE);
+
+					/*
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_1, true);
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_2, true);
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_4, true);
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_7, true);
+					//SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_10, true);
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_11, true);
+					//SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_12, true);
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_13, true);
+					//SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_14, true);
+					SetUpgradeMask(&this->pev->iuser4, MASK_UPGRADE_15, true);
+					*/
+
+					this->GiveCombatModeUpgrade(ALIEN_HIVE_TWO_UNLOCK, true);
+					this->mPurchasedCombatUpgrades.push_back(ALIEN_HIVE_TWO_UNLOCK);
+
+					//eventually make it so you get acid rocket in faded gamemode vs lots of enemies
+					/*
+					AvHTeam* testTeam = GetGameRules()->GetTeamA();
+					if (testTeam->GetPlayerCount() <= 4) {
+
+					}
+
+					//this->GiveCombatModeUpgrade(ALIEN_HIVE_THREE_UNLOCK, true);
+					//this->mPurchasedCombatUpgrades.push_back(ALIEN_HIVE_THREE_UNLOCK);
+					*/
+				}
+			}
+
+
+			theTeam = this->GetTeamPointer();
             theTeamName = (theTeam ? theTeam->GetTeamName() : kUndefinedTeam);
 
             this->mLastTimeStartedPlaying = gpGlobals->time;
@@ -8500,7 +8765,8 @@ bool AvHPlayer::GetHasAvailableUpgrades() const
 
 bool AvHPlayer::GetHasPowerArmor() const
 {
-    return this->GetIsMarine() && GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_10);
+    //return this->GetIsMarine() && GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_10);
+	return false;
 }
 
 int AvHPlayer::GetHull() const
@@ -8629,6 +8895,11 @@ bool AvHPlayer::GetIsCatalysted() const
     return this->GetIsMarine() && GetHasUpgrade(this->pev->iuser4, MASK_BUFFED);
 }
 
+bool AvHPlayer::GetIsNanoed() const
+{
+	return this->GetIsMarine() && this->mNanoActive;
+}
+
 void AvHPlayer::SetIsCatalysted(bool inState, float inTime)
 {
     if(this->GetIsMarine())
@@ -8646,6 +8917,25 @@ void AvHPlayer::SetIsCatalysted(bool inState, float inTime)
             this->mTimeToEndCatalyst = -1;
         }
     }
+}
+
+void AvHPlayer::SetIsNanoed(bool inState, float inTime)
+{
+	if (this->GetIsMarine())
+	{
+		if (inState && !this->GetIsNanoed())
+		{
+			this->mNanoActive = true;
+			this->mTimeToEndNano = gpGlobals->time + inTime;
+
+			// Trigger screen effect?
+		}
+		else
+		{
+			this->mNanoActive = false;
+			this->mTimeToEndNano = -1;
+		}
+	}
 }
 
 bool AvHPlayer::Energize(float inEnergyAmount)
@@ -8672,20 +8962,57 @@ bool AvHPlayer::Heal(float inAmount, bool inPlaySound, bool dcHealing)
 		int theMaxArmor = AvHPlayerUpgrade::GetMaxArmorLevel(this->pev->iuser4, (AvHUser3)this->pev->iuser3);
 
 		float theAmount = inAmount;
-	    
+		float theAmountToGive = theAmount;
+
+		//old healing method which did not properly carry over healing to armor
+		/*
 		// If we aren't at full health, heal health
-		if(this->pev->health < theMaxHealth)
+		if (this->pev->health < theMaxHealth)
 		{
-			int theAmountToGive = theAmount;
-			theAmount -= (theMaxHealth - this->pev->health); //store relative amount compared to that necessary for complete heal
-			this->pev->health = min((float)theMaxHealth, this->pev->health + theAmountToGive);
+			this->pev->health = min((float)theMaxHealth, this->pev->health + theAmount);
 			theDidHeal = true;
 		}
-		else if(this->pev->armorvalue < theMaxArmor)
+		else if (this->pev->armorvalue < theMaxArmor)
 		{
 			this->pev->armorvalue = min((float)theMaxArmor, this->pev->armorvalue + theAmount);
 			theDidHeal = true;
 		}
+		*/
+
+
+		// If we aren't at full health, heal health
+		if (this->pev->health < theMaxHealth)
+		{
+			if (this->pev->health + theAmountToGive > (float)theMaxHealth) {
+				theAmountToGive = ((float)theMaxHealth - this->pev->health);
+			}
+			theAmount -= theAmountToGive;
+			this->pev->health = min((float)theMaxHealth, this->pev->health + theAmountToGive);
+			theDidHeal = true;
+		}
+		if (this->pev->armorvalue < theMaxArmor && theAmount > 0.0f) //should this be theAmount or theAmountToGive???
+		{
+			this->pev->armorvalue = min((float)theMaxArmor, this->pev->armorvalue + theAmount);
+			theDidHeal = true;
+		}
+
+		// If we aren't at full health, heal health
+		/*
+		if(floor(this->pev->health) < (float)theMaxHealth)
+		{
+			int theAmountToGive = theAmount;
+			theAmountToGive = (theMaxHealth - this->pev->health); //store relative amount compared to that necessary for complete heal
+			this->pev->health = min((float)theMaxHealth, this->pev->health + theAmountToGive);
+			theAmount -= theAmountToGive;
+			theDidHeal = true;
+		}
+		//else if(this->pev->armorvalue < theMaxArmor)
+		if(floor(this->pev->armorvalue) < (float)theMaxArmor && theAmount > 0) //code to fix alien healing to properly heal armor up instead of getting cut off
+		{
+			this->pev->armorvalue = min((float)theMaxArmor, this->pev->armorvalue + theAmount);
+			theDidHeal = true;
+		}
+		*/
 	    
 		// Play regen event
 		if(theDidHeal)
@@ -8745,24 +9072,20 @@ bool AvHPlayer::Resupply(bool inGiveHealth)
     if(this->m_pActiveItem)
     {
         AvHBasePlayerWeapon* theBaseWeapon = dynamic_cast<AvHBasePlayerWeapon*>(this->m_pActiveItem->GetWeaponPtr());
-        if(theBaseWeapon && theBaseWeapon->Resupply())
+        if(theBaseWeapon)
         {
-            theSuccess = true;
+			if (theBaseWeapon->Resupply())
+			{
+				theSuccess = true;
+			}
         }
 
-        if(inGiveHealth)
-        {
-			// : 1017 armoury gives 10 health per use
-            if(AvHHealth::GiveHealth(this, BALANCE_VAR(kPointsPerArmouryHealth)))
-            {
-                // Play event for each person helped
-                //PLAYBACK_EVENT_FULL(0, this->edict(), gPhaseInEventID, 0, this->pev->origin, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-                theSuccess = true;
-            }
-        }
-        
-        this->mTimeOfLastResupply = gpGlobals->time;
-    }
+		
+
+		
+
+	}
+
     
     return theSuccess;
 }
@@ -8980,32 +9303,36 @@ void AvHPlayer:: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 
         // No locational damage in NS.
 
-        /*  
-        switch ( ptr->iHitgroup )
-        {
-        case HITGROUP_GENERIC:
-            break;
-        case HITGROUP_HEAD:
-            flDamage *= gSkillData.plrHead;
-            break;
-        case HITGROUP_CHEST:
-            flDamage *= gSkillData.plrChest;
-            break;
-        case HITGROUP_STOMACH:
-            flDamage *= gSkillData.plrStomach;
-            break;
-        case HITGROUP_LEFTARM:
-        case HITGROUP_RIGHTARM:
-            flDamage *= gSkillData.plrArm;
-            break;
-        case HITGROUP_LEFTLEG:
-        case HITGROUP_RIGHTLEG:
-            flDamage *= gSkillData.plrLeg;
-            break;
-        default:
-            break;
-        }
-        */
+		//sv_balance_headshot
+		if (avh_balance_mvm.value == 1) {
+			ALERT(at_console, "LOCATION HIT=%d DAMAGE=%f \n", ptr->iHitgroup, flDamage);
+			/*
+			switch (ptr->iHitgroup)
+			{
+			case HITGROUP_GENERIC:
+				break;
+			case HITGROUP_HEAD:
+				flDamage *= gSkillData.plrHead;
+				break;
+			case HITGROUP_CHEST:
+				flDamage *= gSkillData.plrChest;
+				break;
+			case HITGROUP_STOMACH:
+				flDamage *= gSkillData.plrStomach;
+				break;
+			case HITGROUP_LEFTARM:
+			case HITGROUP_RIGHTARM:
+				flDamage *= gSkillData.plrArm;
+				break;
+			case HITGROUP_LEFTLEG:
+			case HITGROUP_RIGHTLEG:
+				flDamage *= gSkillData.plrLeg;
+				break;
+			default:
+				break;
+			}
+			*/
+		}
 
         // Player's aren't affected by structural damage, so don't create blood
         // if that's the damage type.
@@ -9053,23 +9380,125 @@ int AvHPlayer::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
         {
             flDamage *= 10;
         }
+
+
+		if (avh_golden_deagle.value == 1) {
+			flDamage *= 2;
+		}
+
+		if (GetHasUpgrade(this->pev->iuser4, MASK_DIGESTING)) {
+			flDamage *= 1.15;
+		}
+
         
         if(bitsDamageType & NS_DMG_STRUCTURAL)
         {
             flDamage = 0.0f;
         }
+		//Bile bomb does not damage player's health, but destroys armor points
+		if (bitsDamageType & NS_DMG_ACID)
+		{
+			//bool bileBombMelt = false;
+			//bool bileBombFF; dynamic_cast
+				//AvHBasePlayerWeapon* theWeapon = dynamic_cast<AvHBasePlayerWeapon*>(this->m_pActiveItem);
+				//CBaseEntity* inAttackingEn = dynamic_cast<CBaseEntity*>(pevAttacker);
+			//	sGameRules = dynamic_cast<AvHGamerules*>(g_pGameRules);
+			//if (GetGameRules()->friendlyfire.value)
+			//if(avh_bhopskulk.value)
+
+			bool theEDrawDamage = (ns_cvar_float(&avh_drawdamage) > 0);
+
+			
+
+			if (GetGameRules()->GetFriendlyFireEnabled())
+			{
+				//bool bileBombMelt = true;
+				ALERT(at_console, "DO BILE BOMB FF \n");
+				if (this->pev->armorvalue > 0) {
+					this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
+					ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", (flDamage / 10.0f));
+				}
+				if (theEDrawDamage)
+				{
+					this->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-flDamage / 10.0f));
+				}
+				flDamage = 0.0f;
+				return 0;
+			} 
+			else if (pevAttacker->team != this->pev->team)
+			{
+				//bool bileBombMelt = true;
+				ALERT(at_console, "DO BILE BOMB ENEMY \n");
+				if (this->pev->armorvalue > 0) {
+					this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
+					ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", (flDamage / 10.0f));
+				}
+				if (theEDrawDamage)
+				{
+					this->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-flDamage / 10.0f));
+				}
+				flDamage = 0.0f;
+				return 0;
+			}
+			
+			//if (g_pGameRules->FPlayerCanTakeDamage(pevInflictor, pevAttacker)) {
+
+			//}
+			//bile bomb only destroys player armor points of enemies	
+			//if (bileBombMelt == true){
+			//	if (this->pev->armorvalue > 0) {
+			//		this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
+			//		ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", (flDamage / 10.0f));
+			//	}
+			//}
+			
+		}
+
+		
+
+		if (bitsDamageType & DMG_SLASH)
+		{
+			//if (this->pev->health / this->pev->max_health < 0.5f) {
+				float theLethality = 1 + (1 - (this->pev->health / this->pev->max_health));
+				flDamage = flDamage * theLethality;
+				ALERT(at_console, "LETHALITY PROC bonus damage percent=%f \n",theLethality);
+			//}
+		}
+		//Knife has LETHALITY damage meaning it's more effective against lower health targets
+		//
+
+		
 
         // Do half damage to the heavy armor of HA and Onos
         if(bitsDamageType & NS_DMG_LIGHT)
         {
             if(this->GetHasHeavyArmor() || (this->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5))
             {
-                flDamage *= .5f;
+				flDamage *= .6f;//;
             }
         }
 
+
+
+		//ADRENALINE UNKILLABLE STATUS
+
+		
+		if (this->GetIsNanoed()) { //uses catalyst for testing
+			//this->pev->health
+			if (flDamage > this->pev->health - 1.0f) {
+				float theIgnored = flDamage;
+				flDamage = this->pev->health - 1.0f;
+				if (flDamage < 0.0f) {
+					flDamage = 0.0f;
+				}
+				this->pev->armorvalue = 0.0f;
+				ALERT(at_console, "UNKILLABLE PROC damage ignored=%f \n", (theIgnored));
+			}
+		}
+		
+
         // If we're metabolizing, convert the damage to energy
-//      if(this->GetIsMetabolizing())
+		//if(this->GetIsMetabolizing())
 //      {
 //          const float theFactor = BALANCE_VAR(kMetabolizeDamageEnergyFactor);
 //          float theEnergy = (flDamage/100.f)*theFactor;
@@ -9134,6 +9563,41 @@ int AvHPlayer::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
             }
 //      }
     }
+
+
+	//vampirism factor
+
+	if (pevAttacker)
+	{
+		//this magic code here must go thru some list that exists or smthn
+		//either way it returns the pevAttacker, im just using 
+		AvHPlayer* atkPlayer = dynamic_cast<AvHPlayer*>(CBaseEntity::Instance(ENT(pevAttacker)));
+		if (atkPlayer)
+		{
+			//vampirism factor
+			if (avh_vampire_factor.value != 0 || (avh_fadedgamemode.value == 1 && atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4))
+			{
+				float vamp = 0.2f;
+				if (avh_vampire_factor.value > 0) {
+					vamp = avh_vampire_factor.value;
+				}
+				float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(atkPlayer->pev->iuser4, atkPlayer->GetUser3(), atkPlayer->GetExperienceLevel());
+				if (atkPlayer->pev->health < thePlayerMaxHealth)
+				{
+					float thePointsGiven = min((flDamage*vamp), (thePlayerMaxHealth - atkPlayer->pev->health));
+
+					atkPlayer->pev->health += thePointsGiven;
+
+					if (ns_cvar_float(&avh_drawdamage))
+					{
+						atkPlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, thePointsGiven);
+					}
+				}
+			}
+			//
+		}
+		
+	}
 
     return theReturnValue;
 }
@@ -9438,6 +9902,7 @@ void AvHPlayer::UpdateAlienUI()
             }
 
             HiveInfoListType theTeamHiveInfo = theTeamPointer->GetHiveInfoList();
+			//AvHTeam* theTeamPointer = GetGameRules()->GetTeam(theTeamNumber);
             if(this->mClientHiveInfo != theTeamHiveInfo)
             {
 				NetMsg_AlienInfo_Hives( this->pev, theTeamHiveInfo, this->mClientHiveInfo );
@@ -9467,6 +9932,11 @@ void AvHPlayer::UpdateAlienUI()
 				this->mNumSensory=theEntHier.GetNumSensory();
 				this->mNumDefense=theEntHier.GetNumDefense();
 				this->mNumMovement=theEntHier.GetNumMovement();
+				if (avh_fadedgamemode.value == 1) {
+					this->mNumSensory = 3;
+					this->mNumDefense = 3;
+					this->mNumMovement = 3;
+				}
 				NetMsg_HUDSetUpgrades(this->pev, teamMask);
 			}
 		}
@@ -9895,7 +10365,7 @@ void AvHPlayer::UpdateSoundNames()
         if(theNumberOfSounds > theNumberOfSoundsOnClient)
         {
             const char* theSoundNameToSend = theSoundNameList[theNumberOfSoundsOnClient].c_str();
-            if(GetGameRules()->GetIsTesting())
+            //if(GetGameRules()->GetIsTesting())
             {
                 this->SendMessage(theSoundNameToSend);
             }
@@ -10280,7 +10750,7 @@ bool AvHPlayer::GetIsAuthorized(AvHAuthAction inAction, int inParameter) const
 #ifndef BALANCE_ENABLED 
 			return false;
 #else
-			return this->GetIsMember(PLAYERAUTH_DEVELOPER);
+			return false;//return this->GetIsMember(PLAYERAUTH_DEVELOPER);
 #endif
 		}
 		default:
