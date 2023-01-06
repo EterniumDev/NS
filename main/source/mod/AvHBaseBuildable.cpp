@@ -217,7 +217,7 @@ void AvHBaseBuildable::CheckEnabledState()
 {
 }
 
-void AvHBaseBuildable::ConstructUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+void AvHBaseBuildable::ConstructUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
 	bool theSuccess = false;
 	bool theIsBuilding = false;
@@ -253,7 +253,13 @@ void AvHBaseBuildable::ConstructUse( CBaseEntity *pActivator, CBaseEntity *pCall
 				    {
 					    theBuildTime = 2;
 				    }
-	    
+
+					if (GetHasUpgrade(thePlayer->pev->iuser4, MASK_BUFFED)&& (thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER)) {
+						theBuildTime = ((float)theBuildTime/2.5);
+					}
+					theBuildTime = max(theBuildTime, 1);
+
+
 				    // Make non-frame-rate dependent
 				    const float kDefaultInterval = .1f;
 				    float theTimeOfLastConstructUse = thePlayer->GetTimeOfLastConstructUse();
@@ -284,6 +290,7 @@ void AvHBaseBuildable::ConstructUse( CBaseEntity *pActivator, CBaseEntity *pCall
 				    //	UTIL_SayText(theMessage, this);
 				    //}
 					    
+
 				    this->SetNormalizedBuildPercentage(thePercentage);
 
 				    theSuccess = true;
@@ -301,6 +308,107 @@ void AvHBaseBuildable::ConstructUse( CBaseEntity *pActivator, CBaseEntity *pCall
 
 	// Clear out +use sound when ineffective
 	if(!theSuccess)
+	{
+		EMIT_SOUND(pActivator->edict(), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM);
+	}
+}
+
+void AvHBaseBuildable::ConstructWeld(CBaseEntity *pActivator)
+{
+	bool theSuccess = false;
+	bool theIsBuilding = false;
+	bool theIsResearching = false;
+	float thePercentage = 0.0f;
+
+	AvHSHUGetBuildResearchState(this->pev->iuser3, this->pev->iuser4, this->pev->fuser1, theIsBuilding, theIsResearching, thePercentage);
+
+	// Only allow players to help along building, not researching
+	if (theIsBuilding)
+	{
+		// Only allow users from same team as turret deployer
+		float thePercentage = this->GetNormalizedBuildPercentage();
+		if (pActivator->pev->team == this->pev->team && (thePercentage < 1.0f))
+		{
+			AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(pActivator);
+			ASSERT(thePlayer);
+
+			// Only soldiers and builders can build
+			if (thePlayer->GetIsAbleToAct() && ((thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER) || (thePlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER2)))
+			{
+				//AvHBasePlayerWeapon* theWeapon = dynamic_cast<AvHBasePlayerWeapon*>(thePlayer->m_pActiveItem);
+				//if (!theWeapon || theWeapon->CanHolster())
+				{
+					//thePlayer->PlayerConstructUse();
+
+					bool thePlaySound = false;
+
+					// Ensure that buildings are never absolutely painful to create
+					int theBuildTime = max(GetGameRules()->GetBuildTimeForMessageID(this->mMessageID), 1);
+
+					if ((GetGameRules()->GetIsTesting() || GetGameRules()->GetCheatsEnabled()) && !GetGameRules()->GetIsCheatEnabled(kcSlowResearch))
+					{
+						theBuildTime = ((float)theBuildTime / 2.5);
+					}
+
+
+
+					//special x2 fast build speed with welder
+					theBuildTime /= 1.5;
+
+					if (GetHasUpgrade(thePlayer->pev->iuser4, MASK_BUFFED) && (thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER)) {
+						theBuildTime /= 2;
+					}
+					theBuildTime = max(theBuildTime, 1);
+
+
+					// Make non-frame-rate dependent
+					const float kDefaultInterval = .4f;
+					float theTimeOfLastConstructUse = thePlayer->GetTimeOfLastConstructUse();
+
+					float theInterval = min(max(gpGlobals->time - theTimeOfLastConstructUse, 0.0f), kDefaultInterval);
+					thePercentage += (theInterval / (float)theBuildTime);
+
+					thePlayer->SetTimeOfLastConstructUse(gpGlobals->time);
+
+					if (gpGlobals->time > (this->mLastTimePlayedSound + this->mAverageUseSoundLength))
+					{
+						AvHSUPlayRandomConstructionEffect(thePlayer, this);
+						this->mLastTimePlayedSound = gpGlobals->time;
+					}
+
+					// Given the number of constructors, what's chance of starting a new sound?
+					float theChanceForNewSound = (gpGlobals->frametime / (this->mAverageUseSoundLength));//  /2.0f));
+					float theRandomFloat = RANDOM_FLOAT(0.0f, 1.0f);
+					if (theRandomFloat < theChanceForNewSound)
+					{
+						AvHSUPlayRandomConstructionEffect(thePlayer, this);
+					}
+
+					//if(RANDOM_LONG(0, 20) == 0)
+					//{
+					//	char theMessage[128];
+					//	sprintf(theMessage, "Time passed: %f, ticks: %d, rate: %f\n", theTimePassed, this->mPreThinkTicks, this->mPreThinkFrameRate);
+					//	UTIL_SayText(theMessage, this);
+					//}
+
+
+					this->SetNormalizedBuildPercentage(thePercentage);
+
+					theSuccess = true;
+
+					// GHOSTBUILD: Manifest structure.
+					pev->renderamt = 255;
+					pev->rendermode = kRenderNormal;
+					pev->solid = SOLID_BBOX;
+					this->mGhost = false;
+
+				}
+			}
+		}
+	}
+
+	// Clear out +use sound when ineffective
+	if (!theSuccess)
 	{
 		EMIT_SOUND(pActivator->edict(), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM);
 	}
@@ -533,7 +641,7 @@ Vector AvHBaseBuildable::EyePosition( ) {
 		return CBaseEntity::EyePosition();
 
 	vec3_t position=AvHSHUGetRealLocation(this->pev->origin, this->pev->mins, this->pev->maxs);
-	position[2]+=10;
+	position[2]+=45; //pretty sure this was 10 in previous versions and thats why ocs and turrets shot from their bases
 	return position;
 }
 void AvHBaseBuildable::StartRecycle()
@@ -821,7 +929,39 @@ void AvHBaseBuildable::RecycleComplete()
 		bool theIsEnergyTech = AvHSHUGetDoesTechCostEnergy(this->mMessageID);
 		ASSERT(!theIsEnergyTech);
 
-		float thePointsBack = GetGameRules()->GetCostForMessageID(this->mMessageID)*thePercentage;
+		float thePointsBack = this->mMessageID;
+
+		switch (this->mMessageID)
+		{
+			// Marine Structures
+			case BUILD_INFANTRYPORTAL:		thePointsBack = BALANCE_VAR(kInfantryPortalCost); break;
+			case BUILD_RESOURCES:			thePointsBack = BALANCE_VAR(kResourceTowerCost); break;
+			case BUILD_TURRET_FACTORY:		thePointsBack = BALANCE_VAR(kTurretFactoryCost); break;
+			case TURRET_FACTORY_UPGRADE:	thePointsBack = BALANCE_VAR(kTurretFactoryUpgradeCost) + BALANCE_VAR(kTurretFactoryCost); break;
+			case BUILD_ARMSLAB:				thePointsBack = BALANCE_VAR(kArmsLabCost); break;
+			case BUILD_PROTOTYPE_LAB:		thePointsBack = BALANCE_VAR(kPrototypeLabCost); break;
+			case BUILD_ARMORY:				thePointsBack = BALANCE_VAR(kArmoryCost); break;
+			case ARMORY_UPGRADE:			thePointsBack = BALANCE_VAR(kArmoryUpgradeCost) + BALANCE_VAR(kArmoryCost); break;
+			case BUILD_OBSERVATORY:			thePointsBack = BALANCE_VAR(kObservatoryCost); break;
+			case BUILD_PHASEGATE:			thePointsBack = BALANCE_VAR(kPhaseGateCost); break;
+			case BUILD_TURRET:				thePointsBack = BALANCE_VAR(kSentryCost); break;
+			case BUILD_SIEGE:				thePointsBack = BALANCE_VAR(kSiegeCost); break;
+			case BUILD_COMMANDSTATION:		thePointsBack = BALANCE_VAR(kCommandStationCost); break;
+		}
+
+		if (GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_11))
+		{
+			thePointsBack += BALANCE_VAR(kElectricalUpgradeResearchCost);
+		}
+
+
+		thePointsBack = thePointsBack * thePercentage;
+
+	
+		//The old way of calculating Resource Costs for marine structures did not take into account upgrades that the building had and it's original value
+		//float thePointsBack = GetGameRules()->GetCostForMessageID(this->mMessageID)*thePercentage;
+
+
 		theTeam->SetTeamResources(theTeam->GetTeamResources() + thePointsBack);
 
         // Play "+ resources" event
@@ -1083,6 +1223,7 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 	if(inBitsDamageType & NS_DMG_PIERCING)
 	{
 		inDamage /= 2.0f;
+		//inDamage *= 0.75f;
 	}
 
 	// Take double damage from blast
@@ -1090,11 +1231,25 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 	{
 		inDamage *= 2.0f;
 	}
+
+	
+
+	if (avh_golden_deagle.value == 1) {
+		inDamage *= 2.0f;
+	}
 	
 	if((inBitsDamageType & NS_DMG_ORGANIC) && !this->GetIsOrganic())
 	{
 		inDamage = 0.0f;
 	}
+	if (inBitsDamageType & DMG_SLASH)
+	{
+		float theLethality = 1 + (1 - (this->pev->health / this->pev->max_health));
+		inDamage = inDamage * theLethality;
+		ALERT(at_console, "LETHALITY PROC BUILDING bonus damage percent=%f \n", theLethality);
+	}
+	//Knife has LETHALITY damage meaning it's more effective against lower health targets
+	//
 
 	theDamage = AvHPlayerUpgrade::CalculateDamageLessArmor((AvHUser3)this->pev->iuser3, this->pev->iuser4, inDamage, this->pev->armorvalue, inBitsDamageType, GetGameRules()->GetNumActiveHives((AvHTeamNumber)this->pev->team));
 	if(theDamage > 0)
@@ -1144,6 +1299,37 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 
 	this->HealthChanged();
 	
+	
+	if (inAttacker)
+	{
+		//this magic code here must go thru some list that exists or smthn
+		//either way it returns the pevAttacker, im just using 
+		AvHPlayer* atkPlayer = dynamic_cast<AvHPlayer*>(CBaseEntity::Instance(ENT(inAttacker)));
+		if (atkPlayer)
+		{
+			//vampirism factor
+			if (avh_vampire_factor.value != 0 || (avh_fadedgamemode.value == 1 && atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4))
+			{
+				float vamp = 0.2f;
+				if (avh_vampire_factor.value > 0) {
+					vamp  = avh_vampire_factor.value;
+				}
+				float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(atkPlayer->pev->iuser4, atkPlayer->GetUser3(), atkPlayer->GetExperienceLevel());
+				if (atkPlayer->pev->health < thePlayerMaxHealth)
+				{
+				float thePointsGiven = min((inDamage*vamp), (thePlayerMaxHealth - atkPlayer->pev->health));
+
+				atkPlayer->pev->health += thePointsGiven;
+
+					if (ns_cvar_float(&avh_drawdamage))
+					{
+						atkPlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, thePointsGiven);
+					}
+				}
+			}
+		}
+	}
+
 	return theDamage;
 }
 
@@ -1166,7 +1352,9 @@ void AvHBaseBuildable::WorldUpdate()
 	}
 
 	// If we're electrified, set render mode
-	if(GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_11))
+	//Check if we're not recycling and alive too
+	//Fixes phantom electrification
+	if(GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_11) && this->pev->health > 0 && !this->GetIsRecycling())
 	{
 		// Base marine building
 		const int kElectrifyRenderMode = kRenderFxGlowShell;
@@ -1178,10 +1366,22 @@ void AvHBaseBuildable::WorldUpdate()
 		this->pev->rendercolor.y = kTeamColors[this->pev->team][1];
 		this->pev->rendercolor.z = kTeamColors[this->pev->team][2];
 
+
 		// Check for enemy players/structures nearby
 		CBaseEntity* theBaseEntity = NULL;
 		int theNumEntsDamaged = 0;
 		
+		float theDamageModifier;
+		int theTracerFreq;
+
+		AvHTeam* theTeam = GetGameRules()->GetTeam(AvHTeamNumber(this->pev->team));
+		ASSERT(theTeam);
+		
+
+		int theUpgradeLevel = AvHPlayerUpgrade::GetWeaponUpgrade(AVH_USER3_MARINE_PLAYER, theTeam->GetTeamWideUpgrades(), &theDamageModifier, &theTracerFreq);
+		//pass in AVH_USER3_MARINE_PLAYER because tf, atf and rt are not allowed to receive weapon ups via GetWeaponUpgrade currently
+		//ALERT(at_console, "team= %d team ups= %d upgrade level=%d \n", this->pev->team, theTeam->GetTeamWideUpgrades(), theUpgradeLevel);
+
 		while(((theBaseEntity = UTIL_FindEntityInSphere(theBaseEntity, this->pev->origin, BALANCE_VAR(kElectricalRange))) != NULL) && (theNumEntsDamaged < BALANCE_VAR(kElectricalMaxTargets)))
 		{
 			// When "electric" cheat is enabled, shock all non-self entities, else shock enemies
@@ -1195,8 +1395,9 @@ void AvHBaseBuildable::WorldUpdate()
 					CBaseEntity* theAttacker = this->GetAttacker();
 					ASSERT(theAttacker);
 
-					if(theBaseEntity->TakeDamage(this->pev, theAttacker->pev, BALANCE_VAR(kElectricalDamage), DMG_GENERIC) > 0)
+					if(theBaseEntity->TakeDamage(this->pev, theAttacker->pev, ((float)BALANCE_VAR(kElectricalDamage))*(1.0f + theUpgradeLevel* 0.15f), DMG_GENERIC) > 0)
 					{
+
 							MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 								WRITE_BYTE(TE_BEAMENTPOINT);
 								WRITE_SHORT(theBaseEntity->entindex());
@@ -1226,6 +1427,12 @@ void AvHBaseBuildable::WorldUpdate()
 				}
 			}
 		}
+	}
+	//If we were electrified and are now recycling, correct render mode -- eter code
+	else if (GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_11) && this->GetIsRecycling()) {
+
+		this->pev->renderfx = kRenderFxNone;
+		this->pev->renderamt = 0;
 	}
 }
 
@@ -1424,6 +1631,10 @@ void AvHBaseBuildable::UpdateAutoHeal()
 			{
 				float theTimePassed = (gpGlobals->time - this->mTimeOfLastAutoHeal);
 				float theHitPointsToGain = theTimePassed*BALANCE_VAR(kOrganicStructureHealRate);
+
+				if (avh_fadedgamemode.value == 1) {
+					theHitPointsToGain /= 3.0f;
+				}
 			
 				this->pev->health += theHitPointsToGain;
 				this->pev->health = min(this->pev->health, theMaxHealth);
