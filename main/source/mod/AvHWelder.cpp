@@ -54,10 +54,12 @@
 
 #ifdef AVH_SERVER
 #include "AvHPlayerUpgrade.h"
+#include "AvHServerVariables.h"
 #include "AvHServerUtil.h"
 #include "AvHPlayer.h"
 #include "AvHMarineEquipment.h"
 #include "AvHGamerules.h"
+#include "AvHServerVariables.h"
 
 extern int	gWelderConstEventID;
 #endif
@@ -69,7 +71,17 @@ int AvHWelder::GetDeployAnimation() const
 
 float AvHWelder::GetDeployTime() const
 {
-	return .55f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.25f;
+	}
+	else {
+		return 0.55f;
+	}
+	//return .55f;
 }
 
 char* AvHWelder::GetHeavyViewModel() const
@@ -118,23 +130,48 @@ void AvHWelder::FireProjectiles(void)
 		AvHWeldable* theWeldable = dynamic_cast<AvHWeldable*>(theEntity);
 		if(theWeldable)
 		{
+			//Weldables, like those panels that activate Vent Covers or the panel on tanith that fires the laser
 			if(theWeldable->GetCanBeWelded())
 			{
 				// Build it by the amount of our rate of fire
-				theWeldable->AddBuildTime(theROF);
+				if (GetHasUpgrade(this->m_pPlayer->pev->iuser4, MASK_BUFFED)) {
+					theWeldable->AddBuildTime(theROF*2.5f);
+					//catalyst doubles your weldable speed
+				}
+				else {
+					theWeldable->AddBuildTime(theROF);
+				}
 
 				AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(this->m_pPlayer);
 				ASSERT(thePlayer);
 				thePlayer->TriggerProgressBar(theWeldable->entindex(), 1);
 				theDidWeld = true;
 			}
+
+
+			AvHPlayer* myavhPlayer = dynamic_cast<AvHPlayer*>(m_pPlayer);
+			if (avh_self_weld.value == 1)
+			{
+				if (myavhPlayer) {
+					int myCurrentArmor = myavhPlayer->pev->armorvalue;
+					int myMaxArmor = AvHPlayerUpgrade::GetMaxArmorLevel(myavhPlayer->pev->iuser4, myavhPlayer->GetUser3());
+
+					if (myCurrentArmor < myMaxArmor)
+					{
+						int myNewArmor = myCurrentArmor + 1; //receive 5% of your own welding as self welding
+						myavhPlayer->pev->armorvalue = min(myMaxArmor, myNewArmor);
+
+					}
+				}
+			}
+
 		}
 		// else it's not a weldable, apply damage to it
 		else
 		{
 			if(this->m_pPlayer->pev->team == theEntity->pev->team)
 			{
-				if( this->RepairTarget(theEntity, theROF) )
+				if( this->RepairTarget(theEntity, theROF, m_pPlayer) )
 					theDidWeld = true;
 			}
 			else
@@ -147,7 +184,7 @@ void AvHWelder::FireProjectiles(void)
 					AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
 					float theDamage = this->mDamage*theDamageMultiplier*theScalar;
 					
-					theEntity->TakeDamage(this->pev, this->m_pPlayer->pev, theDamage, DMG_BURN);
+					theEntity->TakeDamage(this->pev, this->m_pPlayer->pev, theDamage, NS_DMG_BLAST);//DMG_BURN);
 				}
 			}
 		}
@@ -163,6 +200,8 @@ void AvHWelder::FireProjectiles(void)
 		}
 		else
 		{
+			
+
 			if(!this->GetIsWelding())
 			{
 				PLAYBACK_EVENT_FULL(0, this->m_pPlayer->edict(), gWelderConstEventID, 0, this->m_pPlayer->pev->origin, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
@@ -181,7 +220,7 @@ void AvHWelder::FireProjectiles(void)
 
 	// Scan area for webs, and clear them.  I can't make the webs solid, and it seems like the welder might do this, so why not?  Also
 	// adds neat element of specialization where a guy with a welder might be needed to clear an area before an attack, kinda RPS
-	const float kWebClearingRadius = 75;
+	const float kWebClearingRadius = 100;
 	CBaseEntity* thePotentialWebStrand = NULL;
 	while((thePotentialWebStrand = UTIL_FindEntityInSphere(thePotentialWebStrand, theWelderBarrel, kWebClearingRadius)) != NULL)
 	{
@@ -266,15 +305,25 @@ void AvHWelder::Precache()
 
 #ifdef AVH_SERVER
 
-bool AvHWelder::RepairTarget(CBaseEntity* inEntity, float inROF)
+bool AvHWelder::RepairTarget(CBaseEntity* inEntity, float inROF, CBasePlayer* myPlayer)
 {
     int theAmountToRepair = inROF*BALANCE_VAR(kWelderRepairRate);
 	
 	bool theReturn = false;
 
+
+
 	if(inEntity)
 	{
 		AvHPlayer* theHitPlayer = dynamic_cast<AvHPlayer*>(inEntity);
+		AvHPlayer* myavhPlayer = dynamic_cast<AvHPlayer*>(m_pPlayer);
+		
+		if (GetHasUpgrade(myPlayer->pev->iuser4, MASK_BUFFED)) {
+			theAmountToRepair *= 2; //catalyst doubles your welder repair speed
+		}
+
+		
+
 
 		if(theHitPlayer)
 		{
@@ -302,20 +351,72 @@ bool AvHWelder::RepairTarget(CBaseEntity* inEntity, float inROF)
 			AvHBaseBuildable* theBuildable = dynamic_cast<AvHBaseBuildable*>(inEntity);
 			if(theBuildable)
 			{
-				if(theBuildable->Regenerate((theAmountToRepair * BALANCE_VAR(kWelderBuildingModifier)), false))
-                {
-                    // Award experience for welding the CC.  Might award a little more if barely wounded, but that seems OK.
-                    if(GetGameRules()->GetIsCombatMode() && (theBuildable->pev->iuser3 == AVH_USER3_COMMANDER_STATION))
-                    {
-                        AvHPlayer* theWeldingPlayer = dynamic_cast<AvHPlayer*>(this->m_pPlayer);
-                        if(theWeldingPlayer && (theWeldingPlayer->pev->team == theBuildable->pev->team))
-                        {
-                            float theCombatHealExperienceScalar = BALANCE_VAR(kCombatHealExperienceScalar);
-                            theWeldingPlayer->AwardExperienceForObjective(theAmountToRepair*theCombatHealExperienceScalar, theBuildable->GetMessageID());
-                        }
-                    }
+
+			#ifdef AVH_SERVER
+				if (avh_balance_mvm.value == 1)
+				{
+					theAmountToRepair *= 3;
+				}
+			#endif
+
+				//grab player
+				AvHPlayer* theWeldingPlayer = dynamic_cast<AvHPlayer*>(this->m_pPlayer);
+
+				//if it's not built yet let's build it
+				if (GetHasUpgrade(inEntity->pev->iuser4, MASK_BUILDABLE)) {
+					//float thePercentage = 0.0f;
+					//theBuildable->SetNormalizedBuildPercentage(thePercentage);
+					//ALERT(at_console, "WELDER BUILDER PROC TO 50% \n", theBuildable->GetNormalizedBuildPercentage());
+					//theBuildable->SetNormalizedBuildPercentage(0.5f);
+					//float theRandomFloat = RANDOM_FLOAT(0.0f, 1.0f);
+				    //if(theRandomFloat < 0.15f)
+				    //{
+					//    AvHSUPlayRandomConstructionEffect(theWeldingPlayer, this);
+				    //}
+
+					theBuildable->ConstructWeld(theWeldingPlayer);
+					//ALERT(at_console, "WELDER BUILDER PROC \n");
 					theReturn = true;
-                }
+
+				}
+				else {
+
+
+
+					if (theBuildable->Regenerate((theAmountToRepair * BALANCE_VAR(kWelderBuildingModifier)), false))
+					{
+						// Award experience for welding the CC.  Might award a little more if barely wounded, but that seems OK.
+						if (GetGameRules()->GetIsCombatMode() && (theBuildable->pev->iuser3 == AVH_USER3_COMMANDER_STATION))
+						{
+
+							if (theWeldingPlayer && (theWeldingPlayer->pev->team == theBuildable->pev->team))
+							{
+								float theCombatHealExperienceScalar = BALANCE_VAR(kCombatHealExperienceScalar);
+								theWeldingPlayer->AwardExperienceForObjective(theAmountToRepair*theCombatHealExperienceScalar, theBuildable->GetMessageID());
+							}
+						}
+						theReturn = true;
+					}
+				}
+			}
+		}
+
+		if (theReturn == true) 
+		{
+			if (avh_self_weld.value == 1) 
+			{
+				if (myavhPlayer) 
+				{
+					int myCurrentArmor = myavhPlayer->pev->armorvalue;
+					int myMaxArmor = AvHPlayerUpgrade::GetMaxArmorLevel(myavhPlayer->pev->iuser4, myavhPlayer->GetUser3());
+
+					if (myCurrentArmor < myMaxArmor)
+					{
+						int myNewArmor = myCurrentArmor + (theAmountToRepair / 20); //receive 5% of your own welding as self welding
+						myavhPlayer->pev->armorvalue = min(myMaxArmor, myNewArmor);
+
+					}
+				}
 			}
 		}
 	}
@@ -331,6 +432,13 @@ void AvHWelder::Spawn()
 
 	this->m_iId = AVH_WEAPON_WELDER;
 	//this->m_iDefaultAmmo = kWelderMaxClip;
+
+#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		this->mDamage *= 1.25f; //25% more damage
+	}
+#endif
 
     // Set our class name
 	this->pev->classname = MAKE_STRING(kwsWelder);
