@@ -171,6 +171,9 @@ void AvHScrollHandler::cursorMoved(int x, int y, Panel* inPanel)
 	// Uncomment this to make it scroll when you're near the edges of the screen, nice feel but hard to use with UI elements on edge
 	//int kPixelScrollTolerance = ScreenWidth/25;
 	int kPixelScrollTolerance = 0;
+	if (CVAR_GET_FLOAT("cl_commscroll") > 0) {
+		kPixelScrollTolerance = CVAR_GET_FLOAT("cl_commscroll");
+	}
 
 	// Get screen coordinates of mouse
 	ASSERT(inPanel);
