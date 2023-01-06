@@ -42,6 +42,7 @@
 //===============================================================================
 #include "AvHAlienWeapons.h"
 #include "AvHPlayer.h"
+#include "AvHMarineEquipment.h"
 
 #ifdef AVH_CLIENT
 #include "cl_dll/eventscripts.h"
@@ -59,6 +60,7 @@
 #include "AvHConstants.h"
 #include "AvHServerUtil.h"
 #include "AvHParticleConstants.h"
+#include "AvHServerVariables.h"
 
 LINK_ENTITY_TO_CLASS(kwBileBombGun, AvHBileBombGun);
 void V_PunchAxis( int axis, float punch );
@@ -130,7 +132,110 @@ void AvHBileBomb::BileBombTouch(CBaseEntity* pOther)
 	
 		// Explode with splash damage (also change in GetDamageType() above)
 		int theRadius = BALANCE_VAR(kBileBombRadius);
-		RadiusDamage(this->pev->origin, this->pev, VARS(this->pev->owner), this->mDamage, theRadius, CLASS_NONE, NS_DMG_STRUCTURAL);
+		RadiusDamage(this->pev->origin, this->pev, VARS(this->pev->owner), this->mDamage, theRadius, CLASS_NONE, NS_DMG_ACID);
+
+		//clear webs and etc now
+		// Scan area for webs, and clear them.  I can't make the webs solid, and it seems like the welder might do this, so why not?  Also
+		// adds neat element of specialization where a guy with a welder might be needed to clear an area before an attack, kinda RPS
+
+		//perhaps make it so u can clear enemy team webs with bile bomb in AvAs
+		const float kWebClearingRadius = theRadius;
+		CBaseEntity* thePotentialWebStrand = NULL;
+		while ((thePotentialWebStrand = UTIL_FindEntityInSphere(thePotentialWebStrand, this->pev->origin, kWebClearingRadius)) != NULL)
+		{
+			AvHWebStrand* theWebStrand = dynamic_cast<AvHWebStrand*>(thePotentialWebStrand);
+			if (theWebStrand)
+			{
+				//theBileBomb->pev->team = this->m_pPlayer->pev->team;
+				//only destroy enemy webs
+				if (theWebStrand->pev->team != this->pev->team)
+				{
+					//check web's team
+					theWebStrand->Break();
+				}
+
+			}
+		}
+
+		//ALERT(at_console, "WELDER CLEARING PROC \n");
+
+		const float kWelderClearingRadius = 30;
+		CBaseEntity* thePotentialWelder = NULL;
+		while ((thePotentialWelder = UTIL_FindEntityInSphere(thePotentialWelder, this->pev->origin, kWelderClearingRadius)) != NULL)
+		{
+			AvHPlayerEquipment* thePack = dynamic_cast<AvHPlayerEquipment*>(thePotentialWelder);
+			AvHMarineWeapon* theWelder = dynamic_cast<AvHMarineWeapon*>(thePotentialWelder);
+			if (theWelder)
+			{
+				
+
+				if (theWelder->m_pPlayer)
+				{
+					ALERT(at_console, "WEAPON CANT BE DESTROYED \n");
+				}
+				else {
+					ALERT(at_console, "WEAPON DESTROY PROC \n");
+
+
+					if (theWelder->pev->nextthink > gpGlobals->time + 1.0f) {
+						theWelder->pev->nextthink = max(theWelder->pev->nextthink - 5.0f, gpGlobals->time);
+					}
+					else
+					{
+						theWelder->Kill();
+					}
+
+
+					//theWelder->Kill();
+					// /*
+					//int theLifetime = theWelder->GetLifetime() - 5;
+					//if (theLifetime > 0)
+					//{
+						//SetThink(&AvHMarineWeapon::SUB_Remove);
+						
+					//}
+					// */
+				}
+				//theWelder->SetGroundLifetime(0.5f);
+			}
+			else if(thePack)
+			{
+
+				if (thePack->m_pPlayer)
+				{
+					ALERT(at_console, "ITEM CANT BE DESTROYED \n");
+				}
+				else {
+					ALERT(at_console, "ITEM DESTROY PROC \n");
+					//thePack->Kill();
+
+					if (thePack->pev->nextthink > gpGlobals->time + 1.0f) {
+						thePack->pev->nextthink = max(thePack->pev->nextthink - 5.0f, gpGlobals->time);
+					}
+					else
+					{
+						AvHJetpack* theJP = dynamic_cast<AvHJetpack*>(thePotentialWelder);
+						AvHHeavyArmor* theHA = dynamic_cast<AvHHeavyArmor*>(thePotentialWelder);
+						if (theJP || theHA)
+						{
+						}
+						else
+						{
+							thePack->Kill();
+						}
+					}
+
+				}
+
+
+				
+
+				
+				//theWelder->SetGroundLifetime(0.5f);
+			}
+		}
+
+
 
 		SetTouch(NULL);
 
@@ -221,7 +326,7 @@ int	AvHBileBombGun::GetShootAnimation() const
 // Also change in RadiusDamage below
 int AvHBileBombGun::GetDamageType() const
 {
-	return NS_DMG_STRUCTURAL;
+	return DMG_IGNITE;// NS_DMG_ACID;//NS_DMG_STRUCTURAL;
 }
 
 char* AvHBileBombGun::GetViewModel() const
@@ -252,6 +357,13 @@ void AvHBileBombGun::Spawn()
 	this->pev->classname = MAKE_STRING(kwsBileBombGun);
 
 	SET_MODEL(ENT(this->pev), kNullModel);
+
+#ifdef AVH_SERVER
+	if (avh_balance_ava.value == 1)
+	{
+		this->mDamage = 370; //75% bonus damage
+	}
+#endif
 
 	FallInit();// get ready to fall down.
 } 
