@@ -87,6 +87,7 @@
 #include <ctype.h>  // isspace
 #include "../mod/AvHSpecials.h"
 #include "../mod/AvHMarineEquipmentConstants.h"
+//#include "../mod/AvHClientVariables.h"
 #include "../mod/AvHMessage.h"
 #include "../util/MathUtil.h"
 #include "../util/Quat.h"
@@ -101,7 +102,8 @@
 #include "../mod/AvHMapExtents.h"
 #include "../mod/AvHSharedMovementInfo.h"
 #include "../util/Balance.h"
-
+//#include "../dlls/game.h" //not needed for avh_vars
+#include "../mod/AvHServerVariables.h"
 #include "../common/com_model.h"
 
 #include "../mod/CollisionUtil.h"
@@ -116,6 +118,7 @@
 
 #ifdef AVH_SERVER
 void AvHSUAddDebugPoint(float inX, float inY, float inZ);
+//#include "../mod/AvHServerUtil.h"
 #endif
 
 void AvHSHUGetFirstNonSolidPoint(float* inStartPos, float* inEndPos, float* outNonSolidPoint);
@@ -123,10 +126,16 @@ bool AvHSHUGetCenterPositionForGroup(int inGroupNumber, float* inPlayerOrigin, f
 
 #ifdef AVH_CLIENT
 ////#include "cl_dll/cl_dll.h"
-////#include "cl_dll/hud.h"
+//#include "cl_dll/hud.h"
 //#include "cl_dll/cl_util.h"
 //#include "cl_dll/cl_dll.h"
+//#include "cl_dll/cl_util.h"
 #include "cl_dll/eventscripts.h"
+#endif
+
+#ifdef AVH_CLIENT
+extern "C" int gHackGetGameTime();
+extern "C" int gHackGetServerVariableFloat(const char* inName);
 #endif
 
 float PM_GetDesiredTopDownCameraHeight(qboolean& outFoundEntity);
@@ -136,6 +145,7 @@ void PM_Overwatch();
 bool PM_TopDown();
 void PM_Jump(void);
 void PM_PreventMegaBunnyJumping(bool inIgnoreZ);
+void PM_PreventMegaCrazyLerkPancakage();
 bool GetIsEntityAPlayer(int inPhysIndex);
 
 #ifdef AVH_CLIENT
@@ -153,6 +163,7 @@ DebugEntityListType                 gCubeDebugEntities;*/
 //extern int gFlightEventID;
 
 extern int gJetpackEventID;
+extern int gWelderConstEventID;
 extern int gBlinkEffectSuccessEventID;
 
 #define Vector vec3_t
@@ -237,7 +248,7 @@ extern vec3_t gWorldViewAngles;
 //#define VEC_DUCK_HULL_MAX 18
 //#define VEC_DUCK_VIEW     12
 #define PM_DEAD_VIEWHEIGHT  -8
-#define MAX_CLIMB_SPEED 120
+#define MAX_CLIMB_SPEED 140
 #define STUCK_MOVEUP 1
 #define STUCK_MOVEDOWN -1
 //#define VEC_HULL_MIN      -36
@@ -279,7 +290,7 @@ extern vec3_t gWorldViewAngles;
 
 #define PLAYER_LONGJUMP_SPEED 350 // how fast we longjump
 
-const float kAlienEnergyFlap = .025f;
+const float kAlienEnergyFlap = .012f;
 
 // double to float warning
 #pragma warning(disable : 4244)
@@ -1056,6 +1067,7 @@ pmtrace_t NS_PlayerTrace(playermove_t* pmove, float* start, float* end, int trac
                     }
                     else
                     {
+						
                         rotated = false;
                     }
                 }
@@ -1540,11 +1552,11 @@ void NS_UpdateWallsticking()
             }
             else
             {
-                
+                /*
                 // This seems like a good idea, but it doesn't work too well in
                 // practice (maybe the constant just need to be tweaked).
             
-                /*
+                
                 // If the Skulk is not wallsticking, then rotate to align with the
                 // surface he's moving towards (if there's one nearby).
 
@@ -1574,8 +1586,8 @@ void NS_UpdateWallsticking()
                     VectorCopy(angles, gTargetPlayerAngles);
                     #endif                    
                 }
-                */
-
+                
+				*/
                 // When the player isn't wall sticking, just revert to the normal
                 // angles.
 
@@ -1904,7 +1916,7 @@ void NS_PlayStepSound(int inMaterialType, int inSoundNumber, float inVolume)
         theExtension = kHeavyFootstepExtension;
 
         // Can't be too quiet with heavy armor
-        inVolume = max(inVolume, .5f);
+        inVolume = max(inVolume, .4f);
     }
 
     // Build base name
@@ -1980,7 +1992,13 @@ void NS_PlayStepSound(int inMaterialType, int inSoundNumber, float inVolume)
     float theSpeedFraction = theCurrentSpeed/(float)theMaxSpeed;
 
     bool thePlayingFootstep = true;
+//#ifdef AVH_SERVER
     if(theSpeedFraction > theWalkFactor)
+//#endif
+//#ifdef AVH_CLIENT
+//		if (theWalkFactor > 0)
+			//cl_allowsilence 0
+//#endif
     {
         // Construct full name using base name and sound number
         char theFinalName[128];
@@ -1998,11 +2016,14 @@ void NS_PlayStepSound(int inMaterialType, int inSoundNumber, float inVolume)
         // If alien has silencio upgrade, mute footstep volume
         float theSilenceUpgradeFactor = 0.0f;
 
+		//cl_allowsilence 0
+//#ifdef AVH_SERVER
         if(theIsAlien)
         {
             int theSilenceUpgradeLevel = AvHGetAlienUpgradeLevel(pmove->iuser4, MASK_UPGRADE_6);
-            theSilenceUpgradeFactor = theSilenceUpgradeLevel/3.0f;
+            theSilenceUpgradeFactor = theSilenceUpgradeLevel/4.0f;
         }
+//#endif
         
         inVolume = inVolume - inVolume*theSilenceUpgradeFactor;
         
@@ -2035,10 +2056,14 @@ void PM_PlayStepSound( int step, float fvol )
 
     // Don't play footsteps when ducked
     // FIXME mp_footsteps needs to be a movevar
+
+	//cl_allowsilence 0
+	/*
     if((pmove->multiplayer && !pmove->movevars->footsteps) || (pmove->flags & FL_DUCKING))
     {
         return;
     }
+	*/
 
     VectorCopy( pmove->velocity, hvel );
     hvel[2] = 0.0;
@@ -2295,6 +2320,9 @@ float PM_SetStepInterval()
 
     // Play louder as we get closer to max speed
     float theFraction = (float)theCurrentSpeed/theMaxSpeed;
+
+	//cl_allowsilence 0
+	theFraction = 1.0f;
 
 //  int theCurrentInterval = kSlowestFootstepInterval - (kSlowestFootstepInterval - kFastestFootstepInterval)*theFraction;
 
@@ -3091,8 +3119,27 @@ void PM_WalkMove ()
     {
         if(fmove < 0)
         {
-            fmove *= kMarineBackpedalSpeedScalar;
-        }
+#ifdef AVH_SERVER
+			if (fmove < -1) {
+				fmove = -pow(-fmove, 0.9);// kMarineBackpedalSpeedScalar;
+			}
+#endif
+#ifdef AVH_CLIENT
+			
+			//if (CVAR_GET_FLOAT("cl_backwardlag") == 0)
+			//if (gEngfuncs.pfnGetCvarFloat("cl_backwardlag") == 0)
+			//need to check server version somehow to pick which one of these i should do
+				
+			//{
+			//	fmove = -pow(-fmove, 0.9);// kMarineBackpedalSpeedScalar;
+			//}
+			//else {
+				fmove *= kMarineBackpedalSpeedScalar;
+			//}
+#endif
+		}
+
+		
 
         smove *= kMarineSidestepSpeedScalar;
     }
@@ -3132,8 +3179,11 @@ void PM_WalkMove ()
         {
             SetUpgradeMask(&pmove->iuser4, MASK_ALIEN_MOVEMENT, true);
 
+
             // Modify fmove?
-            fmove = 500;
+			fmove = 550;//520;
+
+
         }
         
         for (i=0 ; i<2 ; i++)       // Determine x and y parts of velocity
@@ -3160,8 +3210,43 @@ void PM_WalkMove ()
 
     PM_Accelerate (wishdir, wishspeed, pmove->movevars->accelerate);
 
+#ifdef AVH_SERVER
+	//Wall strafe bug fix
+	//this code here corrects the problem where strafing into a wall grants you bonus move speed incoherently
+	//however it seems to prevent onos charging from working properly so it'll be disabled during charge
+	//it also seems to prevent skulk from walljumping so it'll be disabled while wallsticking
+	if (!PM_GetIsCharging() && !GetHasUpgrade(pmove->iuser4, MASK_WALLSTICKING))
+	{
+		if (avh_wallstrafe.value == 0) 
+		{
+			if (Length(pmove->velocity) > pmove->maxspeed)
+			{
+				VectorScale(pmove->velocity, (pmove->maxspeed) / Length(pmove->velocity), pmove->velocity);
+			}
+		}
+		else if (avh_wallstrafe.value == 2)
+		{
+			if (Length(pmove->velocity) > pmove->maxspeed)
+			{
+				VectorScale(pmove->velocity, (pmove->maxspeed) / Length(pmove->velocity), pmove->velocity);
+			}
+		}
+	}
+	
+#endif
+
     if(!GetHasUpgrade(pmove->iuser4, MASK_WALLSTICKING))
         pmove->velocity[2] = 0;
+
+	//extra Onos charging movement speed enhancements
+	//if (PM_GetIsCharging())
+	//{ //XY bhop
+	//	if (Length(pmove->velocity) < 550.0f && Length(pmove->velocity) > 1.0f)
+	//	{
+			//VectorScale(pmove->velocity, 500.0f / Length(pmove->velocity), pmove->velocity);
+	//		VectorScale(pmove->velocity, 1.15f, pmove->velocity);
+	//	}
+	//}
 
     // Add in any base velocity to the current velocity.
     VectorAdd (pmove->velocity, pmove->basevelocity, pmove->velocity );
@@ -3178,6 +3263,15 @@ void PM_WalkMove ()
     //if (!pmove->velocity[0] && !pmove->velocity[1] && !pmove->velocity[2])
     //  return;
 
+	//Wall strafe bug fix
+	//this code here corrects the problem where strafing into a wall grants you bonus move speed incoherently
+	//if (Length(pmove->velocity) > pmove->maxspeed + Length(pmove->basevelocity))
+	//{
+	//	VectorScale(pmove->velocity, (pmove->maxspeed + Length(pmove->basevelocity)) / Length(pmove->velocity), pmove->velocity);
+	//}
+	
+
+
     oldonground = pmove->onground;
 
 // first try just moving to the destination 
@@ -3187,6 +3281,9 @@ void PM_WalkMove ()
     // Wall-sticking change
     //dest[2] = pmove->origin[2];
     dest[2] = pmove->origin[2] + pmove->velocity[2]*pmove->frametime;
+
+
+	
 
     // first try moving directly to the next spot
     VectorCopy (dest, start);
@@ -3201,6 +3298,9 @@ void PM_WalkMove ()
         VectorCopy (trace.endpos, pmove->origin);
         return;
     }
+
+
+	
 
     if(!GetHasUpgrade(pmove->iuser4, MASK_WALLSTICKING))
     {
@@ -3347,6 +3447,34 @@ void PM_Friction (void)
 
         friction *= pmove->friction;  // player friction?
 
+		//celerity friction penalty
+		int theSpeedUpgradeLevel = 0;
+		if (GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_4))
+		{
+			theSpeedUpgradeLevel = 1;
+
+			if (GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_12))
+			{
+				theSpeedUpgradeLevel = 2;
+			}
+			else if (GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_13))
+			{
+				theSpeedUpgradeLevel = 3;
+			}
+		}
+		
+		//error: PM_GetCelerityLevel() identifier not found ???
+		//celerity now reduces friction slowdown while on the ground if your travelling rapidly and for example miss a bhop or a fade slides across the floor a bit
+		//this is a noob friendly mechanic is the idea
+		//also this friction reduction will only take into account if your still trying to go forwards or sideways
+		//this does introduce a new movement mechanic with celerity where you use W and A or D and move the mouse sideways, basically ground strafing
+		/*
+#ifdef AVH_SERVER
+		if (theSpeedUpgradeLevel > 0 && speed > pmove->maxspeed*0.92f && AvHGetIsAlien(pmove->iuser3) && (pmove->cmd.sidemove > 0 || pmove->cmd.forwardmove > 0)) {
+			friction = friction / (((float)theSpeedUpgradeLevel*2.0f) + 1.0f);
+		}
+#endif
+*/
         // Bleed off some speed, but if we have less than the bleed
         //  threshhold, bleed the theshold amount.
         control = (speed < pmove->movevars->stopspeed) ?
@@ -3559,7 +3687,12 @@ void PM_AirMove (void)
         wishspeed = pmove->maxspeed;
     }
 
-    PM_PreventMegaBunnyJumping(true);
+    //PM_PreventMegaBunnyJumping(true);
+
+	// prevent lerk pancaking (moving quickly up and down)
+	if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3) {
+		PM_PreventMegaCrazyLerkPancakage();
+	}
     
 	float theAirAccelerate = gIsJetpacking[pmove->player_index] ? pmove->movevars->airaccelerate*4 : pmove->movevars->airaccelerate;
     if(pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3)
@@ -4516,8 +4649,16 @@ bool PM_FlapMove()
 		// Set to define delay between flaps in seconds
 //		pmove->fuser4 = 0.1f;
 
-		AvHMUDeductAlienEnergy(pmove->fuser3, kAlienEnergyFlap);
-        
+		//AvHMUDeductAlienEnergy(pmove->fuser3, kAlienEnergyFlap);
+
+		//added by eter to increase flap cost with speed
+		AvHMUDeductAlienEnergy(pmove->fuser3, kAlienEnergyFlap * (1.0f + Length(pmove->velocity)/600.0f));
+
+#ifdef AVH_CLIENT
+		//playing on ensl?
+		AvHMUDeductAlienEnergy(pmove->fuser3, 0.025f);
+#endif
+		
         // Added by mmcguire.
         // Move the lerk in the direction has is facing.
         vec3_t theFlapVelocity;
@@ -4532,7 +4673,7 @@ bool PM_FlapMove()
             {
 
                 theThrust = pmove->cmd.forwardmove * kWingThrustForwardScalar;
-                theLift = 200 * (pmove->forward[2] + 0.5) / 1.5;
+                theLift = 180 * (pmove->forward[2] + 0.5) / 1.5;
             
                 if (theLift < 0)
                 {
@@ -4544,21 +4685,31 @@ bool PM_FlapMove()
             {
 				// : 0000522 reverse lerk flight
 				// Uncomment to enable backwards flight
-                //theThrust = pmove->cmd.forwardmove * kWingThrustForwardScalar; //kWingThrustBackwardScalar;
-                //theLift = 200 * (pmove->forward[2] + 0.5) / 1.5;
-				//if (theLift < 0)
-                //{
-                //    theLift = 0;
-                //}
-                theThrust = -pmove->cmd.forwardmove * kWingThrustBackwardScalar;
-                theLift = 200;
+#ifdef AVH_SERVER
+				if (avh_reverselerk.value != 0)
+				{
+					theThrust = pmove->cmd.forwardmove *2.0f * kWingThrustForwardScalar; //kWingThrustBackwardScalar;
+					theLift = 180 * (pmove->forward[2] + 0.5) / 1.5;
+					if (theLift < 0)
+					{
+					    theLift = 0;
+					}
+					
+				}
+				else 
+#endif
+				{
+
+					theThrust = -pmove->cmd.forwardmove * kWingThrustBackwardScalar;
+					theLift = 180;
+				}
 				// :
             }
 
         }
         else
         {
-            theLift = 300;
+            theLift = 270;
             theThrust = 0;
         }
 
@@ -4589,8 +4740,13 @@ bool PM_FlapMove()
             
             // If alien has silencio upgrade, mute footstep volume
             int theSilenceUpgradeLevel = AvHGetAlienUpgradeLevel(pmove->iuser4, MASK_UPGRADE_6);
+
+			//cl_allowsilence 0
+//#ifdef AVH_CLIENT
+			theSilenceUpgradeLevel = 0.0f;
+//#endif
             const float theBaseVolume = .5f;
-            float theVolumeScalar = theBaseVolume - (theSilenceUpgradeLevel/(float)3)*theBaseVolume;
+            float theVolumeScalar = theBaseVolume - (theSilenceUpgradeLevel/4.0f)*theBaseVolume;
             theVolumeScalar = min(max(theVolumeScalar, 0.0f), 1.0f);
             
             PM_NSPlaySound(CHAN_BODY, theSoundToPlay, theVolumeScalar, ATTN_NORM, 0, PITCH_NORM);
@@ -4602,18 +4758,22 @@ bool PM_FlapMove()
     else
     {
         // Added by mmcguire. Lerk gliding.
-        if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3 && pmove->onground == -1)
-        {
-            // Compute the velocity not in the direction we're facing.
-			float theGlideAmount = min(0.2f, PM_GetHorizontalSpeed() / 1000);
+		if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3 && pmove->onground == -1)
+		{
+			// Compute the velocity not in the direction we're facing.
+			float theGlideAmount = min(0.2f, PM_GetHorizontalSpeed() / 10000);
 
 			float speed = Length(pmove->velocity);
-            float projectedSpeed = DotProduct(pmove->velocity, pmove->forward);
+			float projectedSpeed = DotProduct(pmove->velocity, pmove->forward);
 
 			// : 0000522 reverse lerk flight
-			//if (projectedSpeed < 0)
-			//	speed *= -1;
-			// :
+#ifdef AVH_SERVER
+			if (avh_reverselerk.value != 0){
+				if (projectedSpeed < 0) {
+					speed *= -1;
+				}
+		}
+#endif
 			vec3_t forwardVelocity;
             VectorScale(pmove->forward, speed, forwardVelocity);
 
@@ -4654,7 +4814,7 @@ bool PM_ChargeMove()
 	{
 		vec3_t forward;
 		vec3_t sideways;
-		float length = pmove->maxspeed * (1.0f + (float)BALANCE_VAR(kChargeSpeed) * pmove->fuser4 / theChargeThresholdTime);
+		float length = pmove->maxspeed * (1.0f + theChargeSpeed * pmove->fuser4 / theChargeThresholdTime);
 
 		VectorCopy(pmove->forward, forward);
 		VectorScale(forward, -1 * DotProduct(forward, pmove->velocity), forward);
@@ -4673,6 +4833,9 @@ bool PM_ChargeMove()
 
 		float velocity = Length(pmove->velocity);
 		float maxvel = (pmove->maxspeed * (1.0f + theChargeSpeed));
+
+		//this line here needs to be scaled that way bhopping while charging does not slow you down
+		//onos charge speed limit bhop cap  (search tags)
 		if (velocity > maxvel)
 			VectorScale(pmove->velocity, maxvel / velocity, pmove->velocity);
 	}
@@ -4690,8 +4853,10 @@ void PM_AlienAbilities()
         AvHMUUpdateAlienEnergy(theTimePassed, pmove->iuser3, pmove->iuser4, pmove->fuser3);
 
         // Stop charging when we're out of energy
-        if(GetHasUpgrade(pmove->iuser4, MASK_ALIEN_MOVEMENT))
+        if(GetHasUpgrade(pmove->iuser4, MASK_ALIEN_MOVEMENT)&& ((pmove->iuser3 == AVH_USER3_ALIEN_PLAYER1) || (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER2) || (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3) || (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER4) ||(pmove->iuser3 == AVH_USER3_ALIEN_PLAYER5)))
         {
+			
+
             if(pmove->fuser3 <= 0.0f)
             {
                 SetUpgradeMask(&pmove->iuser4, MASK_ALIEN_MOVEMENT, false);
@@ -4708,16 +4873,112 @@ void PM_AlienAbilities()
 	canmove = gCanMove;
 #endif
 	bool success = false;
+
+	//if (pmove->cmd.buttons & IN_ATTACK2) {
+		//ALERT(at_console, "ANY MOVEMENT PROC");
+	//}
+
+	/* //im just experimenting with adding a slide movement ability to the gorge
+	bool gorgeAraming;
+
+	if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER2 && pmove->movetype == MOVETYPE_NOCLIP) {
+		
+		//trace
+		gorgeAraming = true;
+
+		
+
+		pmtrace_t   trace;
+		vec3_t      end;
+		
+
+
+		for (int i = 0; i < 3; i++)
+			end[i] = pmove->origin[i] + pmove->frametime * pmove->velocity[i];
+
+		trace = NS_PlayerTrace(pmove, pmove->origin, end, PM_NORMAL, -1);
+
+
+		
+		if (trace.fraction == 1)
+		{
+			#ifdef AVH_SERVER
+			ALERT(at_console, "GORGE ALRIGHT\n");
+			#endif
+			
+		}
+		else 
+		{
+			#ifdef AVH_SERVER
+			ALERT(at_console, "GORGE STUCK\n");
+			#endif
+
+			if (pmove->cmd.buttons & IN_ATTACK2)
+			{
+				pmove->movetype = MOVETYPE_WALK;
+			}
+		}
+
+
+	}
+	*/
+
+
 	if ((pmove->cmd.buttons & IN_ATTACK2) && (AvHGetIsAlien(pmove->iuser3)))
 	{
 		switch (pmove->iuser3)
 		{
 		case AVH_USER3_ALIEN_PLAYER1:
 			success = canmove && PM_LeapMove();
+			//ALERT(at_console, "SKULK MOVEMENT PROC");
+			break;
+		case AVH_USER3_ALIEN_PLAYER2:
+			//pmove->velocity[2] += 1000.0f * pmove->frametime;
+			/*
+//#ifdef AVH_SERVER
+			if (GetHasUpgrade(pmove->iuser4, MASK_ALIEN_MOVEMENT) == false){
+			ALERT(at_console, "GORGE FIRST MOVEMENT PROC\n");
+			}
+//#endif
+			
+			if (AvHMUHasEnoughAlienEnergy(pmove->fuser3, 0.2f * pmove->frametime))
+			{
+
+				//pmove->movetype == MOVETYPE_NOCLIP
+				//MOVETYPE_WALK
+				//pmove->frametime;
+				AvHMUDeductAlienEnergy(pmove->fuser3, 0.2f * pmove->frametime);
+				
+				pmove->movetype = MOVETYPE_NOCLIP;
+
+				//if (pmove->velocity[2] < 0.0f) {
+				//	pmove->velocity[2] *= 0.98f;
+							//pmove->velocity[2] = pmove->velocity[2] * (0.5f/pmove->frametime); //this doesnt work yet need to do some more math
+				//}
+
+				//RadiusDamage(pmove->origin, 0, VARS(theRocketOwner), this->mDamage, BALANCE_VAR(kAcidRocketRadius), CLASS_NONE, NS_DMG_BLAST);
+				//if (pmove->onground == -1)
+				//{
+				//pmove->flFallVelocity = -pmove->velocity[2];
+				//}
+				//VectorScale(pmove->velocity, 1.1f, pmove->velocity);
+			}
+			//RadiusDamage(pmove->origin, 0, VARS(theRocketOwner), this->mDamage, BALANCE_VAR(kAcidRocketRadius), CLASS_NONE, NS_DMG_BLAST);
+
+
+			//success = canmove && PM_LeapMove();
+			SetUpgradeMask(&pmove->iuser4, MASK_ALIEN_MOVEMENT, true);
+			SetUpgradeMask(&pmove->iuser4, MASK_UMBRA, true);
+			success = true;
+
+			//ALERT(at_console, "GORGE MOVEMENT PROC");
+			*/
+
 			break;
 		case AVH_USER3_ALIEN_PLAYER3:
-			pmove->cmd.buttons |= IN_JUMP;
-			success = PM_FlapMove();
+			//pmove->cmd.buttons |= IN_JUMP;
+			//success = PM_FlapMove();
+			//ALERT(at_console, "LERK MOVEMENT PROC");
 			break;
 		case AVH_USER3_ALIEN_PLAYER4:
 			success = canmove && PM_BlinkMove();
@@ -4841,14 +5102,39 @@ void PM_LadderMove( physent_t *pLadder )
         vec3_t vpn, v_right;
 
         AngleVectors( pmove->angles, vpn, v_right, NULL );
+//#ifdef AVH_SERVER
         if ( pmove->cmd.buttons & IN_BACK )
-            forward -= MAX_CLIMB_SPEED;
+            //forward -= MAX_CLIMB_SPEED;
+			forward -= pmove->maxspeed*0.75f;
         if ( pmove->cmd.buttons & IN_FORWARD )
-            forward += MAX_CLIMB_SPEED;
+            //forward += MAX_CLIMB_SPEED;
+			forward += pmove->maxspeed*0.75f;
         if ( pmove->cmd.buttons & IN_MOVELEFT )
-            right -= MAX_CLIMB_SPEED;
+            //right -= MAX_CLIMB_SPEED;
+			right -= pmove->maxspeed*0.75f;
         if ( pmove->cmd.buttons & IN_MOVERIGHT )
-            right += MAX_CLIMB_SPEED;
+            //right += MAX_CLIMB_SPEED;
+			right += pmove->maxspeed*0.75f;
+//#endif
+		//ensl friendly ladder speeds
+		
+//#ifdef AVH_CLIENT
+		/*
+		if (pmove->cmd.buttons & IN_BACK)
+			forward -= MAX_CLIMB_SPEED;
+			
+		if (pmove->cmd.buttons & IN_FORWARD)
+			forward += MAX_CLIMB_SPEED;
+			
+		if (pmove->cmd.buttons & IN_MOVELEFT)
+			right -= MAX_CLIMB_SPEED;
+			
+		if (pmove->cmd.buttons & IN_MOVERIGHT)
+			right += MAX_CLIMB_SPEED;
+			*/
+			
+//#endif
+
 
 //        if ( PM_GetIsBlinking() )
         //{
@@ -4859,7 +5145,10 @@ void PM_LadderMove( physent_t *pLadder )
 		if ( pmove->cmd.buttons & IN_JUMP )
         {
             pmove->movetype = MOVETYPE_WALK;
-            VectorScale( trace.plane.normal, 270, pmove->velocity );
+            //VectorScale( trace.plane.normal, 200, pmove->velocity ); 
+
+			//jumping off a ladder now correctly uses your max speed to jump off
+			VectorScale(trace.plane.normal, pmove->maxspeed, pmove->velocity);
         }
         else
         {
@@ -5216,22 +5505,43 @@ void PM_PreventMegaCrazyLerkPancakage() {
     float spd;
     // If we have to crop, apply this cropping fraction to velocity
     float fraction;
-	float maxbasespeed=BALANCE_VAR(kLerkBaseSpeedMax) + (BALANCE_VAR(kAlienCelerityBonus)-5) * PM_GetCelerityLevel();
+	float maxbasespeed=BALANCE_VAR(kLerkBaseSpeedMax) + (BALANCE_VAR(kAlienCelerityBonus)*2) * PM_GetCelerityLevel();
+
+	/*
+#ifdef AVH_SERVER
+	if (avh_heavyjp.value == 1) {
+		maxbasespeed = BALANCE_VAR(kLerkBaseSpeedMax)*2 + (BALANCE_VAR(kAlienCelerityBonus)*2) * PM_GetCelerityLevel();
+	}
+#endif
+	*/
+
+	//this allows me to set the lerk speed max differently when playing on ENSL/tournament servers
+	//playing with tournament mode in LANs is unlikely so i consider this acceptable
+	//a better solution would be to use a ensl variable that only exists in their version
+	//or i could use a alien version only variable to find the inverse...
+#ifdef AVH_CLIENT
+	//int hackenslvalue = gHackGetServerVariableFloat("mp_tournamentmode");
+	int hackenslvalue = gHackGetServerVariableFloat("sv_wallstrafe");
+	if (hackenslvalue != 0) {
+		maxbasespeed = 650 + (BALANCE_VAR(kAlienCelerityBonus)) * PM_GetCelerityLevel();
+	}
+#endif
 
 	vec3_t vertical={0,0,-1.0f};
 
 	vec3_t normalizedVelocity;
 
 
+
 	spd = Length( pmove->velocity );
 
-
+	
 	VectorCopy(pmove->velocity, normalizedVelocity);
 	VectorNormalize(normalizedVelocity);
 	float dp=DotProduct(normalizedVelocity, vertical);
 
 	if ( dp > 0 ) 
-		dp /= 10.0f;
+		dp /= 10.0f; //raising this number here will reduce the speed for detecting pancaking
 	else
 		dp /= 5.0f;
 
@@ -5331,87 +5641,123 @@ void PM_PreventMegaBunnyJumping(bool inAir)
 PM_Jump
 =============
 */
-void PM_Jump (void)
+void PM_Jump(void)
 {
-    int i;
-    qboolean tfc = false;
+	int i;
+	qboolean tfc = false;
 	qboolean autojump = false;
 	qboolean queuedjump = false;
-    qboolean cansuperjump = false;
-    
-    if (pmove->dead || GetHasUpgrade(pmove->iuser4, MASK_ENSNARED))
-    {
+	qboolean cansuperjump = false;
+
+
+
+	autojump = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "jm2"));
+	queuedjump = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "jm1"));
+
+
+#ifdef AVH_SERVER
+	if (avh_jumpmode.value == 0) {
+		autojump = false;
+		queuedjump = false;
+	}
+	else if (avh_jumpmode.value == 1) {
+		autojump = false;
+		queuedjump = true;
+	}
+	else if (avh_jumpmode.value == 2) {
+		autojump = true;
+		queuedjump = false;
+	}
+#endif
+#ifdef AVH_CLIENT
+	pmove->cmd.buttons &= IN_JUMP;
+	//autojump = true;
+	//queuedjump = false;
+#endif
+
+	if (pmove->dead || GetHasUpgrade(pmove->iuser4, MASK_ENSNARED))
+	{
 		//pmove->oldbuttons |= IN_JUMP;  // don't jump again until released
 		pmove->flags |= FL_JUMPHELD;
-        return;
-    }
-    
-    tfc = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "tfc" ) ) == 1 ? true : false;
-    
-    // Spy that's feigning death cannot jump
-    if ( tfc && 
-        ( pmove->deadflag == ( DEAD_DISCARDBODY + 1 ) ) )
-    {
-        return;
-    }
-    
-    // See if we are waterjumping.  If so, decrement count and return.
+		return;
+	}
+
+
+
+	tfc = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "tfc")) == 1 ? true : false;
+
+	// Spy that's feigning death cannot jump
+	if (tfc &&
+		(pmove->deadflag == (DEAD_DISCARDBODY + 1)))
+	{
+		return;
+	}
+
+	// See if we are waterjumping.  If so, decrement count and return.
 	// : 0000972 
 	if (pmove->waterjumptime && !(pmove->waterlevel == 0 && pmove->iuser3 == AVH_USER3_ALIEN_PLAYER1))
-	// :
-//    if ( pmove->waterjumptime )
-    {
-        pmove->waterjumptime -= pmove->cmd.msec;
-        if (pmove->waterjumptime < 0)
-        {
-            pmove->waterjumptime = 0;
-        }
-        return;
-    }
-    
-    // If we are in the water most of the way...
-    if (pmove->waterlevel >= 2)
-    {   // swimming, not jumping
-        pmove->onground = -1;
-        
-        if (pmove->watertype == CONTENTS_WATER)    // We move up a certain amount
-            pmove->velocity[2] = 100;
-        else if (pmove->watertype == CONTENTS_SLIME)
-            pmove->velocity[2] = 80;
-        else  // LAVA
-            pmove->velocity[2] = 50;
-        
-        // play swiming sound
-        if ( pmove->flSwimTime <= 0 )
-        {
-            // If alien has silencio upgrade, mute footstep volume
-            int theSilenceUpgradeLevel = AvHGetAlienUpgradeLevel(pmove->iuser4, MASK_UPGRADE_6);
-            float theVolumeScalar = 1.0f - theSilenceUpgradeLevel/3.0f;
-            
-            // Don't play sound again for 1 second
-            pmove->flSwimTime = 1000;
-            switch ( pmove->RandomLong( 0, 3 ) )
-            { 
-            case 0:
-                PM_NSPlaySound( CHAN_BODY, "player/pl_wade1.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM );
-                break;
-            case 1:
-                PM_NSPlaySound( CHAN_BODY, "player/pl_wade2.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM );
-                break;
-            case 2:
-                PM_NSPlaySound( CHAN_BODY, "player/pl_wade3.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM );
-                break;
-            case 3:
-                PM_NSPlaySound( CHAN_BODY, "player/pl_wade4.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM );
-                break;
-            }
-        }
-        
-        return;
-    }
-    
-    // For wall jumping, remove bit above and replace with this (from coding forums)
-    
+		// :
+	//    if ( pmove->waterjumptime )
+	{
+		pmove->waterjumptime -= pmove->cmd.msec;
+		if (pmove->waterjumptime < 0)
+		{
+			pmove->waterjumptime = 0;
+		}
+		return;
+	}
+
+	// If we are in the water most of the way...
+	if (pmove->waterlevel >= 2)
+	{   // swimming, not jumping
+		pmove->onground = -1;
+
+		if (pmove->watertype == CONTENTS_WATER)    // We move up a certain amount
+			pmove->velocity[2] = 100;
+		else if (pmove->watertype == CONTENTS_SLIME)
+			pmove->velocity[2] = 80;
+		else  // LAVA
+			pmove->velocity[2] = 50;
+
+		// play swiming sound
+		if (pmove->flSwimTime <= 0)
+		{
+			// If alien has silencio upgrade, mute footstep volume
+			int theSilenceUpgradeLevel = AvHGetAlienUpgradeLevel(pmove->iuser4, MASK_UPGRADE_6);
+			//cl_allowsilence 0
+//#ifdef AVH_CLIENT
+			theSilenceUpgradeLevel = 0.0f;
+			//#endif
+
+			float theVolumeScalar = 1.0f - theSilenceUpgradeLevel / 4.0f;
+
+
+
+
+			// Don't play sound again for 1 second
+			pmove->flSwimTime = 1000;
+			switch (pmove->RandomLong(0, 3))
+			{
+			case 0:
+				PM_NSPlaySound(CHAN_BODY, "player/pl_wade1.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			case 1:
+				PM_NSPlaySound(CHAN_BODY, "player/pl_wade2.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			case 2:
+				PM_NSPlaySound(CHAN_BODY, "player/pl_wade3.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			case 3:
+				PM_NSPlaySound(CHAN_BODY, "player/pl_wade4.wav", theVolumeScalar, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			}
+		}
+
+		return;
+	}
+
+	// For wall jumping, remove bit above and replace with this (from coding forums)
+
 	// Lerk flight movement
 	PM_FlapMove();
 
@@ -5422,7 +5768,7 @@ void PM_Jump (void)
 		//VectorCopy(pmove->velocity, theDirectionVec);
 		//VectorAdd(pmove->basevelocity, pmove->forward, theDirectionVec);
 		//if (Length(theDirectionVec) == 0.0f)
-			VectorCopy(pmove->forward, theDirectionVec);
+		VectorCopy(pmove->forward, theDirectionVec);
 
 		VectorNormalize(theDirectionVec);
 
@@ -5432,14 +5778,16 @@ void PM_Jump (void)
 			VectorCopy(pmove->forward, theDirectionVec);
 			VectorNormalize(theDirectionVec);
 
-			VectorScale(theDirectionVec, pmove->maxspeed + 50, pmove->velocity);
+			//VectorScale(theDirectionVec, pmove->maxspeed + 250 + (BALANCE_VAR(kAlienCelerityBonus) * PM_GetCelerityLevel()), pmove->velocity);
+			VectorScale(theDirectionVec, 425 + (BALANCE_VAR(kAlienCelerityBonus) * PM_GetCelerityLevel()), pmove->velocity);
+
 			pmove->velocity[2] += 100;
 
 			vec3_t theJumpVect;
 			VectorScale(gSurfaceNormal, 25, theJumpVect);
 			VectorAdd(theJumpVect, pmove->velocity, pmove->velocity);
 
-			PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 0.35 );
+			PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 0.35);
 
 			pmove->waterjumptime = 100;
 		}
@@ -5447,29 +5795,32 @@ void PM_Jump (void)
 	// :
 
 	// No more effect
-    if ( pmove->onground == -1 )
-    {
-        // Flag that we jumped.
-        // HACK HACK HACK
-        // Remove this when the game .dll no longer does physics code!!!!
-        //pmove->oldbuttons |= IN_JUMP;   // don't jump again until released
-        return;     // in air, so no effect
-    }
+	if (pmove->onground == -1)
+	{
+		// Flag that we jumped.
+		// HACK HACK HACK
+		// Remove this when the game .dll no longer does physics code!!!!
+		if (queuedjump) {
+			pmove->oldbuttons |= IN_JUMP;   // don't jump again until released
+		}
+		return;     // in air, so no effect
+	}
 
 
-//	string theAlienExtension;
-//	bool theIsAlien = NS_GetIsPlayerAlien(theAlienExtension);
-//	if ( pmove->oldbuttons & IN_JUMP && (pmove->velocity[0] == 0 || !theIsAlien  || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3) )
-		//return;     // don't pogo stick
 
-	autojump = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "jm2"));
-	queuedjump = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "jm1"));
+
+	//	string theAlienExtension;
+	//	bool theIsAlien = NS_GetIsPlayerAlien(theAlienExtension);
+	//	if ( pmove->oldbuttons & IN_JUMP && (pmove->velocity[0] == 0 || !theIsAlien  || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3) )
+			//return;     // don't pogo stick
+
+
 	bool theHasJetpackUpgrade = GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_7) && (pmove->iuser3 == AVH_USER3_MARINE_PLAYER);
 
 	if ((!autojump && !queuedjump) || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3 || theHasJetpackUpgrade)
 	{
 		if (pmove->oldbuttons & IN_JUMP)
-		return;     // don't pogo stick
+			return;     // don't pogo stick
 	}
 
 	if (queuedjump)
@@ -5478,10 +5829,142 @@ void PM_Jump (void)
 			return;
 	}
 
-	// In the air now.
-    pmove->onground = -1;
 
-    PM_PreventMegaBunnyJumping(false);
+
+	//add a cvar to disable bhop speed limitations (perhaps override this setting tho for tournament mode)
+
+	//AvHClassType theClassType = pmove->GetClassType();  AVH_CLASS_TYPE_UNDEFINED
+	//if (pmove->iuser3 == AVH_USER3_MARINE_PLAYER)
+	//theHasJetpackUpgrade
+
+	//if sv_antibhop 1 ? (currently this var doesnt exist)
+	//Massive anti bhop proc code here
+	{
+#ifdef AVH_CLIENT
+		if (pmove->iuser3 == AVH_USER3_MARINE_PLAYER)
+#endif
+#ifdef AVH_SERVER
+			//physent_t* AvHSUGetEntity(int inPhysIndex);
+			//CBaseEntity *theEntity = AvHSUGetEntityFromIndex(theFoundIndex);
+			if (pmove->iuser3 == AVH_USER3_MARINE_PLAYER && avh_bhopmarine.value == 0 && avh_bhoplimit.value == 2)//&& pmove != TEAM_IND) //team team
+#endif
+			{
+
+				bool isCrouchBhopping = (pmove->flags & FL_DUCKING) && (!GetHasUpgrade(pmove->iuser4, MASK_WALLSTICKING));
+				bool theHasJetpackUpgrade = GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_7) && (pmove->iuser3 == AVH_USER3_MARINE_PLAYER);
+				if (!theHasJetpackUpgrade) {
+					//anti marine bhop
+					float theGroundSpeedSquared = pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1];
+					float maxGroundSpeedSquared = 122500.0f;
+					if (isCrouchBhopping) {
+						maxGroundSpeedSquared = 62500.0f;
+					}
+					if (theGroundSpeedSquared > maxGroundSpeedSquared)
+					{
+						VectorScale(pmove->velocity, maxGroundSpeedSquared / theGroundSpeedSquared, pmove->velocity);
+#ifdef AVH_SERVER
+						ALERT(at_console, "MARINE ANTI BHOP PROC \n");
+#endif
+					}
+
+				}
+
+
+			}
+#ifdef AVH_CLIENT
+		if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER1)
+#endif
+#ifdef AVH_SERVER
+			if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER1 && avh_bhopskulk.value == 0 && avh_bhoplimit.value == 2)
+#endif
+			{
+				float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+				float theCelerityGrab = BALANCE_VAR(kAlienCelerityBonus) * PM_GetCelerityLevel();
+				if (theGroundSpeed > 900.0f + theCelerityGrab)
+				{
+					VectorScale(pmove->velocity, (870.0f + theCelerityGrab) / theGroundSpeed, pmove->velocity);
+#ifdef AVH_SERVER
+					ALERT(at_console, "SKULK ANTI-BHOP MAX \n");
+#endif
+				}
+				else if (theGroundSpeed > 600.0f + theCelerityGrab)
+				{
+					VectorScale(pmove->velocity, ((theGroundSpeed - (600.0f + theCelerityGrab))*0.7f + (600.0f + theCelerityGrab)) / theGroundSpeed, pmove->velocity);
+#ifdef AVH_SERVER
+					ALERT(at_console, "SKULK ANTI-BHOP SLOW \n");
+#endif
+				}
+			}
+#ifdef AVH_CLIENT
+		if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER2)
+#endif
+#ifdef AVH_SERVER
+			if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER2 && avh_bhopgorge.value == 0 && avh_bhoplimit.value == 2)
+#endif
+			{
+				float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+				float theCelerityGrab = BALANCE_VAR(kAlienCelerityBonus) * PM_GetCelerityLevel();
+				if (theGroundSpeed > 300.0f + theCelerityGrab)
+				{
+					VectorScale(pmove->velocity, (300.0f + theCelerityGrab) / theGroundSpeed, pmove->velocity);
+#ifdef AVH_SERVER
+					ALERT(at_console, "GORGE ANTI-BHOP PROC \n");
+#endif
+				}
+			}
+#ifdef AVH_CLIENT
+		if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER4)
+#endif
+#ifdef AVH_SERVER
+			if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER4 && avh_bhopfade.value == 0 && avh_bhoplimit.value == 2)
+#endif
+			{
+				float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+				float theCelerityGrab = BALANCE_VAR(kAlienCelerityBonus) * PM_GetCelerityLevel();
+				if (theGroundSpeed > 450.0f + theCelerityGrab)
+				{
+					VectorScale(pmove->velocity, ((theGroundSpeed - (450.0f + theCelerityGrab))*0.7f + (500.0f + theCelerityGrab)) / theGroundSpeed, pmove->velocity);
+#ifdef AVH_SERVER
+					ALERT(at_console, "FADE ANTI-BHOP SLOW \n");
+#endif
+				}
+			}
+#ifdef AVH_CLIENT
+		if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER5)
+#endif
+#ifdef AVH_SERVER
+			if (pmove->iuser3 == AVH_USER3_ALIEN_PLAYER5 && avh_bhoponos.value == 0 && avh_bhoplimit.value == 2)
+#endif
+			{
+				float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+				float theCelerityGrab = BALANCE_VAR(kAlienCelerityBonus) * PM_GetCelerityLevel();
+				if (GetHasUpgrade(pmove->iuser4, MASK_ALIEN_MOVEMENT)) //while charging you are allowed to bunnyhop faster
+				{
+					theCelerityGrab += 350.0f;
+				}
+				if (GetHasUpgrade(pmove->iuser4, MASK_DIGESTING)) //while digesting bhop slower (make sure ot check ur not being digested)
+				{
+					theCelerityGrab -= 45.0f;
+				}
+				if (theGroundSpeed > 330 + theCelerityGrab)
+				{
+					VectorScale(pmove->velocity, (330.0f + theCelerityGrab) / theGroundSpeed, pmove->velocity);
+#ifdef AVH_SERVER
+					ALERT(at_console, "ONOS ANTI-BHOP PROC \n");
+#endif
+				}
+			}
+	}
+
+	// In the air now.
+	pmove->onground = -1;
+
+#ifdef AVH_SERVER
+	if (avh_bhoplimit.value == 1)
+	{
+		PM_PreventMegaBunnyJumping(false);
+	}
+#endif
 
     if ( tfc )
     {
@@ -5497,20 +5980,21 @@ void PM_Jump (void)
     
     // Acclerate upward
     // If we are ducking...
-    if ( ( pmove->bInDuck ) || ( pmove->flags & FL_DUCKING ) )
+    if ( ( pmove->bInDuck ) || ( pmove->flags & FL_DUCKING ) || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER1 || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER2 || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3)
     {
         // Adjust for super long jump module
         // UNDONE -- note this should be based on forward angles, not current velocity.
         if ( cansuperjump &&
-            ( pmove->cmd.buttons & IN_DUCK ) &&
-            ( pmove->flDuckTime > 0 ) &&
+            ( pmove->cmd.buttons & IN_DUCK) &&
+            (( pmove->flDuckTime > 0) || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER1 || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER2 || pmove->iuser3 == AVH_USER3_ALIEN_PLAYER3) &&
             Length( pmove->velocity ) > 50 )
         {
             pmove->punchangle[0] = -5;
             
             for (i =0; i < 2; i++)
             {
-                pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
+                //pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
+				pmove->velocity[i] = pmove->forward[i] * ((PLAYER_LONGJUMP_SPEED* 1.25f) + pmove->maxspeed); //perhaps we should add velocities?
             }
             
             pmove->velocity[2] = sqrt(2 * 800 * 56.0);
@@ -5612,22 +6096,61 @@ void PM_CheckFalling( void )
     {
         if ((pmove->onground != -1) && !pmove->dead)
         {
-            // Slow marines down on landing after a jump
+            // Slow marines down on landing after a jump not in readyroom tho
             const int theFallPenaltyThreshold = pmove->maxspeed;//BALANCE_VAR(kUnencumberedPlayerSpeed);
-            if(pmove->flFallVelocity > theFallPenaltyThreshold)
-            {
-                if(pmove->iuser3 == AVH_USER3_MARINE_PLAYER)
-                {
-                    VectorScale(pmove->velocity, .3f, pmove->velocity);
-                    
-                    if(pmove->runfuncs)
-                    {
-                        //#ifdef AVH_CLIENT
-                        //pmove->Con_Printf("Player landed.\n");
-                        //#endif
-                    }
-                }
-            }
+#ifdef AVH_SERVER
+			if ((avh_bhoplimit.value == 3 || avh_bhoplimit.value == 4) && pmove->flFallVelocity > 50)
+			{
+				if (pmove->iuser3 == AVH_USER3_SPAWN_READYROOM) {
+
+				}
+				else {
+					if (avh_bhoplimit.value == 4) {
+						VectorScale(pmove->velocity, .6f, pmove->velocity);
+					}
+					else {
+						//pmove->maxspeed
+
+						vec3_t theVelVector;
+						VectorCopy(pmove->velocity, theVelVector);
+						theVelVector[2] = 0.0f;
+
+						float spd = Length(theVelVector);
+
+						VectorScale(pmove->velocity, pmove->maxspeed / spd, pmove->velocity);
+
+					}
+					
+				}
+			}
+#endif
+
+			if (pmove->flFallVelocity > theFallPenaltyThreshold)
+			{
+#ifdef AVH_SERVER
+				if ((pmove->maxspeed < 250) && (avh_bhopmarine.value == 0))
+				{
+#else 
+				if (pmove->maxspeed < 250)
+				{
+#endif
+					if (pmove->iuser3 == AVH_USER3_MARINE_PLAYER)
+					{
+						if (pmove->iuser3 == AVH_USER3_SPAWN_READYROOM) {
+
+						}else{
+							VectorScale(pmove->velocity, .3f, pmove->velocity);
+
+							if (pmove->runfuncs)
+							{
+								//#ifdef AVH_CLIENT
+								//pmove->Con_Printf("Player landed.\n");
+								//#endif
+							}
+						}
+					}
+				}
+			}
 
             // Play landing sound if we landed hard enough
             if(pmove->flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD)
@@ -5636,7 +6159,7 @@ void PM_CheckFalling( void )
 				char theFallPainSound[64];                
                 
                 int theSilenceUpgradeLevel = AvHGetAlienUpgradeLevel(pmove->iuser4, MASK_UPGRADE_6);
-                float theVolumeScalar = 1.0f - theSilenceUpgradeLevel/3.0f;
+                float theVolumeScalar = 1.0f - theSilenceUpgradeLevel/4.0f;
                 
                 float theFallPainVolume = 1.0f*theVolumeScalar;
                 
@@ -5735,7 +6258,7 @@ void PM_PlayWaterSounds( void )
         ( pmove->oldwaterlevel != 0 && pmove->waterlevel == 0 ) )
     {
         int theSilenceUpgradeLevel = AvHGetAlienUpgradeLevel(pmove->iuser4, MASK_UPGRADE_6);
-        float theVolume = 1.0f - theSilenceUpgradeLevel/3.0f;
+        float theVolume = 1.0f - theSilenceUpgradeLevel/4.0f;
 
         switch ( pmove->RandomLong(0,3) )
         {
@@ -5932,10 +6455,17 @@ qboolean PM_CanFlap()
     {
         if((pmove->onground == -1) && !(pmove->oldbuttons & IN_JUMP))
         {
-            if(AvHMUHasEnoughAlienEnergy(pmove->fuser3, kAlienEnergyFlap))
+#ifdef AVH_SERVER
+            if(AvHMUHasEnoughAlienEnergy(pmove->fuser3, kAlienEnergyFlap * (1.0f + Length(pmove->velocity) / 600.0f)))
+#else
+			//playing on ensl?
+			if (AvHMUHasEnoughAlienEnergy(pmove->fuser3, 0.025f))
+#endif
             {
                 // Can't hold the button down
                 theCanFlap = true;
+
+
             }
         }
     }
@@ -6048,6 +6578,7 @@ void PM_Overwatch()
 //  }
 }
 
+
 bool PM_TopDown()
 {
     bool theInTopDownMode = false;
@@ -6086,6 +6617,8 @@ bool PM_TopDown()
         vec3_t theEndPos;
         VectorCopy(pmove->origin, theEndPos);
         theEndPos[2] = theMinZ;
+
+
 
         float theMaxCommanderHeight = theMaxZ;
 
@@ -6150,13 +6683,13 @@ bool PM_TopDown()
             qboolean theFoundEntity = false;
             //float theDesiredHeight = PM_GetDesiredTopDownCameraHeight(theFoundEntity);
             
-//          gHeightLevel += (pmove->cmd.forwardmove/300.0f);
-//          float theDesiredHeight = theMaxViewHeight + gHeightLevel;
+          //gHeightLevel += (pmove->cmd.forwardmove/300.0f);
+         // float theDesiredHeight = theMaxZ + gHeightLevel;
 //
 //          // Note: To have a nice smooth zoom-up effect, comment out this next line, but you'll have to
 //          // fix the bouncing from the drop/control/friction code above.  That's where the problem is.
 //          // You'll also have to add an initial upwards velocity in AvHPlayer::StartTopDown()
-//          pmove->origin[2] = theDesiredHeight;
+          //pmove->origin[2] = theDesiredHeight;
 //          
 //          const float kSwoopingTolerance = 1.0f;
 //          float theDiff = theDesiredHeight - pmove->origin[2];
@@ -6245,8 +6778,12 @@ bool PM_TopDown()
         //pmove->origin[2] = 1080;
         //pmove->origin[2] = PM_GetDesiredTopDownCameraHeight();
         
+
         #ifdef AVH_CLIENT
+
+		
         if ( pmove->runfuncs )
+
         {
             VectorCopy(theAngles, gTopDownViewAngles);
             //iHasNewViewAngles = true;
@@ -6254,12 +6791,23 @@ bool PM_TopDown()
             // Set view origin to our real origin but at our highest map extents.  This is needed to the commander's origin is actually inside the world so 
             // he receives nearby events, but so he looks like he's outside the world. Changing this?  Make sure AvHPlayer::GetVisualOrigin() is updated also.
             VectorCopy(pmove->origin, gTopDownViewOrigin);
-            gTopDownViewOrigin[2] = theMaxCommanderHeight;
 
+
+			int test = gHackGetServerVariableFloat("sv_commheight");
+			int usetest = gHackGetServerVariableFloat("sv_commcustomcam");
+
+			if (usetest != 0) {
+				gTopDownViewOrigin[2] = test;
+			}
+			else {
+				gTopDownViewOrigin[2] = theMaxCommanderHeight;
+			}
             //iHasNewViewOrigin = true;
         }
         #endif
-    
+
+
+		
         AngleVectors (pmove->angles, pmove->forward, pmove->right, pmove->up);
         
         // Are we zooming to an area?
@@ -6269,6 +6817,7 @@ bool PM_TopDown()
             pmove->origin[1] = pmove->cmd.sidemove*kWorldPosNetworkConstant;
             VectorCopy(vec3_origin, pmove->velocity)
         }
+
         
         // Clip position to map extents
         float theCurrentX = pmove->origin[0];
@@ -6278,6 +6827,13 @@ bool PM_TopDown()
         pmove->origin[0] = min(max(theMinX, theCurrentX), theMaxX);
         pmove->origin[1] = min(max(theMinY, theCurrentY), theMaxY);
         pmove->origin[2] = min(max(theMinZ, theNewStartPos[2]), theMaxZ);
+
+#ifdef AVH_SERVER
+		//if (avh_bhopmarine.value)
+		//{
+			//pmove->origin[2] = min(max(theMinZ, avh_bhopmarine.value), theMaxZ);
+		//}
+#endif
 
         if(pmove->runfuncs)
         {
@@ -6368,18 +6924,62 @@ void PM_Jetpack()
             int theMaxMarineSpeed = BALANCE_VAR(kUnencumberedPlayerSpeed);
             if(theMaxMarineSpeed == 0)
             {
-                theMaxMarineSpeed = 220;
+                theMaxMarineSpeed = 280;
             }
 
             float theWeightScalar = kBaseScalar + (1.0f - kBaseScalar)*((pmove->clientmaxspeed - theMinMarineSpeed)/(theMaxMarineSpeed - theMinMarineSpeed));
-            
+			float verticalWeightScalar = theWeightScalar;
+
+
+#ifdef AVH_SERVER
+			if (avh_heavyjp.value != 0)
+#endif
+			{
+				if (GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_13)) { //heavy jetpacking penalty only for side to side acceleration
+					theWeightScalar *= 0.7f;
+					verticalWeightScalar *= 0.9f;
+				}
+			}
+
 			// Old lateral jetpack code - acceleration scales with framerate
 			//pmove->velocity[0] += (theWishVelocity[0]/pmove->clientmaxspeed)*kJetpackLateralScalar;
 			//pmove->velocity[1] += (theWishVelocity[1]/pmove->clientmaxspeed)*kJetpackLateralScalar;
 
+
 			pmove->velocity[0] += (theWishVelocity[0] / pmove->clientmaxspeed) * (theTimePassed * theWeightScalar*kJetpackForce);
 			pmove->velocity[1] += (theWishVelocity[1] / pmove->clientmaxspeed) * (theTimePassed * theWeightScalar*kJetpackForce);
-            pmove->velocity[2] += theTimePassed*theWeightScalar*kJetpackForce;
+            pmove->velocity[2] += theTimePassed* verticalWeightScalar*kJetpackForce;
+
+			/*
+			//if your arent moving upwards yet, move up faster
+			//added by alien to make it so when ur falling and u want to stop falling with jp its way faster
+			if (pmove->velocity[2] < theTimePassed* verticalWeightScalar*kJetpackForce) { 
+				pmove->velocity[2] += theTimePassed * 500.0f;
+			}
+			*/
+			
+			//bool isCrouchBhopping = (pmove->flags & FL_DUCKING) && (!GetHasUpgrade(pmove->iuser4, MASK_WALLSTICKING));
+			//bool theHasJetpackUpgrade = GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_7) && (pmove->iuser3 == AVH_USER3_MARINE_PLAYER);
+			//if (theHasJetpackUpgrade) {
+				//anti marine jetpack super speed
+
+				float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+
+				if (theGroundSpeed > 625.0f)
+				{
+					VectorScale(pmove->velocity, (625.0f) / theGroundSpeed, pmove->velocity);
+					//#ifdef AVH_SERVER
+					//ALERT(at_console, "MARINE ANTI-JETPACK OVER SPEED \n");
+					//#endif
+					
+					
+
+					//also add in that nifty lamp thing
+				}
+			//}
+
+			
+
 
 			//FPS independent jetpack event. Scales with FPS without timer.
 			JpEventTimer += pmove->cmd.msec;
@@ -6396,7 +6996,29 @@ void PM_Jetpack()
 
         float theJetpackEnergy = pmove->fuser3/kNormalizationNetworkFactor;
 
-        AvHMUUpdateJetpackEnergy(gIsJetpacking[pmove->player_index], theTimePassed, theJetpackEnergy);
+		//infinite_jetpack
+#ifdef AVH_SERVER
+		if (avh_infinite_jetpack.value == 1) {
+			AvHMUUpdateJetpackEnergy(false, theTimePassed, theJetpackEnergy);
+		}
+		else
+#endif
+		{
+			//heavy jetpacking penalty to drain rate
+			#ifdef AVH_SERVER
+			if (avh_heavyjp.value != 0 && GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_13) && gIsJetpacking[pmove->player_index] == true) 
+			#elif AVH_CLIENT
+			if (GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_13) && gIsJetpacking[pmove->player_index] == true)
+			#endif
+			{
+				AvHMUUpdateJetpackEnergy(true, theTimePassed*2.5f, theJetpackEnergy);
+			}
+			else {
+				AvHMUUpdateJetpackEnergy(gIsJetpacking[pmove->player_index], theTimePassed, theJetpackEnergy);
+			}
+		}
+
+		
 
         pmove->fuser3 = theJetpackEnergy*kNormalizationNetworkFactor;
     }
@@ -6446,11 +7068,14 @@ void PM_PlayerMove ( qboolean server )
 
     bool theIsGestating = GetHasUpgrade(pmove->iuser4, MASK_ALIEN_EMBRYO);
     bool theIsParalyzed = GetHasUpgrade(pmove->iuser4, MASK_PLAYER_STUNNED);
-
+//#ifdef AVH_SERVER
     if(!theIsParalyzed && !theIsGestating)
+//#endif
     {
         // Convert view angles to vectors
+
         AngleVectors (pmove->angles, pmove->forward, pmove->right, pmove->up);
+
     }
 
     //if(pmove->cmd.impulse == COMMANDER_MOUSECOORD)
@@ -6492,7 +7117,7 @@ void PM_PlayerMove ( qboolean server )
 
 //  if(GetHasUpgrade(pmove->iuser4, MASK_MARINE_OVERWATCH))
 //  {
-//      PM_Overwatch();
+//     PM_Overwatch();
 //  }
 
     PM_TopDown();
@@ -6577,7 +7202,7 @@ void PM_PlayerMove ( qboolean server )
     // Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
     if ( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE) )
     {
-        VectorScale( pmove->velocity, 0.3, pmove->velocity );
+        VectorScale( pmove->velocity, 0.9, pmove->velocity );
     }
 
     // Reset gravity to 1.0, in case we're not gliding anymore.  This will get changed
@@ -6637,6 +7262,23 @@ void PM_PlayerMove ( qboolean server )
         {
             PM_AddCorrectGravity();
         }
+
+		
+		//theHasJetpackUpgrade
+		/*
+		if (pmove->iuser3 == AVH_USER3_MARINE_PLAYER)
+		{
+			bool theHasJetpackUpgrade = GetHasUpgrade(pmove->iuser4, MASK_UPGRADE_7) && (pmove->iuser3 == AVH_USER3_MARINE_PLAYER);
+			if (!theHasJetpackUpgrade) {
+				//anti marine bhop
+				float theGroundSpeedSquared = pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1];
+				if (theGroundSpeedSquared > 122500.0f)
+				{
+					VectorScale(pmove->velocity, 122500.0f / theGroundSpeedSquared, pmove->velocity);
+				}
+			}
+		}
+		*/
 
         // If we are leaping out of the water, just update the counters.
 		// : 0000972 
