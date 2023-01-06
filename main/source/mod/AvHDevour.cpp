@@ -148,7 +148,7 @@ void AvHDevour::FireProjectiles(void)
 		if(theDigestee && theDigestee->GetCanBeAffectedByEnemies() && GetGameRules()->CanEntityDoDamageTo(this->m_pPlayer, theDigestee))
 		{
 			// Never devour friends or gestating players
-			if((theDigestee->GetTeam() != this->m_pPlayer->pev->team) && theDigestee->IsAlive() && (theDigestee->GetUser3() != AVH_USER3_ALIEN_EMBRYO))
+			if((theDigestee->GetTeam() != this->m_pPlayer->pev->team) && theDigestee->IsAlive() && (theDigestee->GetUser3() != AVH_USER3_ALIEN_PLAYER5) && (theDigestee->GetUser3() != AVH_USER3_ALIEN_EMBRYO))
 			{
 				AvHPlayer* theDigester = dynamic_cast<AvHPlayer*>(this->m_pPlayer);
 				ASSERT(theDigester);
