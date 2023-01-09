@@ -122,7 +122,36 @@ cvar_t	avh_combattime				= {kvCombatTime, "10", FCVAR_SERVER};
 cvar_t  avh_mapvoteratio            = {kvMapVoteRatio, ".6", FCVAR_SERVER};
 cvar_t  avh_blockscripts            = {kvBlockScripts, "1", FCVAR_SERVER};
 cvar_t  avh_jumpmode				= {kvJumpMode, "1", FCVAR_SERVER};
+cvar_t  avh_reverselerk				= {kvReverseLerk, "0", FCVAR_SERVER};
+cvar_t  avh_fastonoscharge			= {kvFastOnosCharge, "0", FCVAR_SERVER};
+cvar_t  avh_bhoplimit				= {kvBhopLimit, "2", FCVAR_SERVER};
+cvar_t  avh_bhopmarine				= {kvBhopMarine, "0", FCVAR_SERVER};
+cvar_t  avh_bhopskulk				= {kvBhopSkulk, "0", FCVAR_SERVER };
+cvar_t  avh_bhopgorge				= {kvBhopGorge, "0", FCVAR_SERVER };
+cvar_t  avh_bhopfade				= {kvBhopFade, "0", FCVAR_SERVER };
+cvar_t  avh_bhoponos				= {kvBhopOnos, "0", FCVAR_SERVER };
+cvar_t  avh_wallstrafe				= {"sv_wallstrafe", "1", FCVAR_SERVER };
+cvar_t  avh_restocknades			= {kvRestockGrenades, "1", FCVAR_SERVER };
 cvar_t  avh_autoswap				= {kvAutoSwap, "1", FCVAR_SERVER };
+cvar_t  avh_killrewards				= {kvKillRewards, "2", FCVAR_SERVER };
+cvar_t  avh_turretupgradesound		= {"sv_turretupgradesound", "1", FCVAR_SERVER};
+cvar_t  avh_infinite_ammo			= {"sv_infinite_ammo", "0", FCVAR_SERVER };
+cvar_t  avh_infinite_energy			= {"sv_infinite_energy", "0", FCVAR_SERVER };
+cvar_t  avh_infinite_jetpack		= {"sv_infinite_jetpack", "0", FCVAR_SERVER };
+cvar_t  avh_vampire_factor			= {"sv_vampire_factor", "0", FCVAR_SERVER };
+cvar_t  avh_balance_mvm				= {"sv_balance_mvm", "0", FCVAR_SERVER };
+cvar_t  avh_balance_ava				= {"sv_balance_ava", "0", FCVAR_SERVER };
+cvar_t  avh_balance_faded           = {"sv_balance_faded", "0", FCVAR_SERVER };
+cvar_t  avh_last_stand				= {"sv_last_stand", "0", FCVAR_SERVER };
+cvar_t  avh_self_weld				= {"sv_self_weld", "1", FCVAR_SERVER };
+cvar_t  avh_golden_deagle			= {"sv_golden_deagle", "0", FCVAR_SERVER };
+cvar_t  avh_fadedgamemode           = {"sv_fadedgamemode", "0", FCVAR_SERVER };
+cvar_t  avh_commheight				= {"sv_commheight", "300", FCVAR_SERVER };
+cvar_t  avh_commcustomcam			= {"sv_commcustomcam", "0", FCVAR_SERVER };
+cvar_t  avh_heavyjp					= {"sv_heavyjp", "0", FCVAR_SERVER };
+cvar_t  avh_fallsafe				= {"sv_fallsafe", "0", FCVAR_SERVER };
+cvar_t  avh_worldlight				= {"sv_worldlight", "0", FCVAR_SERVER };
+
 #ifdef DEBUG
 	cvar_t  avh_testing            = {kvTesting, "0", FCVAR_SERVER};
 #endif
@@ -165,6 +194,7 @@ cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
 cvar_t	*g_footsteps = NULL;
 
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -176,6 +206,8 @@ void GameDLLInit( void )
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
+	
+
 
 	CVAR_REGISTER (&displaysoundlist);
 
@@ -233,7 +265,39 @@ void GameDLLInit( void )
     CVAR_REGISTER (&avh_mapvoteratio);
     CVAR_REGISTER (&avh_blockscripts);
 	CVAR_REGISTER (&avh_jumpmode);
+	CVAR_REGISTER (&avh_reverselerk);
+	CVAR_REGISTER (&avh_fastonoscharge);
+	CVAR_REGISTER (&avh_bhoplimit);
+	CVAR_REGISTER (&avh_bhopmarine);
+	CVAR_REGISTER (&avh_bhopskulk);
+	CVAR_REGISTER (&avh_bhopgorge);
+	CVAR_REGISTER (&avh_bhopfade);
+	CVAR_REGISTER (&avh_bhoponos);
+	CVAR_REGISTER (&avh_wallstrafe);
+	CVAR_REGISTER (&avh_restocknades);
 	CVAR_REGISTER (&avh_autoswap);
+	CVAR_REGISTER (&avh_killrewards);
+	CVAR_REGISTER (&avh_turretupgradesound);
+
+	CVAR_REGISTER(&avh_infinite_ammo);
+	CVAR_REGISTER(&avh_infinite_energy);
+	CVAR_REGISTER(&avh_infinite_jetpack);
+	CVAR_REGISTER(&avh_vampire_factor);
+	CVAR_REGISTER(&avh_balance_mvm);
+	CVAR_REGISTER(&avh_balance_ava);
+	CVAR_REGISTER(&avh_balance_faded);
+	CVAR_REGISTER(&avh_last_stand);
+	CVAR_REGISTER(&avh_self_weld);
+	CVAR_REGISTER(&avh_golden_deagle);
+	CVAR_REGISTER(&avh_fadedgamemode);
+	CVAR_REGISTER(&avh_commheight);
+	CVAR_REGISTER(&avh_commcustomcam);
+	CVAR_REGISTER(&avh_heavyjp);
+	CVAR_REGISTER(&avh_fallsafe);
+	CVAR_REGISTER(&avh_worldlight);
+	
+	
+
 
     // TODO: Remove
     CVAR_REGISTER (&avh_ironman);
