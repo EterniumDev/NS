@@ -79,6 +79,8 @@ public:
 	virtual void	CheckEnabledState();
 					
 	void EXPORT		ConstructUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	
+	void EXPORT		ConstructWeld(CBaseEntity *pActivator);//, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
 	virtual bool	Energize(float inEnergyAmount);
 
