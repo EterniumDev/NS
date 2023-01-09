@@ -1111,10 +1111,30 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 
 	int bInWater = (UTIL_PointContents ( vecSrc ) == CONTENTS_WATER);
 
+
+	
+
 	vecSrc.z += 1;// in case grenade is lying on the ground
 
 	if ( !pevAttacker )
 		pevAttacker = pevInflictor;
+
+	bool fragNade = false;
+	//if (flRadius == 350){
+	
+	//ALERT(at_console, strcat(" \n", STRING(pevAttacker->classname)));
+	//ALERT(at_console, "Bombed: %s \n", pEntity->pev->classname);
+	
+	//ALERT(at_console, std::string("BombedR: %f \n", flRadius)std::string.c_str);
+	//ALERT(at_console, "Bombed: %s \n", pevAttacker->classname);
+	//ALERT(at_console, "Bombed: %s \n", STRING(pEntity->classname));
+
+
+	//if (pevAttacker->classname == MAKE_STRING(kwsGrenade)) {
+	//if ((flRadius >= 345.0f) && (flRadius < 346.0f)){ //kGrenadeRadius
+	//	fragNade = true;
+	//	ALERT(at_console, "FRAG NADE STUN OPEN \n");
+	//}
 
 	// iterate on all entities in the vicinity.
 	while ((pEntity = UTIL_FindEntityInSphere( pEntity, vecSrc, flRadius )) != NULL)
@@ -1122,8 +1142,14 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 		// NOTE: Should this be inflictor or attacker?
 		CBaseEntity* theInflictingEntity = CBaseEntity::Instance(pevInflictor);
 		CBaseEntity* theAttackingEntity = CBaseEntity::Instance(pevAttacker);
+
+		//if (theInflictingEntity->pev->classname == MAKE_STRING(kwsGrenade)) {
+		//	fragNade = true;
+		//	ALERT(at_console, "FRAG NADE STUN OPEN \n");
+		//}
+
 		float theScalar = 1.0f;
-		bool aCanDamage=GetGameRules()->CanEntityDoDamageTo(theAttackingEntity, pEntity, &theScalar) || theInflictingEntity->pev->classname == MAKE_STRING(kwsDeployedMine);;
+		bool aCanDamage = GetGameRules()->CanEntityDoDamageTo(theAttackingEntity, pEntity, &theScalar) || theInflictingEntity->pev->classname == MAKE_STRING(kwsDeployedMine);;
 		bool iCanDamage=GetGameRules()->CanEntityDoDamageTo(theInflictingEntity, pEntity, &theScalar);
 
 		if(pEntity && ( aCanDamage && iCanDamage ))
@@ -1145,6 +1171,16 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 					continue;
 				if (!bInWater && pEntity->pev->waterlevel == 3)
 					continue;
+
+				//I'm using scalar less than 1 to check if the actual damage being dealt is going to be friendly fire,
+				//since at time of writing friendly fire deals 1/3 of normal damage
+				if (!(GetGameRules()->GetFriendlyFireEnabled()) && (theScalar < 1.0f) && (bitsDamageType & NS_DMG_ACID)) {
+					//Check if friendly fire is off, if this is hitting a friendly and if it's a bile bomb
+					//If all those pass, then that means there's a gorge that's trying to bile itself or a teammate and we dont want to do damage then
+					continue;
+				}
+
+
 			
 				vecSpot = pEntity->BodyTarget( vecSrc );
 
@@ -1172,7 +1208,33 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 				
 					if ( flAdjustedDamage > 0 )
 					{
-						pEntity->TakeDamage ( pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
+						//if (bitsDamageType & NS_DMG_ACID) {
+						
+						
+							//NS_DMG_ACID
+								//if (bitsDamageType & NS_DMG_ACID)
+								//if (GetGameRules()->GetFriendlyFireEnabled())
+								//else if (pevAttacker->team != this->pev->team)
+
+						pEntity->TakeDamage(pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType);
+						
+						/*
+						//stun enemies if hit by a frag nade
+						if (fragNade) {
+							AvHPlayer* theNadedPlayer = dynamic_cast<AvHPlayer*>(pEntity);
+
+							//AvHPlayer* theNadedPlayer = dynamic_cast<AvHPlayer*>(theInflictingEntity);
+							if (theNadedPlayer) {
+								theNadedPlayer->SetIsStunned(true, 1.0f);
+								ALERT(at_console, "FRAG NADE STUN PROC \n");
+							}
+							else {
+								ALERT(at_console, "FRAG NADE IGNORED \n");
+								
+							}
+						}
+						*/
+
 					}
 				}
 			}
@@ -1266,8 +1328,18 @@ CBaseEntity* CBaseMonster :: CheckTraceHullAttack( float flDist, float& ioDamage
 			if ( ioDamage > 0 )
 			{
 				float theScalar = 1.0f;
-				if(GetGameRules()->CanEntityDoDamageTo(this, pEntity, &theScalar))
+				/*
+				bool isProtected = false;
+				if (GetHasUpgrade(pEntity->pev->iuser4, MASK_UMBRA))
 				{
+					isProtected = true;
+				}
+				*/
+				//if((GetGameRules()->CanEntityDoDamageTo(this, pEntity, &theScalar))&&(isProtected == false))
+				if (GetGameRules()->CanEntityDoDamageTo(this, pEntity, &theScalar))
+				{
+					//need numeric
+					
 					theHitTarget = true;
 
 					// Multiply damage by scalar for tourny mode, etc.
@@ -1286,6 +1358,17 @@ CBaseEntity* CBaseMonster :: CheckTraceHullAttack( float flDist, float& ioDamage
 					
 					pEntity->TakeDamage(theInflictor, pev, ioDamage, iDmgType );
 
+					//added numerical damage for melee attacks
+
+
+					bool theDrawDamage = (ns_cvar_float(&avh_drawdamage) > 0);
+					AvHPlayer* hitPlayer = dynamic_cast<AvHPlayer*>(pEntity);
+					if ((hitPlayer) && (theDrawDamage))
+					{
+						hitPlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-ioDamage));
+					}
+
+
 					// Spawn blood
 					if(ioDamage > 0.0f)
 					{
@@ -1298,6 +1381,15 @@ CBaseEntity* CBaseMonster :: CheckTraceHullAttack( float flDist, float& ioDamage
 		
 					return pEntity;
 				}
+				/*
+				else if (isProtected == true) {
+					//copied from elsewhere for umbra block sound
+					//umbra now blocks spike damage?
+					// : experiment
+					EMIT_SOUND(pEntity->edict(), CHAN_AUTO, kUmbraBlockedSound, 1.0f, ATTN_NORM);
+					// :
+				}
+				*/
 			}
 		}
 	}
@@ -1539,7 +1631,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 			EMIT_SOUND(theEntityHit->edict(), CHAN_AUTO, kUmbraBlockedSound, 1.0f, ATTN_NORM);
 			// :
 		}
-		else
+		//else
 		{
 			tracer = 0;
 			if (iTracerFreq != 0 && (tracerCount++ % iTracerFreq) == 0)
@@ -1583,6 +1675,10 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 				{
 					// Multiply damage by scalar for tourny mode, etc.
 					iDamage *= theScalar;
+					if (theProtected) {
+						iDamage = iDamage * 0.5f;
+					}
+
 
 					if ( iDamage )
 					{
@@ -1662,6 +1758,11 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 	if ( pevAttacker == NULL )
 		pevAttacker = pev;  // the default attacker is ourselves
 	
+	// ->
+	//ALERT(at_console, "shotgun pellet damage dealt is %d \n", iDamage);
+
+
+
 	int theDamageType = DMG_BULLET;
 	bool isShotgun=false;
 	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(this);
@@ -1747,8 +1848,9 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 			// : experiment
 			EMIT_SOUND(theEntityHit->edict(), CHAN_AUTO, kUmbraBlockedSound, 1.0f, ATTN_NORM);
 			// :
+			
 		}
-		else
+		//else
 		{
 		
 			// do damage, paint decals
@@ -1758,6 +1860,9 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 				if(GetGameRules()->CanEntityDoDamageTo(thePlayer, theEntityHit, &theScalar))
 				{
 					int theAdjustedDamage = iDamage*theScalar;
+					if (theProtected) {
+						theAdjustedDamage = theAdjustedDamage * 0.5f;
+					}
 
 					if(theAdjustedDamage)
 					{
