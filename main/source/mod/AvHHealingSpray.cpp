@@ -211,6 +211,19 @@ void AvHHealingSpray::FireProjectiles(void)
 								theDamage += thePercentage*theCurrentEntity->pev->max_health;
 								if ( isSelf ) theDamage *= 0.5f;
 								thePlayer->Heal(theDamage, true);
+
+								//Helping evolving players
+								AvHPlayer* evoingPlayer = dynamic_cast<AvHPlayer*>(theCurrentEntity);
+								if (evoingPlayer) 
+								{
+									if (evoingPlayer->pev->iuser3 == AVH_USER3_ALIEN_EMBRYO && evoingPlayer->IsAlive())
+									{
+										//ALERT(at_console, "EVO PROC\n");
+										//evoingPlayer->pev->fuser3 = 1000;
+										evoingPlayer->mTimeGestationStarted -= 0.95f;
+									}
+								}
+
 							}
 							else if(theBuildable)
 							{
