@@ -56,6 +56,7 @@
 #include "AvHMarineWeapons.h"
 #include "AvHMarineWeaponConstants.h"
 #include "AvHServerUtil.h"
+#include "AvHPlayerUpgrade.h"
 
 LINK_ENTITY_TO_CLASS(kwGrenadeGun, AvHGrenadeGun);
 void V_PunchAxis( int axis, float punch );
@@ -107,6 +108,20 @@ char* AvHGrenadeGun::GetDeploySound() const
 	return kGGDeploySound;
 }
 
+float AvHGrenadeGun::GetDeployTime() const
+{
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.2f;
+	}
+	else {
+		return 0.3f;
+	}
+}
+
 float AvHGrenadeGun::GetReloadTime(void) const
 {
 	int theShotsToLoad = BALANCE_VAR(kGGMaxClip) - this->GetShotsInClip();
@@ -115,7 +130,29 @@ float AvHGrenadeGun::GetReloadTime(void) const
 	float theGrenadeReloadTime = BALANCE_VAR(kGrenadeLauncherGrenadeReloadTime);
 	float theEndReloadTime = BALANCE_VAR(kGrenadeLauncherEndReloadTime);
 
-	return theBaseReloadTime + theShotsToLoad*theGrenadeReloadTime + theEndReloadTime;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	
+	//fix by alien for grenade launcher reload time to take into account the number of nades in your ammo reserves
+	// Translate iAmount, szName and iMax into the ammo for our current weapon
+	int theSpareShots = GetPrimaryAmmoAmount();
+	
+
+	if (theShotsToLoad > theSpareShots) {
+		theShotsToLoad = theSpareShots;
+	}
+
+	//catpack now reduces grenadegun reload time
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return (theBaseReloadTime + theShotsToLoad * theGrenadeReloadTime + theEndReloadTime)*0.5f;
+	}
+	else {
+		return theBaseReloadTime + theShotsToLoad * theGrenadeReloadTime + theEndReloadTime;
+	}
+
+
+	//return theBaseReloadTime + theShotsToLoad*theGrenadeReloadTime + theEndReloadTime;
 }
 
 bool AvHGrenadeGun::GetHasMuzzleFlash() const
@@ -184,22 +221,34 @@ int	AvHGrenadeGun::GetReloadAnimation() const
 	int theAnimation = -1;
 	
 	int theShotsInClip = this->GetShotsInClip();
-	
+	int theSpareShots = GetPrimaryAmmoAmount();
+
+	//if the number of missing shots is less than the ammo available
+	//this is not a perfect solution because the actual animations for the grenade launcher
+	//do not currently have reload animations for reloading 1 shell with only 1 shell in the gun, etc
+	//this means when reloading only 1 shell with only 1 shell in the gun already
+	//we pretend that we have 3 shells loaded for the purposes of the reload animation
+	//this will show the player the wrong number of shells in their gun but the animation will line up correctly now - by alien
+
+	if (theSpareShots < (4 - theShotsInClip)) {
+		theShotsInClip = 4 - theSpareShots;
+	}
+
 	switch(theShotsInClip)
 	{
-	case 0:
+	case 0: //reload 4 times
 		theAnimation = 7;
 		break;
 		
-	case 1:
+	case 1: //reload 3 times
 		theAnimation = 6;
 		break;
 		
-	case 2:
+	case 2: //reload 2 times
 		theAnimation = 5;
 		break;
 		
-	case 3:
+	case 3: //reload 1 time
 		theAnimation = 4;
 		break;
 	}
@@ -254,6 +303,10 @@ void AvHGrenadeGun::FireProjectiles(void)
 {
 	#ifdef AVH_SERVER
 
+	float theDamageMultiplier;
+	AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
+	//float theDamage = this->mDamage*((2.0f*(theDamageMultiplier - 1.0f)) + 1.0f);
+
 	Vector theOrigin;
 	this->GetEventOrigin(theOrigin);
 
@@ -264,7 +317,7 @@ void AvHGrenadeGun::FireProjectiles(void)
 	// How to handle this?  Only generate entity on server, but we should do SOMETHING on the client, no?
 	CGrenade* theGrenade = AvHSUShootServerGrenade(this->m_pPlayer->pev, theOrigin, theVelocity, BALANCE_VAR(kGrenDetonateTime), false);
     ASSERT(theGrenade);
-    theGrenade->pev->dmg = this->mDamage;
+	theGrenade->pev->dmg = this->mDamage*theDamageMultiplier;
 
 	#endif
 }
