@@ -601,7 +601,29 @@ void CWorld :: Precache( void )
 //
 
 	// 0 normal
-	LIGHT_STYLE(0, "m");
+	
+	
+	//LIGHT_STYLE(0, "z");
+	
+	//sv_worldlight is a new option ive added
+	if (CVAR_GET_FLOAT("sv_worldlight") == 1) {
+		LIGHT_STYLE(0, "p");
+	}
+	else if (CVAR_GET_FLOAT("sv_worldlight") == 2) {
+		LIGHT_STYLE(0, "z");
+	}
+	else if (CVAR_GET_FLOAT("sv_worldlight") == 3) {
+		LIGHT_STYLE(0, "g");
+	}
+	else if (CVAR_GET_FLOAT("sv_worldlight") == 4) {
+		LIGHT_STYLE(0, "d");
+	}
+	else if (CVAR_GET_FLOAT("sv_worldlight") == 5) {
+		LIGHT_STYLE(0, "o");
+	}
+	else {
+		LIGHT_STYLE(0, "m");
+	}
 	
 	// 1 FLICKER (first variety)
 	LIGHT_STYLE(1, "mmnmmommommnonmmonqnmmo");
