@@ -128,6 +128,7 @@ public:
 	float				m_flTimeWeaponIdle; // when to play another weapon idle animation.
 	float				m_flSwimTime;		// how long player has been underwater
 	float				m_flDuckTime;		// how long we've been ducking
+	float				m_flEterDuckTime;		// how long we've been ducking, this never goes down except for when we're not ducking
 	float				m_flWallJumpTime;	// how long until next walljump
 
 	float				m_flSuitUpdate;					// when to play next suit update
@@ -176,10 +177,9 @@ public:
 	CBasePlayerItem *m_pLastItem;
     // Added by mmcguire.
     string_t m_pLastItemName;
-    
-    	//Added by Alien, Used for cl_autoswap
-	int m_iAutoSwap;
 
+	//Used for cl_autoswap
+	int m_iAutoSwap;
 
 	// shared ammo slots
 	int	m_rgAmmo[MAX_AMMO_SLOTS];

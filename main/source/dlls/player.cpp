@@ -333,6 +333,7 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 	{
 		m_LastHitGroup = ptr->iHitgroup;
 
+		//ALERT(at_console, "Hitgroup triggered ( %d \n", ptr->iHitgroup);
 		switch ( ptr->iHitgroup )
 		{
 		case HITGROUP_GENERIC:
@@ -2300,6 +2301,13 @@ void CBasePlayer::PreThink(void)
 			Duck();
 	}
 
+	if (pev->button & IN_DUCK) {
+		m_flEterDuckTime += gpGlobals->frametime;
+	}
+	else {
+		m_flEterDuckTime = 0.0f;
+	}
+
 	if ( !FBitSet ( pev->flags, FL_ONGROUND ) )
 	{
 		m_flFallVelocity = -pev->velocity.z;
@@ -2935,18 +2943,46 @@ void CBasePlayer::PostThink()
 			// if ( !pev->groundentity || VARS(pev->groundentity)->velocity.z == 0 )
 				// EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM);
 		}
-		// skulks, lerks, fades and jetpackers don't take falling damage
-		else if ((m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED) && (this->pev->iuser3 != AVH_USER3_ALIEN_PLAYER1) && (this->pev->iuser3 != AVH_USER3_ALIEN_PLAYER3) && (this->pev->iuser3 != AVH_USER3_ALIEN_PLAYER4) && (this->pev->iuser3 != AVH_USER3_ALIEN_EMBRYO) && (!GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_7) || !(this->pev->iuser3 == AVH_USER3_MARINE_PLAYER)) )
+		// skulks, lerks, fades and jetpackers don't take falling damage || avh_fallsafe.value == 1
+		else if ((m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED) && (avh_fallsafe.value == 1 ||((this->pev->iuser3 != AVH_USER3_ALIEN_PLAYER1) && (this->pev->iuser3 != AVH_USER3_ALIEN_PLAYER3) && (this->pev->iuser3 != AVH_USER3_ALIEN_PLAYER4) && (this->pev->iuser3 != AVH_USER3_ALIEN_EMBRYO) && (!GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_7) || !(this->pev->iuser3 == AVH_USER3_MARINE_PLAYER)) )))
 		{// after this point, we start doing damage
 			
 			float flFallDamage = g_pGameRules->FlPlayerFallDamage( this );
+
+
+			ALERT(at_console, "hit floor duck timer at %f\n", m_flEterDuckTime); //pev->flDuckTime
+			//if (pev->button & IN_DUCK) {
+			if (m_flEterDuckTime < 0.2f && pev->flags & FL_DUCKING) {
+				flFallDamage = 0.0f;
+			}
+
+			/*
+			if (m_afPhysicsFlags & PFLAG_DUCKING) {
+				ALERT(at_console, "duck phys\n");
+			}
+
+			if (pev->button & IN_DUCK) {
+				ALERT(at_console, "duck key\n");
+			}
+
+			if (pev->flags & FL_DUCKING) {
+				ALERT(at_console, "duck flag\n");
+			}
+			*/
+
+			
 
 			//onos fall damage multiplier
 			if (this->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5)
 			{
 				flFallDamage *= 3.5f; 
 			}
-			
+			//lerk fall damage rework
+			if (this->pev->iuser3 == AVH_USER3_ALIEN_PLAYER3)
+			{
+				flFallDamage = flFallDamage + 10;//m_flFallVelocity / 6;//(m_flFallVelocity - PLAYER_MAX_SAFE_FALL_SPEED/5)*DAMAGE_FOR_FALL_SPEED;
+			}
+
 			if ( flFallDamage > pev->health )
 			{//splat
 				// note: play on item channel because we play footstep landing on body channel
@@ -3159,9 +3195,18 @@ void CBasePlayer::Spawn( void )
 	m_afPhysicsFlags	= 0;
 	m_fLongJump			= FALSE;// no longjump module. 
 
+	//this won't work for getting the client info...
+	//if (avh_bhopmarine.value == 1)
+	//{
+	//	m_iAutoSwap = 1;
+	//}
+	//else {
+	//	m_iAutoSwap = 0;
+	//}
+
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
-
+	//if (avh_bhopmarine.value == 1) {};
 	if (avh_jumpmode.value == 2)
 		g_engfuncs.pfnSetPhysicsKeyValue(edict(), "jm2", "1");
 	else
@@ -3775,7 +3820,7 @@ void CBasePlayer :: FlashlightTurnOn( void )
 void CBasePlayer :: FlashlightTurnOff( void )
 {
 	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, kFlashlightVolume, ATTN_NORM, 0, PITCH_NORM );
-    ClearBits(pev->effects, EF_DIMLIGHT);
+    ClearBits(pev->effects,EF_DIMLIGHT);
 	
 	/*MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 	WRITE_BYTE(0);
@@ -3923,6 +3968,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 		m_rgpPlayerItems[pItem->iItemSlot()] = pItem;
 
 		// should we switch to this item?
+		
 		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(this);
 		if (thePlayer) {
 			//ALERT(at_console, "player's auto swap is %d \n", thePlayer->mAutoSwapValue);
