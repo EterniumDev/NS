@@ -92,6 +92,8 @@ public:
 	virtual void	SetEnabledState(bool inState, bool inForce = false);
 	virtual void	Spawn();
 
+	float			mTimeOfLastStun;
+
 protected:
 	virtual float	GetRateOfFire() const;
 	virtual void	UpdateEnemy();
@@ -109,6 +111,9 @@ protected:
 	float			m_flFieldOfView;
 	float			mTimeOfLastAttack;
 	float			mTimeOfNextAttack;
+	
+
+	
     float           mTimeOfLastUpdateEnemy;
 
 	// turn rate in radians

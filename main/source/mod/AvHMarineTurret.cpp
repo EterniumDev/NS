@@ -52,8 +52,10 @@
 #include "AvHMarineEquipment.h"
 #include "AvHConstants.h"
 #include "AvHPlayerUpgrade.h"
+#include "AvHServerVariables.h"
 #include "AvHGamerules.h"
 #include "AvHServerUtil.h"
+#include "AvHTeam.h"
 #include "AvHParticleConstants.h"
 #include "../util/MathUtil.h"
 
@@ -125,7 +127,13 @@ char* AvHMarineTurret::GetDeploySound() const
 
 char* AvHMarineTurret::GetPingSound() const
 {
-	return kTurretPing;
+	if (GetGameRules()->mSentrySoundRunning < max(kTurretSoundRunningLimit-5,2)) {
+		GetGameRules()->mSentrySoundRunning += 1;
+		return kTurretPing;
+	}
+	else {
+		return NULL;
+	}
 }
 
 
@@ -241,26 +249,50 @@ void AvHMarineTurret::Shoot(const Vector &inOrigin, const Vector &inToEnemy, con
 
 	float theDamageModifier;
 	int theTracerFreq;
-	int theUpgradeLevel = AvHPlayerUpgrade::GetWeaponUpgrade(this->pev->iuser3, this->pev->iuser4, &theDamageModifier, &theTracerFreq);
+	int theUpgradeLevel = AvHPlayerUpgrade::GetWeaponUpgrade(this->pev->iuser3, theTeam->GetTeamWideUpgrades(), &theDamageModifier, &theTracerFreq);
 
-	float theDamage = (float)BALANCE_VAR(kSentryDamage)*theDamageModifier;		
+	//float theDamage = (float)BALANCE_VAR(kSentryDamage)*theDamageModifier;		
+	float theDamage = (float)BALANCE_VAR(kSentryDamage) + (float)theUpgradeLevel; //changed by alien to make all weapon ups equally effect sentry damage
+
+	if (avh_balance_mvm.value == 1) {
+		theDamage = (float)BALANCE_VAR(kSentryDamage) + (float)theUpgradeLevel - 1.0f;
+	}
+
+	/*
+	if (GetHasUpgrade(this->pev->iuser4, MASK_UPGRADE_1))
+	{
+		ALERT(at_console, "Sentry Turret has Weapons 1 but it doesnt fucking work \n");
+	}
+	else if (GetHasUpgrade(theTeam->GetTeamWideUpgrades(), MASK_UPGRADE_1))
+	{
+		ALERT(at_console, "TEAM has Weapons 1 but it doesnt fucking work \n");
+	}
+	*/
+
 
 	int theDamageType = this->GetDamageType();
 	Vector theDirToEnemy = inToEnemy.Normalize();
 	this->FireBullets(1, inOrigin, theDirToEnemy, VECTOR_CONE_3DEGREES, this->GetXYRange(), BULLET_MONSTER_MP5, theTracerFreq, theDamage, this->GetAttacker()->pev, theDamageType);
 		
-	const char* theSoundToPlay = kTurretFire1;
-	
-	switch(theUpgradeLevel)
-	{
-	case 1:	theSoundToPlay = kTurretFire2;	break;
-	case 2:	theSoundToPlay = kTurretFire3;	break;
-	case 3:	theSoundToPlay = kTurretFire4;	break;
+	if (GetGameRules()->mSentrySoundRunning < kTurretSoundRunningLimit){
+
+		GetGameRules()->mSentrySoundRunning += 1;
+
+		const char* theSoundToPlay = kTurretFire1;
+		if (avh_turretupgradesound.value != 0) {
+			switch (theUpgradeLevel)
+			{
+			case 1:	theSoundToPlay = kTurretFire2;	break;
+			case 2:	theSoundToPlay = kTurretFire3;	break;
+			case 3:	theSoundToPlay = kTurretFire4;	break;
+			}
+		}
+
+		int thePitch = RANDOM_LONG(50, 150);
+		EMIT_SOUND_DYN(ENT(this->pev), CHAN_WEAPON, theSoundToPlay, 1.0, ATTN_NORM, 0, thePitch);
+
 	}
-	
-	int thePitch = RANDOM_LONG(50, 150);
-	EMIT_SOUND_DYN(ENT(this->pev), CHAN_WEAPON, theSoundToPlay, 1.0, ATTN_NORM, 0, thePitch);
-	
+
 	pev->effects = pev->effects | EF_MUZZLEFLASH;
 
 	int theRandomSmoke = RANDOM_LONG(0, 3);

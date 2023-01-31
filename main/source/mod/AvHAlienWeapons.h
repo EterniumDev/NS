@@ -1159,12 +1159,15 @@ public:
 
 	virtual void	Spawn(void);
 	
+	void EXPORT		StompThink();
+
 	void EXPORT		StompTouch(CBaseEntity* inOther);
 
 	Vector			mSpawnLocation;
 
 private:
 	float			mStunTime;
+	float			mDespawnTime;
 	
 };
 #endif

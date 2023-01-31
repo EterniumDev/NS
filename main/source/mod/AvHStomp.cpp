@@ -39,6 +39,7 @@
 #include "AvHParticleConstants.h"
 #include "AvHHulls.h"
 #include "AvHSharedUtil.h"
+#include "AvHTurret.h"
 
 LINK_ENTITY_TO_CLASS(kwStomp, AvHStomp);
 
@@ -83,12 +84,69 @@ void AvHStompProjectile::Spawn(void)
 //	UTIL_SetSize(this->pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 
 	SetTouch(&AvHStompProjectile::StompTouch);
+	//CBaseEntity::SUB_Remove();
+	//SetThink(&CBaseEntity::SUB_Remove);
+	SetThink(&AvHStompProjectile::StompThink);
+	this->pev->nextthink = gpGlobals->time + 0.1f;
+	this->mDespawnTime = gpGlobals->time + kStompProjectileLifetime;
 
-	SetThink(&CBaseEntity::SUB_Remove);
-	this->pev->nextthink = gpGlobals->time + kStompProjectileLifetime;
 
 	this->mStunTime = 0.0f;
 }
+
+void AvHStompProjectile::StompThink()
+{
+	// Loop through all nearby 
+	CBaseEntity* theBaseEntity = NULL;
+	int theNumEntsHealed = 0;
+
+	while (((theBaseEntity = UTIL_FindEntityInSphere(theBaseEntity, this->pev->origin, BALANCE_VAR(kStompRadius))) != NULL) && (theNumEntsHealed < BALANCE_VAR(kAlienChamberMaxPlayers)))
+	{
+		if (theBaseEntity->pev->team != this->pev->team)
+		{
+			AvHBaseBuildable* theBuildable = dynamic_cast<AvHBaseBuildable*>(theBaseEntity);
+			if (theBuildable)//&& theBuildable->GetIsBuilt())
+			{
+				AvHTurret* theRealTurret = dynamic_cast<AvHTurret*>(theBuildable);
+				if (theRealTurret)
+				{
+					float theStunTime = BALANCE_VAR(kStompTime) * 3;
+					float amount = 10.0f;
+
+					//damage just to test if its working
+					//theBuildable->pev->health = max(1.0f, theBuildable->pev->health - amount);
+
+					//char theErrorMessage[10000];
+					//sprintf(theErrorMessage, "Turret stomp proc");
+					//ALERT(at_console, theErrorMessage);
+					
+					if (gpGlobals->time > theRealTurret->mTimeOfLastStun - 2.0f)
+					{
+						vec3_t theOrigin = theBuildable->pev->origin;
+						//theOrigin.z += 32;
+						AvHSUPlayParticleEvent(kpsStompEffect, theBuildable->edict(), theOrigin);
+					
+
+						theRealTurret->mTimeOfLastStun = gpGlobals->time + theStunTime;
+					}
+					
+
+
+
+				}
+			}
+		}
+	}
+
+	if (gpGlobals->time >= this->mDespawnTime)
+	{
+		CBaseEntity::SUB_Remove();
+	}
+
+	// Set next think
+	this->pev->nextthink = gpGlobals->time + 0.1f;
+}
+
 
 void AvHStompProjectile::SetStunTime(float inStunTime)
 {
@@ -97,6 +155,14 @@ void AvHStompProjectile::SetStunTime(float inStunTime)
 	
 void AvHStompProjectile::StompTouch(CBaseEntity* inOther)
 {
+	//AvHBaseBuildable* theTurret = dynamic_cast<AvHBaseBuildable*>(inOther);
+	//float theStunTime = BALANCE_VAR(kStompTime);
+	//this->mTimeOfLastStun
+	//if (theTurret)
+	{
+		
+	}
+
 	if(!AvHSUGetIsExternalClassName(STRING(inOther->pev->classname)))
 	{
 		// Stop when it hits the world
@@ -108,8 +174,8 @@ void AvHStompProjectile::StompTouch(CBaseEntity* inOther)
 				// Stun them if they're not stunned already, to prevent perpetual stunning
 				if(!thePlayer->GetIsStunned() && !GetHasUpgrade(thePlayer->pev->iuser4, MASK_TOPDOWN))
 				{
-					// Don't stun jetpackers
-					if(!GetHasUpgrade(thePlayer->pev->iuser4, MASK_UPGRADE_7)) //&& !(thePlayer->pev->flags & FL_ONGROUND)))
+					// Don't stun jetpackers WHO ARE MARINE PLAYERS (LMAO)
+					if(! (GetHasUpgrade(thePlayer->pev->iuser4, MASK_UPGRADE_7) && thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER)   ) //&& !(thePlayer->pev->flags & FL_ONGROUND)))
 					{
 						// Do a traceline to make sure the world isn't blocking it (StompTouch doesn't seem to be called for CWorld collisions)
 						TraceResult theTraceResult;
@@ -137,7 +203,50 @@ void AvHStompProjectile::StompTouch(CBaseEntity* inOther)
 				}
 			}
 		}
+		else {
+			//Log error to console
+			//char theErrorMessage[10000];
+			//sprintf(theErrorMessage, "Turret stomp proc");
+			//ALERT(at_console, theErrorMessage);
+		}
+		/*
+		//attempt hitting a turret/siege turret/offense chamber
+		AvHBaseBuildable* theTurret = dynamic_cast<AvHBaseBuildable*>(inOther);
+		//float theStunTime = BALANCE_VAR(kStompTime);
+		//this->mTimeOfLastStun
+		if (theTurret)
+		{
+			//Log error to console
+			char theErrorMessage[10000];
+			sprintf(theErrorMessage, "Turret stomp proc");
+			ALERT(at_logged, theErrorMessage);
+			//dont stun ur own turrets
+			if (theTurret->pev->team != this->pev->team) 
+			{
+				TraceResult theTraceResult;
+				UTIL_TraceLine(this->mSpawnLocation, inOther->pev->origin, dont_ignore_monsters, ignore_glass, NULL, &theTraceResult);
+
+				if (theTraceResult.flFraction == 1.0f)
+				{
+					float theStunTime = BALANCE_VAR(kStompTime)*3;
+					AvHTurret* theRealTurret = dynamic_cast<AvHTurret*>(inOther);
+					if (theRealTurret)
+					{
+						theRealTurret->mTimeOfLastStun = gpGlobals->time + theStunTime;
+						
+
+						vec3_t theOrigin = inOther->pev->origin;
+						//theOrigin.z += 32;
+
+						AvHSUPlayParticleEvent(kpsStompEffect, inOther->edict(), theOrigin);
+
+					}
+				}
+			}
+		}
+		*/
 	}
+	
 }
 	
 #endif
@@ -238,26 +347,26 @@ void AvHStomp::FireProjectiles(void)
 {
 #ifdef AVH_SERVER
 	// Search for relevant enemy players in range (only on ground?)
-//	CBaseEntity* theEntity = NULL;
-//	while((theEntity = UTIL_FindEntityInSphere(theEntity, this->pev->origin, this->mRange)) != NULL)
-//	{
-//		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(theEntity);
-//		if(thePlayer && (thePlayer != this->m_pPlayer))
-//		{
-//			if(thePlayer->GetIsRelevant() && (thePlayer->GetTeam() != this->m_pPlayer->pev->team))
-//			{
-//				// Stun them if they're not stunned already, to prevent perpetual stunning
-//				if(!thePlayer->GetIsStunned() && !GetHasUpgrade(thePlayer->pev->iuser4, MASK_TOPDOWN))
-//				{
-//					// Don't stun flying jetpackers
-//					if(!(GetHasUpgrade(thePlayer->pev->iuser4, MASK_UPGRADE_7) && !(thePlayer->pev->flags & FL_ONGROUND)))
-//					{
-//						thePlayer->SetIsStunned(true, BALANCE_VAR(kStompTime));
-//					}
-//				}
-//			}
-//		}
-//	}
+	//	CBaseEntity* theEntity = NULL;
+	//	while((theEntity = UTIL_FindEntityInSphere(theEntity, this->pev->origin, this->mRange)) != NULL)
+	//	{
+	//		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(theEntity);
+	//		if(thePlayer && (thePlayer != this->m_pPlayer))
+	//		{
+	//			if(thePlayer->GetIsRelevant() && (thePlayer->GetTeam() != this->m_pPlayer->pev->team))
+	//			{
+	//				// Stun them if they're not stunned already, to prevent perpetual stunning
+	//				if(!thePlayer->GetIsStunned() && !GetHasUpgrade(thePlayer->pev->iuser4, MASK_TOPDOWN))
+	//				{
+	//					// Don't stun flying jetpackers
+	//					if(!(GetHasUpgrade(thePlayer->pev->iuser4, MASK_UPGRADE_7) && !(thePlayer->pev->flags & FL_ONGROUND)))
+	//					{
+	//						thePlayer->SetIsStunned(true, BALANCE_VAR(kStompTime));
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
 
 	// Create stomp projectile that flies forward, stunning enemies it touches
 	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(this->m_pPlayer);

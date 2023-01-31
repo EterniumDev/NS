@@ -377,9 +377,9 @@ const float		kDevourPunch				= 2.0;
 #define			kStompProjectileModel		"models/stomp.mdl"
 #define			kwsStompProjectile			"stompprojectile"
 const int		kStompBarrelLength			= 30;
-const float		kStompProjectileLifetime	= 1.2f;
+const float		kStompProjectileLifetime	= 1.8f;
 const int		kStompModelRenderAmount		= 180;
-const int		kStompProjectileVelocity	= 600;
+const int		kStompProjectileVelocity	= 350;
 #define			kStompAnimExt				"ability2"
 
 

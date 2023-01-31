@@ -54,6 +54,7 @@
 #include "AvHMarineEquipmentConstants.h"
 #include "AvHServerUtil.h"
 #include "AvHCloakable.h"
+#include "AvHServerVariables.h"
 #include "../util/MathUtil.h"
 
 const float kPingInterval = 3.0f;
@@ -73,6 +74,7 @@ void AvHTurret::Init()
 	this->m_flFieldOfView = 0;
 	this->mTimeOfLastAttack = -1;
 	this->mTimeOfNextAttack = -1;
+	this->mTimeOfLastStun = -1;
     this->mTimeOfLastUpdateEnemy = -1;
 	
 	this->m_fTurnRate = 0;
@@ -166,6 +168,12 @@ bool AvHTurret::GetRequiresLOS() const
 int	AvHTurret::GetDamageType() const
 {
 	// Turrets to half damage to heavy players
+
+	if (avh_balance_mvm.value == 1) //in MVM, we deal x2 damage vs structures
+	{
+		return DMG_BULLET | DMG_NEVERGIB | NS_DMG_LIGHT | NS_DMG_BLAST;
+	}
+
 	return DMG_BULLET | DMG_NEVERGIB | NS_DMG_LIGHT;
 }
 
@@ -422,6 +430,11 @@ void AvHTurret::ActiveThink(void)
 	// Find enemy, or reacquire dead enemy
 	this->UpdateEnemy();
 
+	if (this->mTimeOfLastStun >= gpGlobals->time)
+	{
+		this->m_hEnemy = NULL;
+	}
+
 	// If we have a valid enemy
 	if(!FNullEnt(this->m_hEnemy))
 	{
@@ -524,6 +537,15 @@ void AvHTurret::SearchThink(void)
 		}
 	}
 	
+	//(theMonsterPointer->pev->team != this->pev->team))
+	//float theStunTime = BALANCE_VAR(kStompTime);
+	//mTimeOfLastStun
+	if (this->mTimeOfLastStun >= gpGlobals->time)
+	{
+		this->m_hEnemy = NULL;
+	}
+
+
 	// Acquire Target
     this->UpdateEnemy();
 

@@ -57,6 +57,7 @@
 #include "AvHServerUtil.h"
 #include "AvHPlayerUpgrade.h"
 #include "../util/MathUtil.h"
+#include "AvHServerVariables.h"
 
 LINK_ENTITY_TO_CLASS(kwSiegeTurret, AvHSiegeTurret);
 
@@ -196,8 +197,21 @@ void AvHSiegeTurret::Shoot(const Vector &inOrigin, const Vector &inToEnemy, cons
 			{
 				// Apply damage, taking upgrade into account
 				float theDamageMultiplier;
-				AvHPlayerUpgrade::GetWeaponUpgrade(this->pev->iuser3, this->pev->iuser4, &theDamageMultiplier);
+				AvHTeam* theTeam = GetGameRules()->GetTeam(AvHTeamNumber(this->pev->team));
+				ASSERT(theTeam);
+
+				AvHPlayerUpgrade::GetWeaponUpgrade(this->pev->iuser3, theTeam->GetTeamWideUpgrades(), &theDamageMultiplier);
+
+				//Siege turret damage is quite large and weapon upgrades were never balanced around affecting siege turrets
+				//Therefore I've decided to nerf the effectiveness of weapon upgrades on siege turrets by 50%
+				theDamageMultiplier = ((theDamageMultiplier - 1.0f) / 2.0f) + 1.0f;
+
 				float theDamage = theDamageMultiplier*BALANCE_VAR(kSiegeDamage);
+
+				if (avh_balance_mvm.value == 1)
+				{
+					theDamage *= 1.5f;
+				}
 
 				// Play view shake, because a big gun is going off
 				float theShakeAmplitude = 20;

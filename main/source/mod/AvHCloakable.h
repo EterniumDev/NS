@@ -30,6 +30,7 @@ public:
 	void				SetSpeeds(float inCurrentSpeed, float inMaxSpeed, float inMaxWalkSpeed);
 	virtual void		Cloak(bool inNoFade = false);
 	virtual void		Uncloak(bool inNoFade = false);
+	virtual void		UncloakKilled(bool inNoFade = false);
 
 	virtual void		ResetCloaking();
 	virtual void		Update();
