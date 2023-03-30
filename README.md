@@ -30,7 +30,7 @@ Updates include:
 "cl_alienhudcolor_blue"
 - Onos can no longer devour other Onos in AVA
 - Focus gorge spit now travels faster
-- Bile bomb can now destroy dropped items
+- Bile bomb can now destroy dropped items and reduce marine armor
 - Longjump module is now precached and can now be spawned in or used by mods without crashing the game
 - Move speed increase from wall strafing can be toggled on or off
 - Skulk walljump speed now affected by celerity
@@ -55,13 +55,12 @@ Default kill rewards now use Bounty, gain 1 res + 1 res per each frag a player h
 - Arrow keys don't work for the commander
 - Chatbox eats inputs occasionally
 - Some mice experience issues with a previous fix for centering the cursor when the popupmenu is open
-- Trying to shoot the shotgun while reloading is very fickle and has poor syncronization with the server. A balance-conscientious rework is planned, but yet to be made.  
+- Trying to shoot the shotgun while reloading is very fickle and has poor syncronization with the server. A balance-conscientious rework is planned, but yet to be made.
 - HUD elements are stretched and/or poorly placed in widescreen. User options/commands for hud element placement are planned.
 - Clicking on the scoreboard can cause +attack to be stuck after closing the scoreboard until firing again.
 - FPS dependant fire rates and player physics.  These have significantly improved with the Half-Life update and are also a non-issue now that other FPS dependency fixes are in the game and the game can be played at high frame rates, where fire rates don't vary. Very high framerates can cause collision issues and other engine limitations, so an fps of 200 or 250 is recommended.
 - Flashing available alien upgrade icons (defense, movement and sensory) tend to disappear when a player dies and respawns. The icons won't appear until the alien chooses an upgrade.
 - func_train and func_tracktrain entities don't reset to their original positions when a round has ended
-- If parts of map have negative Z coordinates, clicking a structure can deselect it or select antoher structure. Make sure all parts of the map have positive Z coordinate.
 
 If you find more please report them!
 
