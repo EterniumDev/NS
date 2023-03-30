@@ -32,7 +32,7 @@ Updates include:
 - Focus gorge spit now travels faster
 - Bile bomb can now destroy dropped items
 - Longjump module is now precached and can now be spawned in or used by mods without crashing the game
-- Erroneous move speed increase while walking near walls fixed (Strafing into a wall increased move speed by up to 50%)
+- Move speed increase from wall strafing can be toggled on or off
 - Skulk walljump speed now affected by celerity
 - KillReward CVar added, allowing control over how resources are granted upon killing a player
 Default kill rewards now use Bounty, gain 1 res + 1 res per each frag a player has upon killing them, reset frags on death
@@ -45,9 +45,9 @@ Default kill rewards now use Bounty, gain 1 res + 1 res per each frag a player h
 - The command cl_showspeed 1 no longer requires sv_cheats 1 to be used
 - Command r_detailtextures readded
 - Electrified TFs and RTs can no longer attack while recycling and will no longer appear to be electrified
-- AutoSwap CVar added, allowing disabling auto swap on weapon pickup (currently server wide)
+- AutoSwap CVar added, allowing disabling auto swap on weapon pickup (currently must be set in client's console or config, but an dropdown could be added to the options menu)
 - Welder now deals x2 damage vs structures
-- Marine's Pistols are now dropped on death
+- Marine's Pistol and pistol ammo is now dropped on death
 - Extra zoom levels for marine minimap added
 
 ## Bugs
@@ -58,7 +58,7 @@ Default kill rewards now use Bounty, gain 1 res + 1 res per each frag a player h
 - Trying to shoot the shotgun while reloading is very fickle and has poor syncronization with the server. A balance-conscientious rework is planned, but yet to be made.  
 - HUD elements are stretched and/or poorly placed in widescreen. User options/commands for hud element placement are planned.
 - Clicking on the scoreboard can cause +attack to be stuck after closing the scoreboard until firing again.
-- FPS dependant fire rates and player physics.  These have significantly improved with the Half-Life update and are also a non-issue now that other FPS dependency fixes are in the game and the game can be played at high frame rates, where fire rates don't vary. Very high framerates cause collision issues and other engine limitations, so an fps of 200 or 250 is recommended unless fixed.
+- FPS dependant fire rates and player physics.  These have significantly improved with the Half-Life update and are also a non-issue now that other FPS dependency fixes are in the game and the game can be played at high frame rates, where fire rates don't vary. Very high framerates can cause collision issues and other engine limitations, so an fps of 200 or 250 is recommended.
 - Flashing available alien upgrade icons (defense, movement and sensory) tend to disappear when a player dies and respawns. The icons won't appear until the alien chooses an upgrade.
 - func_train and func_tracktrain entities don't reset to their original positions when a round has ended
 - If parts of map have negative Z coordinates, clicking a structure can deselect it or select antoher structure. Make sure all parts of the map have positive Z coordinate.
