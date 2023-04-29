@@ -44,6 +44,7 @@
 #ifdef AVH_SERVER
 #include "AvHGamerules.h"
 #include "AvHServerUtil.h"
+#include "AvHPlayerUpgrade.h"
 #endif
 
 #include "../dlls/util.h"
@@ -87,7 +88,7 @@ float AvHGrenade::GetRateOfFire() const
 
 bool AvHGrenade::GetCanBeResupplied() const
 {
-    return false;
+    return true;
 }
 
 void AvHGrenade::Init()
@@ -380,6 +381,11 @@ void AvHGrenade::CreateProjectile()
 	// How to handle this?  Only generate entity on server, but we should do SOMETHING on the client, no?
 	CGrenade* theGrenade = AvHSUShootServerGrenade(this->m_pPlayer->pev, theStartPosition, theVelocity, BALANCE_VAR(kHandGrenDetonateTime), true);
 	ASSERT(theGrenade);
+
+
+	float theDamageMultiplier;
+	AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
+	//float theDamage = this->mDamage*((2.0f*(theDamageMultiplier - 1.0f)) + 1.0f);
 
 	theGrenade->pev->dmg = this->mDamage;
 
