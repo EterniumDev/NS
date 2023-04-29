@@ -121,7 +121,7 @@ const int		kWelderBarrelLength =		10;
 #define			kWingFlapSound3				"player/wingflap3.wav"
 const float		kWingFlapLateralScalar		= 215;
 const float		kWingFlapZVelocityScalar	= 1.0f;
-const float     kWingThrustForwardScalar    = .85f;
+const float     kWingThrustForwardScalar    = .8f;
 const float     kWingThrustBackwardScalar   = .25f;
 
 const int		kMineBarrellLength			= 30;
@@ -182,6 +182,12 @@ const float		kMineROF					= 1.0f;
 #define			kCatalystPickupSound		"items/catalyst.wav"
 #define			kCatalystMinSize			Vector(-16, -16, 0)
 #define			kCatalystMaxSize			Vector(16, 16, 4)
+
+// Nano
+#define			kNanoModel				"models/ns_bast/tripod1.mdl"
+#define			kNanoPickupSound		"items/catalyst.wav"
+#define			kNanoMinSize			Vector(-16, -16, 0)
+#define			kNanoMaxSize			Vector(16, 16, 4)
 
 // Heavy armor
 #define			kHeavyModel					"models/w_heavy.mdl"
@@ -246,9 +252,9 @@ const float		kSiegeTurretMinRangeScalar	= .1f;
 #define	kNukeKilled							"misc/b_nuke_killed.wav"
 #define	kNukeActive							"misc/b_nuke_active.wav"
 #define	kNukeExplode						"misc/b_nuke_explode.wav"
-#define kNukeModel							"models/b_nuke.mdl"
-const float kNukeDamage =					4000;
-const float kNukeRange =					1000;
+#define kNukeModel							"models/b_turretfactory.mdl"//"models/marinevsmarine/b_prototypelab_color.mdl" //"models/b_siege.mdl"//
+const float kNukeDamage =					2000;
+const float kNukeRange =					1600;
 
 // Special building class names
 #define	kwsInfantryPortal			"team_infportal"
@@ -315,7 +321,7 @@ const float		kCommandStationThinkInterval	= .1f;
 #define			kArmsLabModel					"models/b_armslab.mdl"
 #define			kPrototypeLabModel				"models/b_prototypelab.mdl"
 #define			kObservatoryModel				"models/b_observatory.mdl"
-//#define			kNukePlantModel					"models/b_nukeplant.mdl"
+#define			kNukePlantModel					"models/b_turretfactory.mdl"//"models/marinevsmarine/b_prototypelab_color.mdl"//"models/b_nukeplant.mdl"
 
 // Misc build constants
 #define			kArmoryResupplySound			"misc/resupply.wav"

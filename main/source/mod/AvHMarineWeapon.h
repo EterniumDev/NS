@@ -30,6 +30,7 @@
 class AvHMarineWeapon : public AvHBasePlayerWeapon
 {
 public:
+	
     virtual float	ComputeAttackInterval() const;
 
     virtual char*	GetActiveViewModel() const;

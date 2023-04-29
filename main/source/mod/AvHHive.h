@@ -182,6 +182,7 @@ private:
 	bool			mSpawning;
 	float			mTimeLastContributed;
 	float			mTimeLastWoundSound;
+	float			mTimeLastWoundAnimation;
 	float			mTimeOfNextUmbra;
 	float			mEnergy;
 	float			mLastTimeScannedHives;

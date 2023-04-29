@@ -144,6 +144,16 @@ public:
     void EXPORT Touch(CBaseEntity* inOther);
 };
 
+class AvHNano : public AvHPlayerEquipment
+{
+public:
+	static BOOL GiveNano(CBaseEntity* inOther);
+
+	void Precache(void);
+	void Spawn(void);
+	void EXPORT Touch(CBaseEntity* inOther);
+};
+
 class AvHGenericAmmo : public CBasePlayerAmmo
 {
 public:
@@ -260,14 +270,19 @@ public:
 						AvHNuke();
 	
 	virtual void		Precache();
+	//virtual void		Precache(void);
 	
 	void EXPORT			ActiveThink();
 
 	void EXPORT			DeathThink();
 
+	/*
 	virtual char*		GetDeploySound() const;
 
 	virtual char*		GetKilledSound() const;
+	*/
+
+	virtual void	SetHasBeenBuilt();
 
 	virtual void		Spawn();
 

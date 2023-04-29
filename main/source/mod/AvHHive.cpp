@@ -94,6 +94,7 @@
 #include "../util/MathUtil.h"
 #include <vector>
 
+
 extern AvHSoundListManager				gSoundListManager;
 BOOL IsSpawnPointValid( CBaseEntity *pPlayer, CBaseEntity *pSpot );
 
@@ -111,6 +112,7 @@ AvHHive::AvHHive() : AvHBaseBuildable(TECH_HIVE, ALIEN_BUILD_HIVE, kesTeamHive, 
 	this->mSolid = false;
 	this->mSpawning = false;
 	this->mTimeLastWoundSound = -1;
+	this->mTimeLastWoundAnimation = -1;
 	this->mTechnology = MESSAGE_NULL;	
 	this->mEnergy = 0.0f;
 	this->mLastTimeScannedHives=-1.0f;
@@ -231,19 +233,27 @@ int AvHHive::GetTakeDamageAnimation() const
 	int theAnimation = -1;
 	
 	// Choose animation based on global time, so animation doesn't interrupt itself
-	float theTime = gpGlobals->time;
-	int theOffset = (int)(ceil(theTime) - theTime + .5f);
+	//float theTime = gpGlobals->time;
+	//int theOffset = (int)(ceil(theTime) - theTime + .5f);
 
-	if(this->GetIsActive())
+	//Commented out classic ns hive spazzing out animation (very classic indeed)
+	
+
+	if ((this->mTimeLastWoundAnimation == -1) || ((this->mTimeLastWoundAnimation + 0.5f) < gpGlobals->time))
 	{
-		// Play wound animation.  
-		theAnimation = 5 + theOffset;
+		//ALERT(at_console, "HIVE ANIM\n");
+		if (this->GetIsActive())
+		{
+			// Play wound animation.  
+			theAnimation = 5;// +theOffset;
+		}
+		else
+		{
+			// Use still-building flinch anims
+			theAnimation = 7;// +theOffset;
+		}
+		
 	}
-    else
-    {
-        // Use still-building flinch anims
-        theAnimation = 7 + theOffset;
-    }
 
 	return theAnimation;
 }
@@ -443,6 +453,7 @@ void AvHHive::ResetEntity(void)
 
 	// Reset parasites, etc.
 	this->pev->iuser4 = 0;
+	this->pev->eter_hack = 0;
 	this->SetPersistent();
 
 	this->mTimeOfNextUmbra = -1;
@@ -571,8 +582,13 @@ void AvHHive::Spawn()
 	this->pev->flags = 0;
 	this->pev->iuser3 = AVH_USER3_HIVE;
 
+
+
 	this->mMaxHitPoints = GetGameRules()->GetBaseHealthForMessageID(ALIEN_BUILD_HIVE);
+
 	
+
+
 	SET_MODEL( ENT(this->pev), kHiveModel);
 	//this->pev->scale = 2;
 
@@ -695,6 +711,7 @@ int	AvHHive::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 					gSoundListManager.PlaySoundInList(kHiveWoundSoundList, this, CHAN_BODY);
 					
 					this->mTimeLastWoundSound = gpGlobals->time;
+					this->mTimeLastWoundAnimation = gpGlobals->time;
 				}
 			}
 		//}
@@ -707,7 +724,7 @@ int	AvHHive::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 
 bool AvHHive::GetCanReinforce() const
 {
-	return (this->GetIsBuilt() && this->IsAlive() && !GetGameRules()->GetIsCombatMode());
+	return (this->GetIsBuilt() && (avh_fadedgamemode.value != 1 || GetGameRules()->GetArePlayersAllowedToJoinImmediately()) && this->IsAlive() && !GetGameRules()->GetIsCombatMode());
 }
 
 bool AvHHive::GetSpawnLocationForPlayer(CBaseEntity* inPlayer, Vector& outLocation) const

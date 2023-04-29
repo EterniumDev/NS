@@ -28,6 +28,7 @@
 #include "AvHMarineWeapon.h"
 #include "AvHMarineWeaponConstants.h"
 #include "AvHSpecials.h"
+#include "AvHServerVariables.h"
 #include "../util/Balance.h"
 
 bool AvHMarineWeapon::GetAllowedForUser3(AvHUser3 inUser3)
@@ -194,7 +195,12 @@ void AvHReloadableMarineWeapon::Reload(void)
 
                 // Add them to the clip
                 this->m_iClip += 1;
-                this->m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 1;
+#ifdef AVH_SERVER
+				if (avh_infinite_ammo.value != 2)
+#endif
+				{
+					this->m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 1;
+				}
                 this->mSpecialReload = kSpecialReloadGotoReload;
 				this->m_pPlayer->SetAnimation(PLAYER_RELOAD_END);
             }

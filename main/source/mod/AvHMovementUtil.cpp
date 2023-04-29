@@ -59,6 +59,7 @@
 #include "AvHMovementUtil.h"
 #include "AvHSpecials.h"
 #include "AvHAlienWeaponConstants.h"
+#include "AvHServerVariables.h"
 #include "AvHMarineEquipmentConstants.h"
 #include "AvHHulls.h"
 #include "AvHConstants.h"
@@ -270,7 +271,7 @@ float AvHMUGetWalkSpeedFactor(AvHUser3 inUser3)
 	case AVH_USER3_ALIEN_PLAYER1:
 		//theMoveSpeed = .04f;
 		//theMoveSpeed = .14f;
-		theMoveSpeed = .35f;
+		theMoveSpeed = .25f;
 		break;
 	case AVH_USER3_ALIEN_PLAYER2:
 		//theMoveSpeed = .08f;
@@ -330,7 +331,8 @@ void AvHMUUpdateAlienEnergy(float inTimePassed, int inUser3, int inUser4, float&
 			float kChargingDepletionRate = -BALANCE_VAR(kChargingEnergyScalar)*theAlienEnergyRate;
 
 			const float kMultiplier = GetHasUpgrade(inUser4, MASK_BUFFED) ? (1.0f + BALANCE_VAR(kPrimalScreamEnergyFactor)) : 1.0f;
-			float theEnergyRate = theAlienEnergyRate*kMultiplier;
+			//float theAlienEnergyRate = theAlienEnergyRate*kMultiplier;
+			theAlienEnergyRate *= kMultiplier;
 
 			float theUpgradeFactor = 1.0f;
 			int theNumLevels = AvHGetAlienUpgradeLevel(inUser4, MASK_UPGRADE_5);
@@ -340,9 +342,25 @@ void AvHMUUpdateAlienEnergy(float inTimePassed, int inUser3, int inUser4, float&
 				theUpgradeFactor += theNumLevels*BALANCE_VAR(kAdrenalineEnergyPercentPerLevel);
 			}
 
+#ifdef AVH_SERVER
+
+			/*
+			if (this->mNumHives >= 4) {
+				//ALERT(at_console, "4 HIVES DETECTED");
+				theRegenAmount += 12.0f;
+			}
+			*/
+#endif
+
 			float theCurrentEnergy = ioFuser/kNormalizationNetworkFactor;
 			
 			float theNewEnergy = theCurrentEnergy + inTimePassed*theAlienEnergyRate*theUpgradeFactor;
+
+#ifdef AVH_SERVER
+			if (avh_infinite_energy.value == 1) {
+				theNewEnergy = 1.0f;
+			}
+#endif
 
 			// If we're charging, reduce energy
 			if(GetHasUpgrade(inUser4, MASK_ALIEN_MOVEMENT))
@@ -351,7 +369,7 @@ void AvHMUUpdateAlienEnergy(float inTimePassed, int inUser3, int inUser4, float&
 				{
 //					theNewEnergy += inTimePassed*kFadeChargingDeplectionRate;
 				}
-				else
+				else if (inUser3 == AVH_USER3_ALIEN_PLAYER5)
 				{
 					theNewEnergy += inTimePassed*kChargingDepletionRate;
 				}

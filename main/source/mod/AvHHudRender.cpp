@@ -118,6 +118,7 @@
 #include "cl_dll/r_studioint.h"
 #include "AvHMiniMap.h"
 #include "AvHActionButtons.h"
+#include "AvHServerUtil.h"
 #include "../util/STLUtil.h"
 #include "AvHSharedUtil.h"
 #include "../common/event_api.h"
@@ -1535,7 +1536,7 @@ void AvHHud::DrawInfoLocationText()
 
 		// Draw handicap text as well
 		int theHandicap = (int)this->GetHUDHandicap();
-		if(theHandicap < 100)
+		if(theHandicap != 100)
 		{
 			// draw "(handicap 70%)"
 			string theHandicapString;
@@ -1584,12 +1585,13 @@ void AvHHud::DrawInfoLocationText()
 		{
 			bool theTimeVisible = true;
 
-			// Flash time when we're almost out of time
+			
 			if((theMinutesLeft < 1) && this->GetGameStarted() && theDisplayTimeLimit)
 			{
 				float theTime = gHUD.GetTimeOfLastUpdate();
 				float theTimeFraction = theTime - floor(theTime);
-				if(theTimeFraction < .5f)
+				// Only Flash time when timelimit is above 0, very annoying since gather timelimit is always 0
+				if(theTimeFraction < .5f && theTimeLimitSeconds>0)
 				{
 					theTimeVisible = false;
 				}
@@ -1603,6 +1605,7 @@ void AvHHud::DrawInfoLocationText()
 			if(theTimeVisible)
 			{
 				this->DrawHudString(theX, theY, ScreenWidth(), theGameTimeText.c_str(), theR, theG, theB);
+
 			}
 
 			// Increment X so time limit is drawn properly
@@ -1701,7 +1704,10 @@ void AvHHud::DrawMouseCursor(int inBaseX, int inBaseY)
                 AVHHSPRITE sprite = SPR_Load(kWhiteSprite);
                 
                 int r, g, b;
-                GetPrimaryHudColor(r, g, b, true, false);
+                //GetPrimaryHudColor(r, g, b, true, false);
+				r = CVAR_GET_FLOAT(kvCommSelectionHudRed);
+				g = CVAR_GET_FLOAT(kvCommSelectionHudGreen);
+				b = CVAR_GET_FLOAT(kvCommSelectionHudBlue);
 				
                 AvHSpriteSetRenderMode(kRenderTransAdd);
                 AvHSpriteSetColor(r / 255.0, g / 255.0, b / 255.0, 0.3);
@@ -1876,7 +1882,6 @@ float AvHHud::GetHUDHandicap() const
 	case TEAM_ONE:
 		theHandicap = this->GetServerVariableFloat(kvTeam1DamagePercent);
 		break;
-		
 	case TEAM_TWO:
 		theHandicap = this->GetServerVariableFloat(kvTeam2DamagePercent);
 		break;
@@ -2837,8 +2842,15 @@ void AvHHud::RenderSpecExtraUI()
 
 			maxSpeed = max(speed, maxSpeed);
 			//sprintf(buffer, "Speed = %d (%d) %d/%d", speed, maxSpeed, maxClimb, maxDive);
-			sprintf(buffer, "Speed = %d", speed);
-			mFont.DrawString(10, 10, buffer, theR, theG, theB);
+			sprintf(buffer, "Air speed = %d", speed);
+			if (this->GetInTopDownMode())
+			{
+				mFont.DrawString(10, 60, buffer, theR, theG, theB);
+			}
+			else
+			{
+				mFont.DrawString(10, 10, buffer, theR, theG, theB);
+			}
 
 			float theGroundSpeed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
 			int realMaxSpeed = pmove->maxspeed;
@@ -2846,8 +2858,16 @@ void AvHHud::RenderSpecExtraUI()
 
 			maxGroundSpeed = max((int)theGroundSpeed, maxGroundSpeed);
 			sprintf(buffer, "Ground speed = %d (Max %d)", (int)theGroundSpeed, realMaxSpeed);
+			if (this->GetInTopDownMode())
+			{
+				mFont.DrawString(10, 62 + mFont.GetStringHeight(), buffer, theR, theG, theB);
+			}
+			else
+			{
+				mFont.DrawString(10, 12 + mFont.GetStringHeight(), buffer, theR, theG, theB);
+			}
 			//clientMaxSpeed
-			mFont.DrawString(10, 12 + mFont.GetStringHeight(), buffer, theR, theG, theB);
+			
 			speedMeasured = true;
 		}
 
@@ -2867,6 +2887,42 @@ void AvHHud::RenderSpecExtraUI()
 			mFont.DrawString(10, 14 + mFont.GetStringHeight()*2, bufferb, theR, theG, theB);
 
 		}
+
+		
+
+		//gScrollHandler.GetMouseOneDown() avhhud
+		
+		/*
+		if (CVAR_GET_FLOAT("cl_showcount") != 0) {
+
+			// Draw the speedometer.
+			int theR, theG, theB;
+			int theCount;
+			this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+			
+			FOR_ALL_ETERENTITIES();
+			if (theBaseEntity->pev->iuser3 == AVH_USER3_INFANTRYPORTAL) //|| ((inUser3 == -1) && (theBaseEntity->pev->iuser3 > 0)))
+			{
+				theCount++;
+			}
+			END_FOR_ALL_ETERENTITIES();
+			
+
+
+			//extern playermove_s* pmove;
+
+			char bufferc[1024];
+
+			sprintf(bufferc, "nearby ip count: %d", theCount);
+			mFont.DrawString(10, 16 + mFont.GetStringHeight() * 3, bufferc, theR, theG, theB);
+
+		}
+		*/
+		
+		
+
 
 	}
 }
@@ -2922,6 +2978,24 @@ void AvHHud::RenderCommonUI()
 				maxSpeed=0, maxGroundSpeed=0, maxClimb=0, maxDive=0;
 				speedMeasured = false;
 			}
+/*
+			if (gHUD.m_Spectator.HandleButtonsDown == IN_ATTACK) {
+				// if ( ButtonPressed & IN_JUMP )
+				// Draw the left mouse show
+				int theR, theG, theB;
+				this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+
+				extern playermove_s* pmove;
+
+				char buffere[1024];
+
+				sprintf(buffere, "Attack Down");
+				mFont.DrawString(10, 18 + mFont.GetStringHeight() * 3, buffere, theR, theG, theB);
+			}
+			*/
+			
 
 
 			
@@ -2940,6 +3014,43 @@ void AvHHud::RenderCommonUI()
 				sprintf(bufferb, "pos: %d %d %d", (int)pmove->origin[0], (int)pmove->origin[1], (int)pmove->origin[2]);
 				mFont.DrawString(10, 14 + mFont.GetStringHeight() * 2, bufferb, theR, theG, theB);
 				
+				if (this->mMouseOneDown) {
+
+					// Draw the left mouse show
+					int theR, theG, theB;
+					this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+
+					extern playermove_s* pmove;
+
+					char buffere[1024];
+
+					sprintf(buffere, "Left Mouse Down");
+					mFont.DrawString(10, 18 + mFont.GetStringHeight() * 4, buffere, theR, theG, theB);
+				}
+
+				/*
+				if (CVAR_GET_FLOAT("cl_showpos") == 2) {
+
+					// Draw the speedometer.
+					int theR, theG, theB;
+					this->GetPrimaryHudColor(theR, theG, theB, true, false);
+
+
+
+					extern playermove_s* pmove; //gravity
+
+
+
+					char buffer[1024];
+
+					sprintf(buffer, "gravity: %f", pmove->gravity);
+					mFont.DrawString(10, 16 + mFont.GetStringHeight() * 3, buffer, theR, theG, theB);
+
+				}
+				*/
+
 			}
          //}
 
@@ -3019,6 +3130,7 @@ void AvHHud::RenderCommonUI()
 				this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), (kPlayerStatusVerticalInset + kPlayerStatusStatusSpacing*2)*ScreenHeight(), ScreenWidth(), theCharArray, theR, theG, theB);
 			}
 			*/
+#ifndef AVH_NO_CHEESE
 			if (CVAR_GET_FLOAT("cl_showspotted") != 0) {
 				if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_VIS_SIGHTED))
 				{
@@ -3035,6 +3147,7 @@ void AvHHud::RenderCommonUI()
 					this->DrawHudStringCentered((kPlayerStatusHorizontalCenteredInset)*ScreenWidth(), (0.55f)*ScreenHeight(), ScreenWidth(), theCharArray, 255, 0, 0);
 				}
 			}
+#endif
 			if (GetHasUpgrade(this->GetHUDUpgrades(), MASK_ALIEN_MOVEMENT))
 			{
 				// Draw it
@@ -3097,7 +3210,7 @@ void AvHHud::RenderCommonUI()
 			    // Draw it
 			    this->DrawHudStringCentered(kPlayerStatusHorizontalCenteredInset*ScreenWidth(), (kPlayerStatusVerticalInset+3*kPlayerStatusStatusSpacing)*ScreenHeight(), ScreenWidth(), theCharArray, theR, theG, theB);
 		    }
-
+			
 		    // Draw "stunned" message (it's so fast, try not blinking it)
 		    if(GetHasUpgrade(this->GetHUDUpgrades(), MASK_PLAYER_STUNNED) /*&& (theSecondOfLastUpdate % 2)*/)
 		    {
@@ -3974,6 +4087,19 @@ void AvHHud::RenderStructureRanges()
             AvHSHUGetSizeForUser3(theUser3, theMinSize, theMaxSize);
             float theMaxRadius2 = max(max(theMinSize.x, theMaxSize.x), max(theMinSize.y, theMaxSize.y));
 			//float theMaxRadius2 = max(max(theMinSize.x, theMaxSize.x), max(theMinSize.y, theMaxSize.y), max(theMinSize.z, theMaxSize.z));
+
+
+			/*
+			FOR_ALL_BASEENTITIES();
+			if ((theBaseEntity->pev->iuser3 == inUser3) || ((inUser3 == -1) && (theBaseEntity->pev->iuser3 > 0)))
+			{
+				outEntities.push_back(theBaseEntity->entindex());
+			}
+			END_FOR_ALL_BASEENTITIES();
+			*/
+
+
+
 
             AVHHSPRITE theSprite = this->mBuildCircleSprite;
 			// : 0000291 
