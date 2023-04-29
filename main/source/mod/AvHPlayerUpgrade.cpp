@@ -68,6 +68,11 @@
 #include "../util/Balance.h"
 #include "../common/damagetypes.h"
 
+#ifdef AVH_SERVER
+#include "AvHServerVariables.h"
+#endif
+//#include "../cl_dll/cl_util.h"
+
 const int	kWeaponTracerDefault		= 0;
 const int	kWeaponTracerLevelOne		= 6;
 const int	kWeaponTracerLevelTwo		= 4;
@@ -129,6 +134,14 @@ float AvHPlayerUpgrade::GetArmorValue(int inNumHives)
 
 		//theArmorBonus = (theArmorValueBase + inNumHives*theArmorValuePerHive);
 		theArmorBonus+=kArmorValuePerHive;
+	}else if (inNumHives == 4)
+	{
+		//float theArmorValueBase = 1.0f + (float)BALANCE_VAR(kArmorValueBase);
+		//float theArmorValuePerHive = (float)BALANCE_VAR(kArmorValuePerHive);
+		//inNumHives = min(inNumHives, kMaxHives);
+
+		//theArmorBonus = (theArmorValueBase + inNumHives*theArmorValuePerHive);
+		theArmorBonus += 1.5f*kArmorValuePerHive;
 	}
 
 	// Smaller is better
@@ -154,7 +167,7 @@ float AvHPlayerUpgrade::GetArmorAbsorption(AvHUser3 inUser3, int inUpgrade, int 
 	}
 
   // Increase absorption at higher hive-levels to make sure armor is always used before player dies
-    if(inNumHives==3)
+    if(inNumHives>=3)
     {
         switch(inUser3)
         {
@@ -188,6 +201,10 @@ int AvHPlayerUpgrade::GetMaxHealth(int inUpgrade, AvHUser3 inUser3, int inLevel)
 	case AVH_USER3_MARINE_PLAYER:
 	case AVH_USER3_COMMANDER_PLAYER:
 		theMaxHealth = BALANCE_VAR(kMarineHealth);
+		//if (GetHasUpgrade(inUpgrade, MASK_UPGRADE_10))
+		//{
+		//	theMaxHealth = BALANCE_VAR(kMarineHealth) + 20;
+		//}
 		break;
 		
 	case AVH_USER3_ALIEN_PLAYER1:
@@ -436,6 +453,15 @@ float AvHPlayerUpgrade::GetSilenceVolumeLevel(AvHUser3 inUser3, int inUpgrade)
 		theSilenceVolumeFactor = (float)BALANCE_VAR(kSilenceLevel3Volume);
 		break;
 	}
+	
+	// /*
+//#ifdef AVH_CLIENT
+	//if (CVAR_GET_FLOAT("cl_allowsilence") == 0.0f) {
+	//	theSilenceVolumeFactor = 1.0f;
+	//}
+ //#endif
+//*/
+	
 
 	return theSilenceVolumeFactor;
 }
@@ -457,7 +483,11 @@ float AvHPlayerUpgrade::CalculateDamageLessArmor(AvHUser3 inUser3, int inUser4, 
 	float flBonus = AvHPlayerUpgrade::GetArmorValue(inNumHives);
 	
 	// Level 1 aliens don't take falling damage, ever
-	if((inUser3 == AVH_USER3_ALIEN_PLAYER1) && (bitsDamageType & DMG_FALL))
+#ifdef AVH_SERVER
+	if((inUser3 == AVH_USER3_ALIEN_PLAYER1) && (bitsDamageType & DMG_FALL) && avh_fallsafe.value != 1)
+#else
+	if ((inUser3 == AVH_USER3_ALIEN_PLAYER1) && (bitsDamageType & DMG_FALL))
+#endif
 	{
 		flDamage = 0.0f;
 	}
@@ -479,20 +509,27 @@ float AvHPlayerUpgrade::CalculateDamageLessArmor(AvHUser3 inUser3, int inUser4, 
 		else
 		{
 			ioArmorValue -= flArmor;
-			if ( bitsDamageType & (NS_DMG_ACID) )
-			{
-				ioArmorValue -= flArmor;
-			}
+			//bugged code for my bile bomb implementation of dealing anti armor damage against players
+			//if ( bitsDamageType & (NS_DMG_ACID) )
+			//{
+			//	ioArmorValue -= flArmor;
+			//}
 		}
 	
 		flDamage = flNew;
 	}
 	
+	//once i uncomment this code bile bomb will stop doing damage to players but keep damaging their armor
+	//if (bitsDamageType & (NS_DMG_ACID))
+	//{
+	//	flDamage = 0.0f;
+	//}
+
 	return flDamage;
 }
 
 const int kCombatMinLevel = 1;
-const int kCombatMaxLevel = 10;
+const int kCombatMaxLevel = 60;
 
 float AvHPlayerUpgrade::GetExperienceForLevel(int inLevel)
 {
