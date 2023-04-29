@@ -62,6 +62,7 @@
 #include "../common/vector_util.h"
 #include "AvHMarineWeapons.h"
 #include "../dlls/util.h"
+#include "../mod/AvHServerVariables.h"
 
 LINK_ENTITY_TO_CLASS(kwPistol, AvHPistol);
 void V_PunchAxis( int axis, float punch );
@@ -70,6 +71,16 @@ void AvHPistol::Init()
 {
 	this->mRange = kHGRange;
 	this->mDamage = BALANCE_VAR(kHGDamage);
+	/*
+#ifdef AVH_SERVER
+	if (avh_killrewards.value == 1) {
+		this->mDamage = 500 * BALANCE_VAR(kHGDamage);
+	}
+	else {
+		this->mDamage = BALANCE_VAR(kHGDamage);
+	}
+#endif
+*/
 }
 
 int	AvHPistol::GetBarrelLength() const
@@ -90,11 +101,23 @@ int	AvHPistol::GetDeployAnimation() const
 char* AvHPistol::GetDeploySound() const
 {
 	return kHGDeploySound;
-}
+}//if (GetHasUpgrade(theUser4, MASK_BUFFED))
 
 float AvHPistol::GetDeployTime() const
 {
-	return .35f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.2f;
+	}
+	else {
+		return 0.35f;
+	}
+	//return .35f;
 }
 
 int	AvHPistol::GetEmptyShootAnimation() const
@@ -159,7 +182,17 @@ bool AvHPistol::GetMustPressTriggerForEachShot() const
 
 float AvHPistol::GetReloadTime(void) const
 {
-	return 3.0f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 2.25f;
+	}
+	else {
+		return 3.0f;
+	}
+	//return 3.0f;
 }
 
 void AvHPistol::Precache()
@@ -180,6 +213,23 @@ void AvHPistol::Spawn()
     AvHMarineWeapon::Spawn();
 
 	Precache();
+
+//#ifdef AVH_SERVER
+	//if (avh_killrewards.value == 1) {
+	//	this->mDamage = 500 * BALANCE_VAR(kHGDamage);
+	//}
+	//else {
+		//this->mDamage = BALANCE_VAR(kHGDamage);
+	//}
+//#endif
+
+	#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		this->mDamage *= 0.9f; //10% less damage
+	}
+	#endif
+
 
 	this->m_iId = AVH_WEAPON_PISTOL;
 	this->m_iDefaultAmmo = BALANCE_VAR(kHGMaxClip)*(BALANCE_VAR(kMarineSpawnClips) + 1);
