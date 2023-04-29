@@ -107,6 +107,9 @@
 #include "AvHSpawn.h"
 //#include "AvHConstants.h"
 
+#define kTurretSoundRunningLimit 30
+
+
 class AvHPlayer;
 
 class TeamPurchase
@@ -142,6 +145,8 @@ public:
 	const AuthIDListType&	GetServerOpList() const;
 	void				UpdateUplink();
 #endif
+
+
 
 	// this is the game name that gets seen in the server browser
 	virtual int			AmmoShouldRespawn( CBasePlayerAmmo *pAmmo );
@@ -219,6 +224,7 @@ public:
     const cvar_t*		GetServerVariable(int i) const;
 
 	bool				GetCheatsEnabled(void) const;
+	bool				GetFriendlyFireEnabled(void) const;
 	bool				GetIsCheatEnabled(const string& inCheatName) const;
 	void				SetCheatEnabled(const string& inCheatName, bool inEnabledState = true);
 	
@@ -234,7 +240,7 @@ public:
 	Vector				GetSpawnAreaCenter(AvHTeamNumber inTeamNumber) const;
 	float				GetTimeGameStarted() const;
 	int					GetTimeLimit() const;
-	int					GetWeightForItemAndAmmo(AvHWeaponID inWeapon, int inNumRounds) const;
+	float				GetWeightForItemAndAmmo(int inWeapon, int inNumRounds) const;
 	bool				AttemptToJoinTeam(AvHPlayer* inPlayer, AvHTeamNumber theTeamNumber, bool inDisplayErrorMessage = true);
 	const AvHTeam*		GetTeam(AvHTeamNumber inTeamNumber) const;
 	const AvHTeam*		GetTeamA() const;
@@ -291,6 +297,11 @@ public:
 
 	int					GetStructureLimit();
 	void				RemoveEntityUnderAttack(int entIndex);
+
+	//private variables bad bad bad bad - alien
+	float				mSentrySoundRunning;
+
+
 protected:
 	void				AutoAssignPlayer(AvHPlayer* inPlayer);
 	void				PerformMapValidityCheck();
@@ -309,7 +320,7 @@ protected:
 #endif
 
 private:
-	void				AwardExperience(AvHPlayer* inPlayer, int inTargetLevel, bool inAwardFriendliesInRange = true);
+	void				AwardExperience(AvHPlayer* inPlayer, int inTargetLevel, AvHPlayer* enemyPlayer, bool inAwardFriendliesInRange = true);
 	void				CalculateMapExtents();
 	void				CalculateMapGamma();
 	void				CopyDataToSpawnEntity(const AvHSpawn& inSpawnEntity) const;
@@ -378,6 +389,8 @@ private:
 	float				mLastParticleUpdate;
 	float				mLastNetworkUpdate;
 	float				mLastWorldEntityUpdate;
+	
+
 	float				mLastCloakableUpdate;
 	float				mLastVictoryUpdate;
 	float				mLastMapChange;
