@@ -408,6 +408,11 @@ bool AvHTeam::GetHasTeamLost() const
 		{
 			theTeamHasLost = true;
 		}
+
+		if (avh_fadedgamemode.value == 1 && !theHasAtLeastOneActivePlayer)
+		{
+			theTeamHasLost = true;
+		}
 	}
 
 	if(theTeamHasLost)
