@@ -2951,6 +2951,26 @@ void AvHGamerules::ResetEntities()
 	// Now reset all the world entities and mark useable ones with AVH_USER3_USEABLE
 	//AvHSUPrintDevMessage("FOR_ALL_BASEENTITIES: AvHGamerules::ResetEntities\n");
 
+
+	// Reset ONLY the player entities - added by alien
+	FOR_ALL_BASEENTITIES();
+	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(theBaseEntity);
+	if (thePlayer && (thePlayer->GetPlayMode() == PLAYMODE_READYROOM)) // && (thePlayer->GetHasSeenATeam()))
+	{
+		int theUser3 = thePlayer->pev->iuser3;
+		int theUser4 = thePlayer->pev->iuser4;
+		int thePlayMode = thePlayer->pev->playerclass;
+		int thePlayerTeam = thePlayer->pev->team;
+		int theSolidType = thePlayer->pev->solid;
+		thePlayer->ResetEntity();
+		thePlayer->pev->iuser3 = theUser3;
+		thePlayer->pev->iuser4 = theUser4;
+		thePlayer->pev->playerclass = thePlayMode;
+		thePlayer->pev->team = thePlayerTeam;
+		thePlayer->pev->solid = theSolidType;
+	}
+	END_FOR_ALL_BASEENTITIES();
+
 	FOR_ALL_BASEENTITIES();
 
 	// Reset non-player entities
