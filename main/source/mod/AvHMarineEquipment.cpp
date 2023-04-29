@@ -792,13 +792,16 @@ void AvHHeavyArmor::Touch(CBaseEntity* inOther)
 		if(thePlayer->GetIsMarine())
 		{
 			// Check to make sure they don't have heavy armor or jetpack already
-			if((!thePlayer->GetHasJetpack() || GetGameRules()->GetIsCombatMode()) && !thePlayer->GetHasHeavyArmor())//: ignore in combat mode since were trying to touch it.
+			if((!(thePlayer->GetHasJetpack() && avh_heavyjp.value == 0) || GetGameRules()->GetIsCombatMode()) && !thePlayer->GetHasHeavyArmor())//: ignore in combat mode since were trying to touch it.
 			{
 				// Needed because view model changes
 				if(thePlayer->HolsterWeaponToUse())
 				{
+					//Take away jetpack
+					if (avh_heavyjp.value == 0) {
+						SetUpgradeMask(&thePlayer->pev->iuser4, MASK_UPGRADE_7, false);
+					}
 					// Give player heavy armor
-					SetUpgradeMask(&thePlayer->pev->iuser4, MASK_UPGRADE_7, false);
 					SetUpgradeMask(&thePlayer->pev->iuser4, MASK_UPGRADE_13);
 
 					// Mark player with heavy armor
@@ -845,12 +848,15 @@ void AvHJetpack::Touch(CBaseEntity* inOther)
 		if(thePlayer->GetIsMarine())
 		{
 			// Check to make sure they don't have heavy armor or jetpack already
-			if((!thePlayer->GetHasHeavyArmor() || GetGameRules()->GetIsCombatMode()) && !thePlayer->GetHasJetpack())//: ignore in combat mode since were trying to touch it.
+			if((!(thePlayer->GetHasHeavyArmor() && avh_heavyjp.value == 0) || GetGameRules()->GetIsCombatMode()) && !thePlayer->GetHasJetpack())//: ignore in combat mode since were trying to touch it.
 			{
+				// Needed because view model changes
                 if(thePlayer->HolsterWeaponToUse())
                 {
 				    // Give player jetpack
-					SetUpgradeMask(&thePlayer->pev->iuser4, MASK_UPGRADE_13, false);
+					if (avh_heavyjp.value == 0) {
+						SetUpgradeMask(&thePlayer->pev->iuser4, MASK_UPGRADE_13, false);
+					}
 				    SetUpgradeMask(&thePlayer->pev->iuser4, MASK_UPGRADE_7);
 				    
 					// Mark player with jetpack
