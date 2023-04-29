@@ -56,7 +56,7 @@
 //
 // Revision 1.38  2002/10/03 18:57:20  Flayra
 // - Picking up heavy armor holsters your weapon for view model switch
-// - Added "armory's upgrading, ammo not available" message but removed it for some reason (I think it was acting strange, like playing way too often)
+// //- Added "armory's upgrading, ammo not available" message but removed it for some reason (I think it was acting strange, like playing way too often)
 //
 // Revision 1.37  2002/09/25 21:12:26  Flayra
 // - Undid solidity change (causes Sys_Error)
@@ -152,6 +152,7 @@
 LINK_ENTITY_TO_CLASS(kwDeployedMine, AvHDeployedMine);
 LINK_ENTITY_TO_CLASS(kwHealth, AvHHealth);
 LINK_ENTITY_TO_CLASS(kwCatalyst, AvHCatalyst);
+LINK_ENTITY_TO_CLASS(kwNano, AvHNano);
 LINK_ENTITY_TO_CLASS(kwGenericAmmo, AvHGenericAmmo);
 LINK_ENTITY_TO_CLASS(kwJetpack, AvHJetpack);
 LINK_ENTITY_TO_CLASS(kwAmmoPack, AvHAmmoPack);
@@ -701,6 +702,7 @@ BOOL AvHCatalyst::GiveCatalyst(CBaseEntity* inOther)
         //// Never kill the player
         //theDamage = min(theDamage, thePlayer->pev->health - 1);
         //thePlayer->TakeDamage(thePlayer->pev, thePlayer->pev, theDamage, DMG_GENERIC | DMG_IGNOREARMOR);
+			
 		//eternium adjustment for catpacks to give armor
 		/*
 		int theCurrentArmor = thePlayer->pev->armorvalue;
@@ -761,6 +763,64 @@ void AvHCatalyst::Touch(CBaseEntity* inOther)
     {
         UTIL_Remove(this);
     }
+}
+
+
+void AvHNano::Precache(void)
+{
+	PRECACHE_UNMODIFIED_MODEL(kNanoModel);
+	PRECACHE_UNMODIFIED_SOUND(kNanoPickupSound);
+}
+
+void AvHNano::Spawn(void)
+{
+	this->Precache();
+
+	SET_MODEL(ENT(pev), kNanoModel); //"models/ns_bast/tripod1.mdl"
+	this->pev->movetype = MOVETYPE_TOSS;
+	this->pev->solid = SOLID_TRIGGER;
+
+	UTIL_SetSize(pev, kNanoMinSize, kNanoMaxSize);
+	UTIL_SetOrigin(pev, pev->origin);
+
+	SetTouch(&AvHNano::Touch);
+
+	// Expire after a time.
+	int theLifetime = this->GetLifetime();
+	if (theLifetime > 0)
+	{
+		SetThink(&AvHNano::SUB_Remove);
+		this->pev->nextthink = gpGlobals->time + theLifetime;
+	}
+
+	this->pev->iuser3 = AVH_USER3_MARINEITEM;
+}
+
+BOOL AvHNano::GiveNano(CBaseEntity* inOther)
+{
+	BOOL theSuccess = FALSE;
+
+	float theNanoDuration = 6;//BALANCE_VAR(kCatalystDuration);
+
+	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(inOther);
+	if (thePlayer && thePlayer->GetIsRelevant() && thePlayer->GetIsMarine() && !thePlayer->GetIsNanoed())
+	{
+		EMIT_SOUND(ENT(inOther->pev), CHAN_ITEM, kNanoPickupSound, 1, ATTN_NORM);
+
+		thePlayer->SetIsNanoed(true, theNanoDuration);
+
+		theSuccess = TRUE;
+	}
+
+	return theSuccess;
+}
+
+void AvHNano::Touch(CBaseEntity* inOther)
+{
+	if (AvHNano::GiveNano(inOther))
+	{
+		UTIL_Remove(this);
+	}
 }
 
 void AvHHeavyArmor::Precache(void)
@@ -1643,15 +1703,27 @@ void AvHMarineBaseBuildable::TechnologyBuilt(AvHMessageID inMessageID)
 // Marine buildings
 const float kNukeThinkInterval = 1.5f;
 
-AvHNuke::AvHNuke() : AvHMarineBaseBuildable(TECH_NULL, BUILD_NUKE, kwsNuke, AVH_USER3_NUKE)
+AvHNuke::AvHNuke() : AvHMarineBaseBuildable(TECH_NUKE_PLANT, BUILD_NUKE, kwsNuke, AVH_USER3_NUKE)
 {
 }
 
 void AvHNuke::Precache()
 {
 	AvHMarineBaseBuildable::Precache();
+	
+	//CBaseAnimating::Precache();
+
+	//PRECACHE_UNMODIFIED_MODEL(kNukeModel);
+	//PRECACHE_UNMODIFIED_SOUND(kPhaseGateSound);
+	//PRECACHE_UNMODIFIED_SOUND(kPhaseGateTransportSound);
+	
+	/*
 	PRECACHE_UNMODIFIED_SOUND(kNukeActive);
 	PRECACHE_UNMODIFIED_SOUND(kNukeExplode);
+	PRECACHE_UNMODIFIED_SOUND(kNukeDeploy);
+	*/
+
+	
 }
 
 void AvHNuke::ActiveThink()
@@ -1699,12 +1771,12 @@ void AvHNuke::ActiveThink()
 			// Do damage (theDamage at epicenter, falls off from there, doesn't hurt people in water, only hurts people that can be seen by blast)
 			float theDamage = kNukeDamage;
 			float theRadius = kNukeRange;
-			::RadiusDamage(this->pev->origin, this->pev, this->pev, theDamage, theRadius, CLASS_NONE, DMG_BLAST);
+			::RadiusDamage(this->pev->origin, this->pev, this->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_BLAST);
 			
 			// Play view shake here
-			float theShakeAmplitude = 100;
+			float theShakeAmplitude = 80;
 			float theShakeFrequency = 150;
-			float theShakeDuration = 10.0f;
+			float theShakeDuration = 6.0f;
 			float theShakeRadius = 2000;
 			UTIL_ScreenShake(this->pev->origin, theShakeAmplitude, theShakeFrequency, theShakeDuration, theShakeRadius);
 			
@@ -1728,6 +1800,10 @@ void AvHNuke::ActiveThink()
 
 					if(theNearEpicenter || theExplosionVisible)
 					{
+						//radiation blast damage added by alien
+						
+						//theEntity->TakeDamage(theEntity->pev, this->pev, 20, DMG_FALL);
+
 						Vector theFadeColor;
 						theFadeColor.x = 255;
 						theFadeColor.y = 255;
@@ -1761,16 +1837,42 @@ void AvHNuke::DeathThink()
 
 void AvHNuke::Spawn()
 {
+	//PRECACHE_UNMODIFIED_MODEL(kNukeModel);
+	//SET_MODEL(ENT(this->pev), kScanModel);
+	//this->mModelName = kScanModel;
+
+
+	//PRECACHE_UNMODIFIED_SOUND(kNukeActive);
+	//PRECACHE_UNMODIFIED_SOUND(kNukeExplode);
+	//PRECACHE_UNMODIFIED_SOUND(kNukeDeploy);
 	AvHBaseBuildable::Spawn();
 	
 	// Set ActiveThink
+
+	
+	this->mActive = false;
+	this->mTimeActivated = -1;
+	/*
+	SetThink(&AvHNuke::ActiveThink);
+	this->pev->nextthink = gpGlobals->time + kNukeThinkInterval;
+	
+	*/
+}
+
+void AvHNuke::SetHasBeenBuilt()
+{
+	AvHBuildable::SetHasBeenBuilt();
+
 	this->mActive = false;
 	this->mTimeActivated = -1;
 
 	SetThink(&AvHNuke::ActiveThink);
 	this->pev->nextthink = gpGlobals->time + kNukeThinkInterval;
+
+	UTIL_ShowMessageAll("Nuclear launch detected");
 }
 
+/*
 char* AvHNuke::GetDeploySound() const
 {
 	return kNukeDeploy;
@@ -1780,7 +1882,7 @@ char* AvHNuke::GetKilledSound() const
 {
 	return kNukeKilled;
 }
-
+*/
 
 const float kInfantryPortalThinkTime = 1.0f;
 #define kInfantryPortalLightEffect EF_LIGHT
