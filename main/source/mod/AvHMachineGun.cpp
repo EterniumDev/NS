@@ -71,6 +71,7 @@
 #include "../common/vector_util.h"
 #include "AvHMarineWeapons.h"
 #include "../dlls/util.h"
+#include "../mod/AvHServerVariables.h"
 
 LINK_ENTITY_TO_CLASS(kwMachineGun, AvHMachineGun);
 void V_PunchAxis( int axis, float punch );
@@ -78,7 +79,31 @@ void V_PunchAxis( int axis, float punch );
 void AvHMachineGun::Init()
 {
 	this->mRange = kMGRange;
-	this->mDamage = BALANCE_VAR(kMGDamage);
+
+	
+
+		this->mDamage = BALANCE_VAR(kMGDamage);
+		/*
+#ifdef AVH_SERVER
+		
+		
+		if (avh_bhopmarine.value == 0) {
+			//this->mDamage = BALANCE_VAR(kMGDamage);
+			ALERT(at_console, "LOW MG DAMAGE PROC \n");
+		}
+		else {
+			this->mDamage = 5;
+			ALERT(at_console, "NOM MG DAMAGE PROC \n");
+		}
+#endif
+
+*/
+		//this->mDamage = 7;
+	
+	//if (avh_bhopmarine.value == 0) {
+	
+
+	
 }
 
 int	AvHMachineGun::GetBarrelLength() const
@@ -104,7 +129,17 @@ char* AvHMachineGun::GetDeploySound() const
 
 float AvHMachineGun::GetDeployTime() const
 {
-	return .4f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.25f;
+	}
+	else {
+		return 0.4f;
+	}
+	//return .4f;
 }
 
 bool AvHMachineGun::GetHasMuzzleFlash() const
@@ -134,7 +169,17 @@ char* AvHMachineGun::GetWorldModel() const
 
 float AvHMachineGun::GetReloadTime(void) const
 {
-	return 3.0f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 2.25f;
+	}
+	else {
+		return 3.0f;
+	}
+	//return 3.0f;
 }
 
 Vector AvHMachineGun::GetProjectileSpread() const
@@ -165,6 +210,13 @@ void AvHMachineGun::Spawn()
 
 	this->m_iId = AVH_WEAPON_MG;
 	this->m_iDefaultAmmo = BALANCE_VAR(kMGMaxClip)*(BALANCE_VAR(kMarineSpawnClips) + 1);
+
+	#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		this->mDamage *= 0.9f; //10% less damage
+	}
+	#endif
 
     // Set our class name
 	this->pev->classname = MAKE_STRING(kwsMachineGun);
