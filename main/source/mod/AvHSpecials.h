@@ -159,13 +159,13 @@ typedef enum
 	MASK_UPGRADE_7		= 0x00000200,	// Marine jetpacks, Cloaking, marine basebuildable slot #6
 	MASK_UPGRADE_8		= 0x00000400,	// Pheromone, motion-tracking, marine basebuildable slot #7
 	MASK_UPGRADE_9		= 0x00000800,	// Scent of fear, exoskeleton
-	MASK_UPGRADE_10		= 0x00001000,	// Defensive level 2, power armor
+	MASK_UPGRADE_10		= 0x00001000,	// Defensive level 2, power armor/now cybernetics upgrade
 	MASK_UPGRADE_11		= 0x00002000,	// Defensive level 3, electrical defense
 	MASK_UPGRADE_12		= 0x00004000,	// Movement level 2, 
 	MASK_UPGRADE_13		= 0x00008000,	// Movement level 3, marine heavy armor
 	MASK_UPGRADE_14		= 0x00010000,	// Sensory level 2
 	MASK_UPGRADE_15		= 0x00020000,	// Sensory level 3
-	MASK_ALIEN_MOVEMENT	= 0x00040000,	// Onos is charging
+	MASK_ALIEN_MOVEMENT	= 0x00040000,	// Onos is charging, skulk leaping, fade blinking
 	MASK_WALLSTICKING	= 0x00080000,	// Flag for wall-sticking
 	MASK_BUFFED			= 0x00100000,	// Alien is in range of active primal scream, or marine is under effects of catalyst
 	MASK_UMBRA			= 0x00200000,
@@ -179,6 +179,46 @@ typedef enum
 	MASK_PARASITED		= 0x20000000,
 	MASK_SENSORY_NEARBY	= 0x40000000
 } AvHUpgradeMask;
+
+typedef enum
+{
+	MASKB_NONE = 0x00000000,
+	MASK_NANO = 0x00000001,	// Alien is in range of active primal scream, or marine is under effects of catalyst
+
+	/*
+	MASK_VIS_SIGHTED = 0x00000001,	// This means this is an entity that can be seen by at least one member of the opposing team.  Assumes commanders can never be seen.
+	MASK_VIS_DETECTED = 0x00000002,	// This entity has been detected by the other team but isn't currently seen
+	MASK_BUILDABLE = 0x00000004,	// This entity is buildable
+	MASK_UPGRADE_1 = 0x00000008,	// Marine weapons 1, armor, marine basebuildable slot #0
+	MASK_UPGRADE_2 = 0x00000010,	// Marine weapons 2, regen, marine basebuildable slot #1
+	MASK_UPGRADE_3 = 0x00000020,	// Marine weapons 3, redemption, marine basebuildable slot #2
+	MASK_UPGRADE_4 = 0x00000040,	// Marine armor 1, speed, marine basebuildable slot #3
+	MASK_UPGRADE_5 = 0x00000080,	// Marine armor 2, adrenaline, marine basebuildable slot #4
+	MASK_UPGRADE_6 = 0x00000100,	// Marine armor 3, silence, marine basebuildable slot #5
+	MASK_UPGRADE_7 = 0x00000200,	// Marine jetpacks, Cloaking, marine basebuildable slot #6
+	MASK_UPGRADE_8 = 0x00000400,	// Pheromone, motion-tracking, marine basebuildable slot #7
+	MASK_UPGRADE_9 = 0x00000800,	// Scent of fear, exoskeleton
+	MASK_UPGRADE_10 = 0x00001000,	// Defensive level 2, power armor
+	MASK_UPGRADE_11 = 0x00002000,	// Defensive level 3, electrical defense
+	MASK_UPGRADE_12 = 0x00004000,	// Movement level 2, 
+	MASK_UPGRADE_13 = 0x00008000,	// Movement level 3, marine heavy armor
+	MASK_UPGRADE_14 = 0x00010000,	// Sensory level 2
+	MASK_UPGRADE_15 = 0x00020000,	// Sensory level 3
+	MASK_ALIEN_MOVEMENT = 0x00040000,	// Onos is charging
+	MASK_WALLSTICKING = 0x00080000,	// Flag for wall-sticking
+	MASK_BUFFED = 0x00100000,	// Alien is in range of active primal scream, or marine is under effects of catalyst
+	MASK_UMBRA = 0x00200000,
+	MASK_DIGESTING = 0x00400000,	// When set on a visible player, player is digesting.  When set on invisible player, player is being digested
+	MASK_RECYCLING = 0x00800000,
+	MASK_TOPDOWN = 0x01000000,
+	MASK_PLAYER_STUNNED = 0x02000000,	// Player has been stunned by stomp
+	MASK_ENSNARED = 0x04000000,
+	MASK_ALIEN_EMBRYO = 0x08000000,
+	MASK_SELECTABLE = 0x10000000,
+	MASK_PARASITED = 0x20000000,
+	MASK_SENSORY_NEARBY = 0x40000000
+	*/
+} AvHUpgradeMaskB;
 
 // IMPORTANT: Keep this mask up to date as upgrades change and move around
 const int kUpgradeBitMask = MASK_UPGRADE_1 | MASK_UPGRADE_2 | MASK_UPGRADE_3 | MASK_UPGRADE_4 | MASK_UPGRADE_5 | MASK_UPGRADE_6 /*| MASK_UPGRADE_7*/ | MASK_UPGRADE_8 | MASK_UPGRADE_9 | MASK_UPGRADE_10 | MASK_UPGRADE_11 | MASK_UPGRADE_12 /*| MASK_UPGRADE_13 */ | MASK_UPGRADE_14 | MASK_UPGRADE_15;

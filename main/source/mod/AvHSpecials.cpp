@@ -36,6 +36,10 @@
 #include "AvHSpecials.h"
 #include "../localassert.h"
 #include "AvHConstants.h"
+#ifdef AVH_CLIENT
+//#include "cl_dll/cl_util.h"
+//#include "../mod/AvHClientVariables.h"
+#endif
 
 void InitializeBuildable(int& inUser3, int& inUser4, float& inFuser1, int inUser3ID)
 {
@@ -123,6 +127,11 @@ AvHUpgradeMask ProcessGenericUpgrade(int& inUpgradeVariable, AvHMessageID inUpgr
         SetUpgradeMask(&inUpgradeVariable, MASK_UPGRADE_7, inGive);
         theUpgradeMask = MASK_UPGRADE_7;
         break;
+
+	case RESEARCH_HEALTH:
+		SetUpgradeMask(&inUpgradeVariable, MASK_UPGRADE_10, inGive);
+		theUpgradeMask = MASK_UPGRADE_10;
+		break;
 
 	// Alien upgrades
 	case ALIEN_EVOLUTION_ONE:
@@ -316,6 +325,9 @@ int AvHGetAlienUpgradeLevel(int inUser4, AvHUpgradeMask inMask)
 			break;
 		}
 	}
+	//if (inMask == MASK_UPGRADE_6 && (CVAR_GET_FLOAT("cl_allowsilence") != 0))
+	//{
+	//}
 	return theLevel;
 }
 
