@@ -62,6 +62,7 @@
 #endif
 
 #include "AvHAlienWeaponConstants.h"
+#include "AvHServerVariables.h"
 
 LINK_ENTITY_TO_CLASS(kwSporeGun, AvHSpore);
 
@@ -128,7 +129,8 @@ void AvHSporeProjectile::SporeCloudThink()
 		if(thePlayer)
 		{
 			ASSERT(this->pev->team != 0);
-			if(theEntity->pev->team != this->pev->team)
+			if(theEntity->pev->team != this->pev->team)//||(GetGameRules()->GetFriendlyFireEnabled())) //now that I've tested this
+				//I can safely say that friendly fire on lerk spores is awful
 			{
 				// Don't do damage to heavy armor
 				// : 1019 
@@ -146,7 +148,14 @@ void AvHSporeProjectile::SporeCloudThink()
 						
 						if(theTraceResult.flFraction == 1.0f)
 						{
-							theEntity->TakeDamage(this->pev, VARS(this->pev->owner), this->mDamage, NS_DMG_NORMAL);
+							float preDamage = this->mDamage;
+							#ifdef AVH_SERVER
+							if (avh_balance_ava.value == 1)
+							{
+								preDamage += theEntity->pev->max_health*0.04f;
+							}
+							#endif
+							theEntity->TakeDamage(this->pev, VARS(this->pev->owner), preDamage, NS_DMG_NORMAL);
 
 							thePlayer->SetTimeOfLastSporeDamage(gpGlobals->time);
 						}
@@ -348,6 +357,14 @@ void AvHSpore::FireProjectiles(void)
 
 		// Set the spore damage
 		float theDamage = this->mDamage*AvHPlayerUpgrade::GetAlienRangedDamageUpgrade(this->m_pPlayer->pev->iuser4);
+		/*
+		#ifdef AVH_SERVER
+		if (avh_balance_ava.value == 1)
+		{
+			theDamage *= 2;
+		}
+		#endif
+		*/
 		theSpore->SetDamage(theDamage);
 	//}
 	#endif	
