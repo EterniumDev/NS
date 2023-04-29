@@ -201,6 +201,7 @@
 #include "AvHNetworkMessages.h"
 #include "AvHNexusServer.h"
 #include "AvHParticleTemplateClient.h"
+#include "AvHTurret.h"
 
 // : 0001073
 #ifdef USE_OLDAUTH
@@ -329,8 +330,41 @@ AvHGamerules::AvHGamerules() : mTeamA(TEAM_ONE), mTeamB(TEAM_TWO)
 
     RegisterServerVariable(&avh_blockscripts);
 	RegisterServerVariable(&avh_jumpmode);
-	RegisterServerVariable(&avh_tournamentmode);
+	RegisterServerVariable(&avh_reverselerk);
+	RegisterServerVariable(&avh_fastonoscharge);
+	RegisterServerVariable(&avh_bhoplimit);
+	RegisterServerVariable(&avh_bhopmarine);
+	RegisterServerVariable(&avh_bhopskulk);
+	RegisterServerVariable(&avh_bhopgorge);
+	RegisterServerVariable(&avh_bhopfade);
+	RegisterServerVariable(&avh_bhoponos);
+	RegisterServerVariable(&avh_wallstrafe);
+	RegisterServerVariable(&avh_restocknades);
 	RegisterServerVariable(&avh_autoswap);
+	RegisterServerVariable(&avh_killrewards);
+	RegisterServerVariable(&avh_turretupgradesound);
+	//RegisterServerVariable(&avh_turretupgradesound);
+
+	RegisterServerVariable(&avh_infinite_ammo);
+	RegisterServerVariable(&avh_infinite_energy);
+	RegisterServerVariable(&avh_infinite_jetpack);
+	RegisterServerVariable(&avh_vampire_factor);
+	RegisterServerVariable(&avh_balance_mvm);
+	RegisterServerVariable(&avh_balance_ava);
+	RegisterServerVariable(&avh_balance_faded);
+	RegisterServerVariable(&avh_last_stand);
+	RegisterServerVariable(&avh_self_weld);
+	RegisterServerVariable(&avh_golden_deagle);
+	RegisterServerVariable(&avh_fadedgamemode);
+	RegisterServerVariable(&avh_commheight);
+	RegisterServerVariable(&avh_commcustomcam);
+	RegisterServerVariable(&avh_heavyjp);
+	RegisterServerVariable(&avh_fallsafe);
+	RegisterServerVariable(&avh_worldlight);
+	
+	
+
+	RegisterServerVariable(&avh_tournamentmode);
     RegisterServerVariable(&avh_team1damagepercent);
     RegisterServerVariable(&avh_team2damagepercent);
     RegisterServerVariable(&avh_team3damagepercent);
@@ -499,16 +533,109 @@ void AvHGamerules::RewardPlayerForKill(AvHPlayer* inPlayer, CBaseEntity* inTarge
 	{
 		// Team could be NULL if spectating and using cheats
 		AvHTeam* theTeamPointer = inPlayer->GetTeamPointer();
-
+		
 		// Only award resources for killing players
 		if(theTeamPointer && inTarget->IsPlayer())
 		{
+			AvHPlayer* theEnemyPlayer = dynamic_cast<AvHPlayer*>(inTarget);
+			AvHTeam* theEnemyTeamPointer = theEnemyPlayer->GetTeamPointer();
+			//CBasePlayer* ourBasePlayer = dynamic_cast<CBasePlayer*>(inPlayer);
+
+
+
 			if(!this->GetIsCombatMode())
 			{
 				int theResourceValue = 0;
 				int theMin = BALANCE_VAR(kKillRewardMin);
 				int theMax = BALANCE_VAR(kKillRewardMax);
-				theResourceValue = RANDOM_LONG(theMin, theMax);
+
+				if (avh_killrewards.value == 0) { //no res on kills
+					theResourceValue = 0;
+				}
+				else if (avh_killrewards.value == 1) { //classic ns rng res from kills
+					theResourceValue = RANDOM_LONG(theMin, theMax);
+				}
+				else if (avh_killrewards.value == 2) { //anti snowball team res diff
+					//theResourceValue = 5;
+
+					if (!theEnemyTeamPointer)
+					{
+						//char msg[1024];
+						//sprintf(msg, "FAILED TO  SEND RES KILL \n");
+						//ClientPrint(inPlayer->pev, HUD_PRINTCENTER, msg);
+					}
+					else 
+					{
+
+						int ourTeamRes = theTeamPointer->GetTotalResourcesGathered();
+						int enemyTeamRes = theEnemyTeamPointer->GetTotalResourcesGathered();
+						int maxDiffChange = 1;
+
+						if (enemyTeamRes > ourTeamRes + 50) {
+							maxDiffChange = 5;
+						}
+						else if (enemyTeamRes > ourTeamRes + 40) {
+							maxDiffChange = 4;
+						}
+						else if (enemyTeamRes > ourTeamRes + 30) {
+							maxDiffChange = 3;
+						}
+						else if (enemyTeamRes > ourTeamRes) {
+							maxDiffChange = 2;
+						}
+						else {
+							maxDiffChange = 1;
+						}
+						//the amount of resource equalization depends on how far the enemy team has gathered total resources over you
+
+						theResourceValue = min(max(1, enemyTeamRes - ourTeamRes), maxDiffChange);
+
+						//char msg[1024];
+						//sprintf(msg, "OUR TEAM RES: %s ENEMY TEAM RES: %s RES AWARD: %s \n", ourTeamRes, enemyTeamRes, theResourceValue);
+						//ClientPrint(inPlayer->pev, HUD_PRINTCENTER, msg);
+					}
+					//TODO: anti-snowball team res diff based
+				}
+				else if (avh_killrewards.value == 3) { //anti snowball kill to kill comparison
+					//theResourceValue = 6;
+
+					//inTarget->IsPlayer())
+					//inPlayer->pev->frags += 1;
+					//theEnemyPlayer->m_iDeaths;
+					//todo how do we get the # of deaths???
+					
+					theResourceValue = min(max(1.0f, 2.0f + inTarget->pev->frags - inPlayer->pev->frags),3.0f);
+
+					//TODO: anti-snowball kill-death diff based
+				}
+				else if (avh_killrewards.value == 4) { //1 RES PER KILL
+					theResourceValue = 1;
+				}
+				else if (avh_killrewards.value == 5) { //bounty
+					//theResourceValue = 7;
+					//inTarget->IsPlayer())
+					//inPlayer->pev->frags += 1;
+
+					//gain 1 res per enemy frag
+
+					//use a max() just in case for some reason you have negative kills
+					theResourceValue = max(1.0f, 1.0f + inTarget->pev->frags);
+
+					//char msg[1024];
+					//sprintf(msg, "RES AWARD: %s \n", theResourceValue);
+					//ClientPrint(inPlayer->pev, HUD_PRINTCENTER, msg);
+
+					//we could set ur frags back to 0 once u die :D
+					inTarget->pev->frags = 0;
+
+					//Perhaps instead of resetting their frags just update their AvHPlayer to indicate we are aware of how many kills they have
+					//theEnemyPlayer->bounty = inTarget->pev->frags;
+
+				}
+				else { //give whatever they said but only if it's not negative
+					theResourceValue = abs(avh_killrewards.value);
+				}
+				
 
 				if(theResourceValue > 0)
 				{
@@ -523,8 +650,29 @@ void AvHGamerules::RewardPlayerForKill(AvHPlayer* inPlayer, CBaseEntity* inTarge
 						inPlayer->SendMessageOnce(kAlienPointsAwarded, TOOLTIP);
 					}
 
-					// Increment resource score in tourny mode
+					
+					
+					// Increment resource score in tourney mode
 					theTeamPointer->AddResourcesGathered(theResourceValue);
+					// Tracks resources total gathered
+					//char msg[1024];
+					//sprintf(msg, "TEAM TOTAL RES: %f:\n", theTeamPointer->GetTotalResourcesGathered());
+					//ClientPrint(inPlayer->pev, HUD_PRINTCENTER, msg);
+
+					/*
+					if (inPlayer->pev->eter_hack != 42) {
+						
+						char msg[1024];
+						sprintf(msg, "ETERNIUM HACK: %d:\n", inPlayer->pev->eter_hack);
+						ClientPrint(inPlayer->pev, HUD_PRINTCENTER, msg);
+						inPlayer->pev->eter_hack = 42;
+					}
+					*/
+					
+
+					//ALERT(at_console, "pev %.2f %.2f %.2f - ", pev->velocity.x, pev->velocity.y, pev->velocity.z);
+					//ALERT(at_console,  "TEAM TOTAL RES: %f \n", theTeamPointer->GetTotalResourcesGathered()); //inPlayer->GetTeam()
+					//ALERT(at_console, "KILL PROC \n"); //inPlayer->GetTeam()
 
 					AvHSUPlayNumericEvent(theResourceValue, inTarget->edict(), inTarget->pev->origin, 0, kNumericalInfoResourcesEvent, inPlayer->pev->team);
 
@@ -546,7 +694,7 @@ void AvHGamerules::RewardPlayerForKill(AvHPlayer* inPlayer, CBaseEntity* inTarge
 
 				AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(inPlayer);
 				ASSERT(thePlayer);
-				this->AwardExperience(inPlayer, thePlayer->GetExperienceLevel(), theShareExperience);
+				this->AwardExperience(inPlayer, thePlayer->GetExperienceLevel(), theEnemyPlayer, theShareExperience);
 			}
 		}
 
@@ -848,7 +996,7 @@ void AvHGamerules::ClientUserInfoChanged(CBasePlayer *pPlayer, char *infobuffer)
 			thePlayer->mAutoSwapValue = atoi(theAutoSwapValue);
 		}
 	}
-	
+
 	// NOTE: Not currently calling down to parent CHalfLifeTeamplay 
 }
 
@@ -926,6 +1074,9 @@ void AvHGamerules::DeleteAndResetEntities()
 	// Clear out marine weapons
 	AvHSURemoveAllEntities(kwsMachineGun);
 	AvHSURemoveAllEntities(kwsPistol);
+#ifdef AVH_WEAPON_PISTOLB
+	AvHSURemoveAllEntities(kwsPistolB);
+#endif
 	AvHSURemoveAllEntities(kwsShotGun);
 	AvHSURemoveAllEntities(kwsHeavyMachineGun);
 	AvHSURemoveAllEntities(kwsGrenadeGun);
@@ -954,6 +1105,7 @@ void AvHGamerules::DeleteAndResetEntities()
 	AvHSURemoveAllEntities(kwsHealth);
 	AvHSURemoveAllEntities(kwsWelder);
 	AvHSURemoveAllEntities(kwsCatalyst);
+	AvHSURemoveAllEntities(kwsNano);
 	AvHSURemoveAllEntities(kwsAmmoPack);
 
 	// Remove all non-persistent entities marked buildable
@@ -1059,13 +1211,20 @@ bool AvHGamerules::CanEntityDoDamageTo(const CBaseEntity* inAttacker, const CBas
 			// If we're in tournament mode and two teams are different, yes
 			if(theGameHasStarted)
 			{
-				if(theTeamsAreOpposing || theIsFriendlyFireEnabled || theIsBreakable || theIsDoor || theAttackerIsWorld || theAttackerIsReceiver || ( theAttackerIsMine && theTeamsAreDifferent ))
+				if(theTeamsAreOpposing || (friendlyfire.value > 0) || theIsBreakable || theIsDoor || theAttackerIsWorld || theAttackerIsReceiver || ( theAttackerIsMine && theTeamsAreDifferent ))
 				{
 					theCanDoDamage = true;
 					// Do less damage with friendly fire
 					if(theAttackerTeam == theReceiverTeam)
 					{
-						theScalar = .33f;
+						if (friendlyfire.value == 1)
+						{
+							theScalar = .33f;
+						}
+						else if (friendlyfire.value == 2)
+						{
+							theScalar = .9f;
+						}
 					}
 
 					if(theAttackerIsReceiver)
@@ -1257,6 +1416,14 @@ bool AvHGamerules::GetCheatsEnabled(void) const
 		gSvCheatsLastUpdateTime = gpGlobals->time;
 	}
 	return (theCheatsEnabled == 1.0f);
+}
+
+bool AvHGamerules::GetFriendlyFireEnabled(void) const
+{
+	//static float theFriendlyFireEnabled = ns_cvar_float(avh_cheats);
+
+	return (friendlyfire.value);
+	//return (theFriendlyFireEnabled == 1.0f);
 }
 
 float AvHGamerules::GetFirstScanThinkTime() const 
@@ -1606,10 +1773,10 @@ float AvHGamerules::GetVictoryTime() const
 	return this->mVictoryTime;
 }
 
-// Assumes full encumbered weight around 50
+// Assumes full encumbered weight around 26
 int	AvHGamerules::GetMaxWeight(void) const
 {
-	return 30;
+	return 26;
 }
 
 int	AvHGamerules::GetNumCommandersOnTeam(AvHTeamNumber inTeam)
@@ -1643,17 +1810,17 @@ int	AvHGamerules::GetNumEntities() const
 //	FOR_ALL_BASEENTITIES();
 //		theNumEntities++;
 //	END_FOR_ALL_BASEENTITIES();
-
+	 
     theNumEntities = g_engfuncs.pfnNumberOfEntities();
 
 	return theNumEntities;
 }
 
-int	AvHGamerules::GetWeightForItemAndAmmo(AvHWeaponID inWeapon, int inNumRounds) const
+float AvHGamerules::GetWeightForItemAndAmmo(int inWeapon, int inNumRounds) const
 {
-	// Assumes full encumbered weight around 50
+	// Assumes full encumbered weight around 26
 
-	int theWeight = 0;
+	float theWeight = 0;
 	ASSERT(inNumRounds >= 0);
 
 	switch(inWeapon)
@@ -1662,32 +1829,39 @@ int	AvHGamerules::GetWeightForItemAndAmmo(AvHWeaponID inWeapon, int inNumRounds)
 		break;
 
 	case AVH_WEAPON_MG:
-		theWeight += 4;
-		theWeight += (inNumRounds/100.0f)*1;
+		theWeight += 9;
+		theWeight += (inNumRounds/100.0f);
 		break;
 
 	case AVH_WEAPON_PISTOL:
-		theWeight += 2;
-		theWeight += (inNumRounds/8.0f)*.5;
+		theWeight += 5;
+		theWeight += (inNumRounds/30.0f);
 		break;
+
+#ifdef AVH_WEAPON_PISTOLB
+	case AVH_WEAPON_PISTOLB:
+		theWeight += 2;
+		theWeight += (inNumRounds / 8.0f)*.5;
+		break;
+#endif
 
 	case AVH_WEAPON_KNIFE:
 		// No weight for the knife
 		break;
 
 	case AVH_WEAPON_SONIC:
-		theWeight += 5;
-		theWeight += (inNumRounds/10.0f)*2;
+		theWeight += 9;
+		theWeight += (inNumRounds/12.0f);
 		break;
 
 	case AVH_WEAPON_HMG:
-		theWeight += 7;
-		theWeight += (inNumRounds/150.0f)*2;
+		theWeight += 10;
+		theWeight += (inNumRounds/125.0f);
 		break;
 
 	case AVH_WEAPON_GRENADE_GUN:
-		theWeight += 7;
-		theWeight += (inNumRounds/4.0f)*1;
+		theWeight += 6;
+		theWeight += (inNumRounds/6.0f);
 		break;
 
 	case AVH_WEAPON_WELDER:
@@ -2102,14 +2276,26 @@ void AvHGamerules::PostWorldPrecacheReset(bool inNewMap)
 
 	// Set team numbers differently if teams are the same, so their colors change
 	// Marines vs. marines will be team 1 vs, team 3, aliens vs. aliens will be team 2 vs. team 4
+	ALERT(at_console, "CHECKING GAMEMODE \n");
+	avh_balance_ava.value = 0;
+	avh_balance_mvm.value = 0;
+	
+	//this doesnt update the server variable for all clients yet...
+	//hmm how do i do this
+	
 	if(this->mTeamA.GetTeamType() == this->mTeamB.GetTeamType())
 	{
+		
+
+		ALERT(at_console, "ABNORMAL GAME PROC \n");
 		if(this->mTeamA.GetTeamType() == AVH_CLASS_TYPE_MARINE)
 		{
 			this->mTeamA.SetTeamNumber(TEAM_ONE);
 			this->mTeamB.SetTeamNumber(TEAM_THREE);
 			this->mTeamB.SetTeamName(kMarine2Team);
 			this->mTeamB.SetTeamPrettyName(kMarinePrettyName);
+			ALERT(at_console, "MvM GAME PROC \n");
+			avh_balance_mvm.value = 1;
 		}
 		else
 		{
@@ -2119,8 +2305,15 @@ void AvHGamerules::PostWorldPrecacheReset(bool inNewMap)
 			this->mTeamB.SetTeamNumber(TEAM_FOUR);
 			this->mTeamB.SetTeamName(kAlien2Team);
 			this->mTeamB.SetTeamPrettyName(kAlienPrettyName);
+			ALERT(at_console, "AvA GAME PROC \n");
+			avh_balance_ava.value = 1;
+			
 		}
 	}
+
+	//updates it for all players in their console so they can see the new value!
+	CVAR_SET_FLOAT("sv_balance_ava", avh_balance_ava.value);
+	CVAR_SET_FLOAT("sv_balance_mvm", avh_balance_mvm.value);
 
 	this->InitializeTechNodes();
 
@@ -2313,6 +2506,19 @@ void AvHGamerules::ProcessTeamUpgrade(AvHMessageID inUpgrade, AvHTeamNumber inNu
 			}
 			else
 			{
+				if (inUpgrade == RESEARCH_WEAPONS_ONE) {
+					ALERT(at_console, "Weapons One on a entity \n");
+					
+					AvHBaseBuildable* theBuildable = dynamic_cast<AvHBaseBuildable*>(theBaseEntity);
+					if (theBuildable)//&& theBuildable->GetIsBuilt())
+					{
+						AvHTurret* theRealTurret = dynamic_cast<AvHTurret*>(theBuildable);
+						if (theRealTurret)
+						{
+							ALERT(at_console, "Weapons One on a turret \n");
+						}
+					}
+				}
 				ProcessGenericUpgrade(theBaseEntity->pev->iuser4, inUpgrade, inGive);
 			}
 		}
@@ -2351,7 +2557,8 @@ bool AvHGamerules::ReadyToStartCountdown()
 
 void AvHGamerules::RecalculateHandicap()
 {
-    const float kHandicapMax = 100.0f;
+    const float kHandicapMax = 200.0f;
+	const float kHandicapDefault = 100.0f;
 
 	// Teams can enforce their own handicaps if they want (cap to valid values)
 	float handicaps[4];
@@ -2361,8 +2568,8 @@ void AvHGamerules::RecalculateHandicap()
 	handicaps[3] = max(min(kHandicapMax, avh_team4damagepercent.value), 0.0f);
 
     // Set handicap scalars
-	this->mTeamA.SetHandicap(handicaps[this->mTeamA.GetTeamNumber()-1]/kHandicapMax);
-	this->mTeamB.SetHandicap(handicaps[this->mTeamB.GetTeamNumber()-1]/kHandicapMax);
+	this->mTeamA.SetHandicap(handicaps[this->mTeamA.GetTeamNumber()-1]/kHandicapDefault);
+	this->mTeamB.SetHandicap(handicaps[this->mTeamB.GetTeamNumber()-1]/kHandicapDefault);
 
 	avh_team1damagepercent.value = handicaps[0];
 	avh_team2damagepercent.value = handicaps[1];
@@ -2536,6 +2743,7 @@ void AvHGamerules::RespawnPlayer(AvHPlayer* inPlayer)
 		{
 			inPlayer->pev->iuser4 = 0;
 		}
+		inPlayer->pev->eter_hack = 0;
 
 		respawn(inPlayer->pev, !(inPlayer->m_afPhysicsFlags & PFLAG_OBSERVER));// don't copy a corpse if we're in deathcam.
 		inPlayer->pev->nextthink = -1;
@@ -2640,6 +2848,8 @@ bool AvHGamerules::RoamingAllowedForPlayer(CBasePlayer* inPlayer) const
 
 BOOL AvHGamerules::FShouldSwitchWeapon(CBasePlayer* inPlayer, CBasePlayerItem* inWeapon)
 {
+
+
 	BOOL theShouldSwitch = CHalfLifeTeamplay::FShouldSwitchWeapon(inPlayer, inWeapon);
 	if(theShouldSwitch)
 	{
@@ -3155,7 +3365,7 @@ void AvHGamerules::UpdatePlaytesting()
 			{
 				int theTeamATowers = 0;
 				int theTeamBTowers = 0;
-
+				
 				FOR_ALL_BASEENTITIES();
 				AvHResourceTower* theResourceTower = dynamic_cast<AvHResourceTower*>(theBaseEntity);
 				if(theResourceTower && theResourceTower->GetIsActive())
@@ -3407,8 +3617,22 @@ void AvHGamerules::Think(void)
 			PROFILE_END(kUpdateWorldEntitiesProfile)
 		}
 
+		//reset the limit for sentrys sound effects
+		this->mSentrySoundRunning = 0;
+
 		// Don't need to update cheats every tick, as they can be expensive
 		this->UpdateCheats();
+
+		//sv_fadedgamemode 1
+		//all teams gain 1 resource
+
+
+
+		if (avh_fadedgamemode.value == 1 && GetGameStarted()) {
+			this->mTeamA.SetTeamResources(this->mTeamA.GetTeamResources() + 1);
+			this->mTeamB.SetTeamResources(this->mTeamB.GetTeamResources() + 1);
+		}
+
 	}
 
 	this->mMiniMap.Process();
@@ -3829,6 +4053,8 @@ bool AvHGamerules::GetIsCheatEnabled(const string& inCheatName) const
 	return theCheatIsEnabled;
 }
 
+
+
 void AvHGamerules::SetCheatEnabled(const string& inCheatName, bool inEnabledState)
 {
 	if(this->GetCheatsEnabled())
@@ -4112,7 +4338,7 @@ void AvHGamerules::UpdateVictoryStatus(void)
 		}
 		else if(this->GetIsTournamentMode() && !this->GetIsCombatMode())
 		{
-			// If timelimit has elapsed in tourny mode, the victor is the team with the most resources
+			// If timelimit has elapsed in tourny mode, the victor is the team with the most resources gathered
 			if(theTimeLimitHit)
 			{
 				// Don't count fractional resources.  If it's that close, it was a tie.
@@ -4275,6 +4501,19 @@ int	AvHGamerules::GetBaseHealthForMessageID(AvHMessageID inMessageID) const
 	case ALIEN_BUILD_MOVEMENT_CHAMBER:	health = BALANCE_VAR(kMovementChamberHealth); break;
 	case ALIEN_BUILD_HIVE:				health = BALANCE_VAR(kHiveHealth); break;
 	}
+	if (avh_balance_ava.value == 1)
+	{
+		switch (inMessageID)
+		{
+		case ALIEN_BUILD_RESOURCES:			health = BALANCE_VAR(kAlienResourceTowerHealth) + 1500; break;
+		case ALIEN_BUILD_OFFENSE_CHAMBER:	health = BALANCE_VAR(kOffenseChamberHealth) + 400; break;
+		case ALIEN_BUILD_DEFENSE_CHAMBER:	health = BALANCE_VAR(kDefenseChamberHealth) + 400; break;
+		case ALIEN_BUILD_SENSORY_CHAMBER:	health = BALANCE_VAR(kSensoryChamberHealth) + 400; break;
+		case ALIEN_BUILD_MOVEMENT_CHAMBER:	health = BALANCE_VAR(kMovementChamberHealth) + 400; break;
+		case ALIEN_BUILD_HIVE:				health = BALANCE_VAR(kHiveHealth) + 3000; break;
+		}
+	}
+
 	return health;
 }
 
@@ -4284,6 +4523,8 @@ int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 	float time = 0.0f;
 	const float CO_Scalar = this->GetIsCombatMode() ? BALANCE_VAR(kCombatModeTimeScalar) : 1.0f;
 	const float CO_GScalar = this->GetIsCombatMode() ? BALANCE_VAR(kCombatModeGestationTimeScalar) : 1.0f;
+
+	
 
 	switch(inMessageID)
 	{
@@ -4303,6 +4544,7 @@ int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 		case RESEARCH_HEALTH:			time = BALANCE_VAR(kHealthResearchTime); break;
 		case RESEARCH_MOTIONTRACK:		time = BALANCE_VAR(kMotionTrackingResearchTime); break;
 		case RESEARCH_PHASETECH:		time = BALANCE_VAR(kPhaseTechResearchTime); break;
+		case RESOURCE_UPGRADE:			time = 60; break;
 
 		// Marine Structures
 		case BUILD_INFANTRYPORTAL:		time = BALANCE_VAR(kInfantryPortalBuildTime); break;
@@ -4318,6 +4560,7 @@ int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 		case BUILD_SIEGE:				time = BALANCE_VAR(kSiegeBuildTime); break;
 		case BUILD_COMMANDSTATION:		time = BALANCE_VAR(kCommandStationBuildTime); break;
 		case TURRET_FACTORY_UPGRADE:	time = BALANCE_VAR(kTurretFactoryUpgradeTime); break;
+		case BUILD_NUKE:				time = 15; break;
 
 		// Scan Duration
 		case BUILD_SCAN:				time = BALANCE_VAR(kScanDuration); break;
@@ -4350,12 +4593,17 @@ int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 		case ALIEN_LIFEFORM_FOUR:		time = BALANCE_VAR(kFadeGestateTime)*CO_GScalar; break;
 		case ALIEN_LIFEFORM_FIVE:		time = BALANCE_VAR(kOnosGestateTime)*CO_GScalar; break;
 	}
-
+	
 	if( time > 0 )
 	{
 		time = max( time, 1.0f ); //for cases where combat scalars would  result in fractional seconds
 	}
-
+	if (avh_balance_ava.value == 1) {
+		time = max(time*0.9f, 1.0f); //for the ava enhanced balanced, reduce evo time by 10% and then make sure its at least 1 second
+	}
+	if (avh_last_stand.value == 1) {
+		time = min(time, 5.0f); //for the last stand gamemode
+	}
 	if(this->GetCheatsEnabled() && !this->GetIsCheatEnabled(kcSlowResearch))
 	{
 		time = min( time, 2.0f );
@@ -4440,6 +4688,7 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 			case RESEARCH_MOTIONTRACK:		cost = BALANCE_VAR(kMotionTrackingResearchCost); break;
 			case RESEARCH_PHASETECH:		cost = BALANCE_VAR(kPhaseTechResearchCost); break;
 			case RESEARCH_DISTRESSBEACON:	cost = BALANCE_VAR(kDistressBeaconCost); break;
+			case RESOURCE_UPGRADE:			cost = 20; break;
 		
 			// Marine Structures
 			case BUILD_HEAVY:				cost = BALANCE_VAR(kHeavyArmorCost); break;
@@ -4456,11 +4705,13 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 			case BUILD_TURRET:				cost = BALANCE_VAR(kSentryCost); break;
 			case BUILD_SIEGE:				cost = BALANCE_VAR(kSiegeCost); break;
 			case BUILD_COMMANDSTATION:		cost = BALANCE_VAR(kCommandStationCost); break;
+			case BUILD_NUKE:				cost = 40; break;
 			
 			// Marine Equipment
 			case BUILD_HEALTH:					cost = BALANCE_VAR(kHealthCost); break;
 			case BUILD_AMMO:					cost = BALANCE_VAR(kAmmoCost); break;
             case BUILD_CAT:						cost = BALANCE_VAR(kCatalystCost); break;
+			case BUILD_NANO:					cost = 10; break;
 			case BUILD_MINES:					cost = BALANCE_VAR(kMineCost); break;
 			case BUILD_WELDER:					cost = BALANCE_VAR(kWelderCost); break;
 			case BUILD_SHOTGUN:					cost = BALANCE_VAR(kShotgunCost); break;
@@ -4497,7 +4748,7 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 			case BUILD_SCAN:					cost = BALANCE_VAR(kScanEnergyCost); break;
 		}
 	}
-	
+
 	return cost;
 }
 
