@@ -1955,7 +1955,7 @@ void AvHInfantryPortal::CueRespawnEffect(AvHPlayer* inPlayer)
 
 bool AvHInfantryPortal::GetCanReinforce() const
 {
-	return this->GetIsBuilt() && !GetGameRules()->GetIsCombatMode();
+	return this->GetIsBuilt() && (avh_fadedgamemode.value != 1 || GetGameRules()->GetArePlayersAllowedToJoinImmediately()) && !GetGameRules()->GetIsCombatMode();
 }
 
 bool AvHInfantryPortal::GetSpawnLocationForPlayer(CBaseEntity* inPlayer, Vector& outLocation) const
