@@ -701,10 +701,53 @@ BOOL AvHCatalyst::GiveCatalyst(CBaseEntity* inOther)
         //// Never kill the player
         //theDamage = min(theDamage, thePlayer->pev->health - 1);
         //thePlayer->TakeDamage(thePlayer->pev, thePlayer->pev, theDamage, DMG_GENERIC | DMG_IGNOREARMOR);
+		//eternium adjustment for catpacks to give armor
+		/*
+		int theCurrentArmor = thePlayer->pev->armorvalue;
+		int theMaxArmor = AvHPlayerUpgrade::GetMaxArmorLevel(thePlayer->pev->iuser4, thePlayer->GetUser3());
+
+		if (theCurrentArmor < theMaxArmor)
+		{
+		
+			float thePointsGiven = min(30.0f, (float)(theMaxArmor - theCurrentArmor));
+
+			thePlayer->pev->armorvalue += thePointsGiven;
+
+			//if (ns_cvar_float(&avh_drawdamage))
+			//{
+			//	thePlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, thePointsGiven);
+			//}
+		}
+		*/
+
+		// Remove parasite if player has one
+		int& theUser4 = thePlayer->pev->iuser4;
+		SetUpgradeMask(&theUser4, MASK_PARASITED, false);
+		
+		// Cleanse webbing
+		if (thePlayer->GetIsEnsnared())
+		{
+			thePlayer->SetEnsnareState(false);
+		}
+		
+		// Cleanse stun too
+		SetUpgradeMask(&theUser4, MASK_PLAYER_STUNNED, false);
+
 
         EMIT_SOUND(ENT(inOther->pev), CHAN_ITEM, kCatalystPickupSound, 1, ATTN_NORM);
 
         thePlayer->SetIsCatalysted(true, theCatalystDuration);
+
+		/*
+		if(inState && !this->GetIsCatalysted())
+		{
+			SetUpgradeMask(&this->pev->iuser4, MASK_BUFFED);
+			this->mTimeToEndCatalyst = gpGlobals->time + inTime;
+
+			// Trigger screen effect?
+		}
+		*/
+
 
         theSuccess = TRUE;
     }
