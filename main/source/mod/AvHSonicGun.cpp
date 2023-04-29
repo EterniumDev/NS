@@ -80,6 +80,7 @@
 #include "../common/vector_util.h"
 #include "AvHMarineWeapons.h"
 #include "AvHPlayerUpgrade.h"
+#include "AvHServerVariables.h"
 
 // Anim key:
 const int kShotgunAnimIdle = 0;
@@ -116,6 +117,13 @@ float AvHSonicGun::GetRateOfFire() const
 
 int	AvHSonicGun::GetDamageType() const
 {
+
+#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		return NS_DMG_BLAST;
+	}
+#endif
 	//return NS_DMG_PIERCING;
 	return NS_DMG_NORMAL;
 }
@@ -133,7 +141,17 @@ char* AvHSonicGun::GetDeploySound() const
 
 float AvHSonicGun::GetDeployTime() const
 {
-	return kShotgunAnimDrawLength;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.5f;
+	}
+	else {
+		return 0.9f;
+	}
+	//return kShotgunAnimDrawLength;
 }
 
 int	AvHSonicGun::GetEmptyShootAnimation() const
@@ -207,6 +225,13 @@ void AvHSonicGun::FireProjectiles(void)
 	float theDamageMultiplier;
 	AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
 	float theDamage = this->mDamage*theDamageMultiplier;
+
+#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		theDamage *= 0.75f; //25% less damage
+	}
+#endif
 	
     // Fire the bullets and apply damage
 	//this->m_pPlayer->FireBullets(kSGBulletsPerShot, vecSrc, vecAiming, this->GetProjectileSpread(), this->mRange, 0, 0, theDamage);
@@ -244,8 +269,17 @@ int AvHSonicGun::GetReloadAnimation() const
 
 float AvHSonicGun::GetReloadTime(void) const
 {
-	//return .3f;
-	return .22f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return .16f;
+	}
+	else {
+		return .22f;
+	}
+
+	
 }
 
 int	AvHSonicGun::GetShootAnimation() const
@@ -276,6 +310,9 @@ void AvHSonicGun::Spawn()
 	this->m_iId = AVH_WEAPON_SONIC;
 	this->m_iDefaultAmmo = BALANCE_VAR(kSGMaxClip);
 	
+
+
+
     // Set our class name
 	this->pev->classname = MAKE_STRING(kwsShotGun);
 	
