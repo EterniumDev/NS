@@ -555,6 +555,7 @@ void AvHTeam::InitializeTechNodes()
 			this->AddTechNode(BUILD_AMMO, TECH_NULL, TECH_NULL);
 			this->AddTechNode(BUILD_HEALTH, TECH_NULL, TECH_NULL);
             this->AddTechNode(BUILD_CAT, TECH_NULL, TECH_RESEARCH_CATALYSTS, TECH_NULL, true, false);
+			//this->AddTechNode(BUILD_NANO, TECH_NULL, TECH_RESEARCH_CATALYSTS, TECH_NULL, true, false);
 			this->AddTechNode(BUILD_RESOURCES, TECH_COMMAND_CENTER, TECH_NULL, TECH_NULL, true, false);
 			this->AddTechNode(BUILD_HEALTH, TECH_COMMAND_CENTER, TECH_NULL);
 
@@ -580,6 +581,7 @@ void AvHTeam::InitializeTechNodes()
 			this->AddTechNode(RESEARCH_WEAPONS_TWO, TECH_RESEARCH_WEAPONS_TWO, TECH_RESEARCH_WEAPONS_ONE, TECH_NULL, false);
 			this->AddTechNode(RESEARCH_WEAPONS_THREE, TECH_RESEARCH_WEAPONS_THREE, TECH_RESEARCH_WEAPONS_TWO, TECH_NULL, false);
             this->AddTechNode(RESEARCH_CATALYSTS, TECH_RESEARCH_CATALYSTS, TECH_ARMSLAB, TECH_NULL, false, false);
+			this->AddTechNode(RESEARCH_HEALTH, TECH_RESEARCH_HEALTH, TECH_PROTOTYPE_LAB, TECH_NULL, false, false);
 
 			this->AddTechNode(RESEARCH_HEAVYARMOR, TECH_RESEARCH_HEAVYARMOR, TECH_PROTOTYPE_LAB, TECH_NULL, false);
 					
@@ -613,13 +615,23 @@ void AvHTeam::InitializeTechNodes()
 			this->AddTechNode(BUILD_HMG, TECH_NULL, TECH_ADVANCED_ARMORY);
 			this->AddTechNode(BUILD_GRENADE_GUN, TECH_NULL, TECH_ADVANCED_ARMORY, TECH_NULL);
 			//this->AddTechNode(BUILD_NUKE, TECH_NULL, TECH_NUKE_PLANT, TECH_ADVANCED_ARMORY);
-			
+
+
+			if (avh_modnuke.value == 1)
+			{
+				this->AddTechNode(BUILD_NUKE, TECH_NULL, TECH_ARMORY, TECH_NULL);
+			}
+
 			// Specials
 			//this->AddTechNode(BUILD_MEDKIT, TECH_NULL, TECH_MEDLAB);
 
 			// Add tech to allow resource adjustment (allow it to be researched multiple times)
-			//this->AddTechNode(RESOURCE_UPGRADE, TECH_NULL, TECH_NULL, TECH_NULL);
 
+			if (avh_modrtupgrade.value == 1)
+			{
+				this->AddTechNode(RESOURCE_UPGRADE, TECH_NULL, TECH_NULL, TECH_NULL);
+			}
+			
 			// Initialize tech slots for marines
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_COMMANDER_STATION, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_TURRET_FACTORY, RESEARCH_ELECTRICAL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, TURRET_FACTORY_UPGRADE, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
@@ -627,18 +639,36 @@ void AvHTeam::InitializeTechNodes()
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_ARMORY, ARMORY_UPGRADE, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, RESEARCH_GRENADES, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_ADVANCED_ARMORY, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, RESEARCH_GRENADES, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_ARMSLAB, RESEARCH_WEAPONS_ONE, RESEARCH_WEAPONS_TWO, RESEARCH_WEAPONS_THREE, RESEARCH_CATALYSTS, RESEARCH_ARMOR_ONE, RESEARCH_ARMOR_TWO, RESEARCH_ARMOR_THREE, BUILD_RECYCLE));
-			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_PROTOTYPE_LAB, RESEARCH_JETPACKS, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, RESEARCH_HEAVYARMOR, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
+			//this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_PROTOTYPE_LAB, RESEARCH_JETPACKS, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, RESEARCH_HEAVYARMOR, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
+			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_PROTOTYPE_LAB, RESEARCH_JETPACKS, RESEARCH_HEALTH, MESSAGE_NULL, MESSAGE_NULL, RESEARCH_HEAVYARMOR, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_OBSERVATORY, BUILD_SCAN, RESEARCH_PHASETECH, MESSAGE_NULL, MESSAGE_NULL, RESEARCH_DISTRESSBEACON, RESEARCH_MOTIONTRACK, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_TURRET, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_SIEGETURRET, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
-			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_RESTOWER, RESEARCH_ELECTRICAL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
-			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_INFANTRYPORTAL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
+			if (avh_modrtupgrade.value == 1)
+			{
+				this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_RESTOWER, RESEARCH_ELECTRICAL, RESOURCE_UPGRADE, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
+			}
+			else
+			{
+				this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_RESTOWER, RESEARCH_ELECTRICAL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
+			}
+			//this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_INFANTRYPORTAL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
+			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_INFANTRYPORTAL, RESEARCH_ELECTRICAL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_PHASEGATE, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, MESSAGE_NULL, BUILD_RECYCLE));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MARINE_PLAYER));
 
 			// Initialize tech slots for top-level menus.  Note that the data for these four menus is stored in the command station iuser1
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_BUILD, BUILD_RESOURCES, BUILD_INFANTRYPORTAL, BUILD_ARMORY, BUILD_COMMANDSTATION, BUILD_TURRET_FACTORY, BUILD_TURRET, BUILD_SIEGE));
-			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_BUILD_ADVANCED, BUILD_OBSERVATORY, BUILD_ARMSLAB, BUILD_PROTOTYPE_LAB, BUILD_PHASEGATE));
+
+			if (avh_modnuke.value == 1)
+			{
+				this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_BUILD_ADVANCED, BUILD_OBSERVATORY, BUILD_ARMSLAB, BUILD_PROTOTYPE_LAB, BUILD_PHASEGATE, BUILD_NUKE));
+			}
+			else
+			{
+				this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_BUILD_ADVANCED, BUILD_OBSERVATORY, BUILD_ARMSLAB, BUILD_PROTOTYPE_LAB, BUILD_PHASEGATE));
+			}
+			//this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_ASSIST, BUILD_AMMO, BUILD_HEALTH, BUILD_CAT, BUILD_NANO));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_ASSIST, BUILD_AMMO, BUILD_HEALTH, BUILD_CAT));
 			this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_EQUIP, BUILD_MINES, BUILD_SHOTGUN, BUILD_HMG, BUILD_GRENADE_GUN, BUILD_WELDER, BUILD_JETPACK, BUILD_HEAVY));
 			//this->mTechSlotManager.AddTechSlots(AvHTechSlots(AVH_USER3_MENU_ORDERS, BUILD_HEALTH));
@@ -2156,7 +2186,7 @@ void AvHTeam::UpdateInventoryEnabledState()
 		// For each player, update alien inventory with this # of hives
 		if(theEntity->GetTeam() == this->GetTeamNumber())
 		{
-			if(GetGameRules()->GetIsCombatMode())
+			if(GetGameRules()->GetIsCombatMode() || avh_fadedgamemode.value == 1)
 			{
 				theNumHives = 1;
 				
@@ -2170,11 +2200,13 @@ void AvHTeam::UpdateInventoryEnabledState()
 					theNumHives++;
 
 					//if(theEntity->GetCombatNodes().GetTechNode(ALIEN_HIVE_THREE_UNLOCK, theTechNode) && theTechNode.GetIsResearched())
+					/*
 					theIter = std::find(thePurchasedCombatUpgrades.begin(), thePurchasedCombatUpgrades.end(), ALIEN_HIVE_THREE_UNLOCK);
 					if(theIter != thePurchasedCombatUpgrades.end())
 					{
 						theNumHives++;
 					}
+					*/
 				}
 			}
 
@@ -2411,6 +2443,10 @@ void AvHTeam::UpdateResources()
         kResourceUpdateInterval /= 2.0f;    
     }
 
+	if (avh_balance_ava.value == 1) {
+		kResourceUpdateInterval -= 1.0f;
+	}
+
     // Change here if teams should always get at least one resource
     float theResourcesGathered = 0.0f;
 
@@ -2433,7 +2469,7 @@ void AvHTeam::UpdateResources()
 					if(theCurrentTime > (theLastTimeResourcesContributed + kResourceUpdateInterval))
 					{
 						// Take into account upgrade level stored in tower
-						float theTowerContribution = theGameplay.GetTowerInjectionAmount();
+						float theTowerContribution = theGameplay.GetTowerInjectionAmount() + theResourceTower->GetTechLevel();
 						theResourcesGathered += theTowerContribution;
 					
 						// Decrement the amount of points the resources has
