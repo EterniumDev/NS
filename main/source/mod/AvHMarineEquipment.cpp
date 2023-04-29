@@ -2511,22 +2511,152 @@ void AvHArmory::Precache()
 void AvHArmory::ResupplyUse(CBaseEntity* inActivator, CBaseEntity* inCaller, USE_TYPE inUseType, float inValue)
 {
 	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(inCaller);
-	
-	if(thePlayer && (thePlayer->pev->team == this->pev->team) && this->GetIsBuilt() && !this->GetIsRecycling() && thePlayer->GetIsAbleToAct())
-	{
-        if(thePlayer->GetCanBeResupplied())
-        {
-			// : 1017
-//            // Give health back occasionally
-//            bool theGiveHealthIfNeeded = (RANDOM_LONG(0, 3) == 0);
-//            
-			// resupply gives 10 health each use
-			thePlayer->Resupply(true);		
 
-            // Always play "getting ammo" sound when ammo or health are needed, to indicate to player when to stop pressing +use
-            EMIT_SOUND(thePlayer->edict(), CHAN_WEAPON, kArmoryResupplySound, .3f, ATTN_NORM);
-        }
+	if (thePlayer && (thePlayer->pev->team == this->pev->team) && this->GetIsBuilt() && !this->GetIsRecycling() && thePlayer->GetIsAbleToAct())
+	{
+		/*
+		const float theResupplyTime = BALANCE_VAR(kResupplyTime);
+
+		if((this->mTimeOfLastResupply == 0) || (gpGlobals->time > (this->mTimeOfLastResupply + theResupplyTime)))
+		{
+		if(this->m_pActiveItem)
+		{
+			AvHBasePlayerWeapon* theBaseWeapon = dynamic_cast<AvHBasePlayerWeapon*>(this->m_pActiveItem->GetWeaponPtr());
+			if(theBaseWeapon && theBaseWeapon->CanHolster() && theBaseWeapon->GetCanBeResupplied())
+			{
+				theCanBeResupplied = true;
+			}
+		}
+
+		// If we don't have max health, or we need ammo
+		if(this->pev->health < this->pev->max_health)
+		{
+			theCanBeResupplied = true;
+		}
+		}
+		*/
+
+		//max health value is widely wrong so is health value
+
+
+
+
+
+		if ((thePlayer->mTimeOfLastResupply == 0) || (gpGlobals->time > (thePlayer->mTimeOfLastResupply + (float)BALANCE_VAR(kResupplyTime))))
+		{
+			//resupply weapon ammo
+
+			if (thePlayer->m_pActiveItem)
+			{
+				//resupplyTest += 2;
+				AvHBasePlayerWeapon* theBaseWeapon = dynamic_cast<AvHBasePlayerWeapon*>(thePlayer->m_pActiveItem->GetWeaponPtr());
+				if (theBaseWeapon && theBaseWeapon->CanHolster() && theBaseWeapon->GetCanBeResupplied())
+				{
+					thePlayer->Resupply(true);
+				}
+				else {
+					//ALERT(at_console, "WEAPON RESUP FAIL \n");
+
+				}
+			}
+
+
+			// resupply gives 10 health each use
+			//if (AvHHealth::GiveHealth(this, ))
+			//	ALERT(at_console, "SUCCESSFUL ARMORY HEAL\n");
+
+
+
+			//Reverted: Changed armory heal resupply code to correct Armory not healing Team2 players in Marine vs Marine
+
+			if (thePlayer && thePlayer->GetIsRelevant() && thePlayer->GetIsMarine())  // GetEffectivePlayerClass()
+			//if (thePlayer && thePlayer->GetIsRelevant() && (thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER))  // GetEffectivePlayerClass()
+			{
+				float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(thePlayer->pev->iuser4, thePlayer->GetUser3(), thePlayer->GetExperienceLevel());
+				if (thePlayer->pev->health < thePlayerMaxHealth)
+				{
+					float thePointsGiven = min((float)BALANCE_VAR(kPointsPerArmouryHealth), (thePlayerMaxHealth - thePlayer->pev->health));
+
+					thePlayer->pev->health += thePointsGiven;
+
+					if (ns_cvar_float(&avh_drawdamage))
+					{
+						thePlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, thePointsGiven);
+					}
+
+					// Remove parasite if player has one
+					//int& theUser4 = thePlayer->pev->iuser4;
+					//SetUpgradeMask(&theUser4, MASK_PARASITED, false);
+
+					EMIT_SOUND(ENT(this->pev), CHAN_ITEM, kHealthPickupSound, 1, ATTN_NORM);
+					ALERT(at_console, "SUCCESSFUL ARMORY HEAL\n");
+				}
+				else {
+					ALERT(at_console, "NOT NEEDED ARMORY HEAL\n");
+				}
+			}
+			else {
+				ALERT(at_console, "FAILED ARMORY HEAL\n");
+			}
+
+
+			//- Armory resupply can restock hand nades weapon
+			if (avh_restocknades.value == 1) {
+				if ((thePlayer->mTimeOfLastNadeRestock == 0) || (gpGlobals->time > (thePlayer->mTimeOfLastNadeRestock + 20.0f)))
+				{
+					if (this->pev->iuser3 == AVH_USER3_ADVANCED_ARMORY)
+					{
+						bool theTeamHasGrenades;
+						if (!GetGameRules()->GetIsCombatMode())
+						{
+							AvHTeam* theTeamPointer = thePlayer->GetTeamPointer(false);
+							if (theTeamPointer)
+							{
+								theTeamHasGrenades = theTeamPointer->GetResearchManager().GetTechNodes().GetIsTechResearched(TECH_RESEARCH_GRENADES);
+							}
+						}
+						if (theTeamHasGrenades)
+						{
+							//Don't give nades if they already have them!
+							if (!thePlayer->GetHasItem(kwsGrenade))
+							{
+								
+								thePlayer->GiveNamedItem(kwsGrenade);
+								thePlayer->mTimeOfLastNadeRestock = gpGlobals->time;
+							}
+							else
+							{
+								ALERT(at_console, "ALREADY HAS NADES\n");
+							}
+						}
+					}
+
+
+				}
+				else
+				{
+					ALERT(at_console, "NADE RESUPPLY COOLDOWN %f\n", 20.0f - (gpGlobals->time - thePlayer->mTimeOfLastNadeRestock));
+				}
+			}
+
+			thePlayer->mTimeOfLastResupply = gpGlobals->time;
+
+			// Always play "getting ammo" sound when ammo or health are needed, to indicate to player when to stop pressing +use
+			EMIT_SOUND(thePlayer->edict(), CHAN_WEAPON, kArmoryResupplySound, .3f, ATTN_NORM);
+		}
+		else //if ((thePlayer->mTimeOfLastResupply == 0) || (gpGlobals->time > (thePlayer->mTimeOfLastResupply + (float)BALANCE_VAR(kResupplyTime))))
+		{
+			//ALERT(at_console, "RESUPPLY TIMER\n");
+		}
 	}
+	// if((this->mTimeOfLastResupply == 0) || ))
+	/*
+	if (thePlayer) {
+		char msg[1024];
+		sprintf(msg, "ARMORY TIMER: %d:\n", (gpGlobals->time > (thePlayer->mTimeOfLastResupply + BALANCE_VAR(kResupplyTime))));
+		ClientPrint(thePlayer->pev, HUD_PRINTCENTER, msg);
+	}
+	*/
 }
 
 void AvHArmory::SetHasBeenBuilt()
