@@ -667,6 +667,14 @@ void AvHCatalyst::Spawn(void)
     
     // Expire after a time.
     int theLifetime = this->GetLifetime();
+
+
+	if (theLifetime > 0)
+	{
+		theLifetime = 90; //catalyst is special and lasts 90 seconds
+	}
+
+
     if(theLifetime > 0)
     {
         SetThink(&AvHCatalyst::SUB_Remove);
