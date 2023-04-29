@@ -254,6 +254,24 @@ bool AvHSUGetIsResearchApplicable(CBaseEntity* inResearchEntity, AvHMessageID in
 	} \
 }
 
+//ive added another loop for entities this one is for client dll stuff
+#define FOR_ALL_ETERENTITIES() \
+{ \
+	for(int theBaseEntityLoopIndex = 0; theBaseEntityLoopIndex < gpGlobals->maxEntities; theBaseEntityLoopIndex++) \
+	{ \
+		edict_t* theBaseEntityEdict = g_engfuncs.pfnPEntityOfEntIndex(theBaseEntityLoopIndex); \
+		if(theBaseEntityEdict != NULL) \
+		{ \
+			CBaseEntity* theBaseEntity = CBaseEntity::Instance(theBaseEntityEdict); \
+			if(theBaseEntity && theBaseEntity->pev) \
+			{ \
+
+#define END_FOR_ALL_ETERENTITIES() \
+			} \
+		} \
+	} \
+}
+
 template <class T>
 bool AvHSUGetEntityFromIndex(int inEntityIndex, T& outValue)
 {
