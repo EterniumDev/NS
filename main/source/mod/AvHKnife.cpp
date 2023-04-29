@@ -70,9 +70,12 @@
 #include "../common/vector_util.h"
 #include "AvHMarineWeapons.h"
 
+
 #ifdef AVH_SERVER
+#include "AvHPlayerUpgrade.h"
 #include "AvHGamerules.h"
 #include "AvHServerUtil.h"
+#include "AvHServerVariables.h"
 #endif
 
 LINK_ENTITY_TO_CLASS(kwKnife, AvHKnife);
@@ -85,7 +88,17 @@ int	AvHKnife::GetDeployAnimation() const
 
 float AvHKnife::GetDeployTime() const
 {
-	return .25f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.15f;
+	}
+	else {
+		return 0.25f;
+	}
+	//return .25f;
 }
 
 char* AvHKnife::GetDeploySound() const
@@ -102,7 +115,7 @@ int	AvHKnife::GetIdleAnimation() const
 {
 	// Only play the poking-finger animation once in awhile and play the knife flourish once in a blue moon, it's a special treat
 	int iAnim;
-	int theRandomNum = UTIL_SharedRandomLong(this->m_pPlayer->random_seed, 0, 200);
+	int theRandomNum = UTIL_SharedRandomLong(this->m_pPlayer->random_seed, 0, 100);
 
 	if(theRandomNum == 0)
 	{
@@ -153,8 +166,16 @@ void AvHKnife::FireProjectiles(void)
 	// TODO: Check team
 	
 	// Do trace hull here
-	float theDamage = this->mDamage;
-	CBaseEntity* pHurt = this->m_pPlayer->CheckTraceHullAttack(kKNRange, theDamage, DMG_SLASH);
+	//float theDamage = this->mDamage;
+
+
+	float theDamageMultiplier;
+	AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
+	float theDamage = this->mDamage*((2.0f*(theDamageMultiplier - 1.0f)) + 1.0f);
+	//float theDamage = this->mDamage*theDamageMultiplier;
+	//float theDamage = this->mDamage*theDamageMultiplier*theDamageMultiplier;
+
+	CBaseEntity* pHurt = this->m_pPlayer->CheckTraceHullAttack(this->mRange, theDamage, DMG_SLASH);
 	if(pHurt)
 	{
 		char* theSoundToPlay = NULL;
@@ -242,6 +263,14 @@ void AvHKnife::Spawn()
 	this->m_iId = AVH_WEAPON_KNIFE;
 	//this->m_iDefaultAmmo = kKNMaxClip;
 	
+#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		this->mDamage *= 1.25f; //25% more damage
+		//this->mRange *= 50.0f; //50x more range lmao
+	}
+#endif
+
     // Set our class name
 	this->pev->classname = MAKE_STRING(kwsKnife);
 	
