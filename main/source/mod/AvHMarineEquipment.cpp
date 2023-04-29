@@ -589,9 +589,25 @@ BOOL AvHHealth::GiveHealth(CBaseEntity* inOther, float points)
 
 //	float thePointsPerHealth = BALANCE_VAR(kPointsPerHealth)
 	
-	
+	/*
+	f(this->GetHasHeavyArmor())
+				{
+					theEffectivePlayerClass = PLAYERCLASS_ALIVE_HEAVY_MARINE;
+				}
+				else if (this->GetHasJetpack()) {
+					theEffectivePlayerClass = PLAYERCLASS_ALIVE_JETPACK_MARINE;
+				}
+				else
+				{
+					theEffectivePlayerClass = PLAYERCLASS_ALIVE_MARINE;
+				}
+	*/
+
+	//Reverted: Changed armory heal resupply code to correct Armory not healing Team2 players in Marine vs Marine
+
 	AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(inOther);
-	if(thePlayer && thePlayer->GetIsRelevant() && thePlayer->GetIsMarine())
+	if(thePlayer && thePlayer->GetIsRelevant() && thePlayer->GetIsMarine())  // GetEffectivePlayerClass()
+	//if (thePlayer && thePlayer->GetIsRelevant() && (thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER))  // GetEffectivePlayerClass()
 	{
 		float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(thePlayer->pev->iuser4, thePlayer->GetUser3(), thePlayer->GetExperienceLevel());
 		if(thePlayer->pev->health < thePlayerMaxHealth)
@@ -614,6 +630,8 @@ BOOL AvHHealth::GiveHealth(CBaseEntity* inOther, float points)
 			theSuccess = TRUE;
 		}
 	}
+
+
 
 	return theSuccess;
 }
