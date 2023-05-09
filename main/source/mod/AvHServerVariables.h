@@ -66,8 +66,47 @@
 
 #include "../common/cvardef.h"
 
+
+
 extern cvar_t avh_blockscripts;
 extern cvar_t avh_jumpmode;
+extern cvar_t avh_fastonoscharge;
+extern cvar_t avh_reverselerk;
+extern cvar_t avh_bhoplimit;
+extern cvar_t avh_bhopmarine;
+extern cvar_t avh_bhopskulk;
+extern cvar_t avh_bhopgorge;
+extern cvar_t avh_bhopfade;
+extern cvar_t avh_bhoponos;
+extern cvar_t avh_restocknades;
+extern cvar_t avh_autoswap;
+extern cvar_t avh_wallstrafe;
+extern cvar_t avh_killrewards;
+extern cvar_t avh_turretupgradesound;
+extern cvar_t avh_modrtupgrade;
+extern cvar_t avh_modnuke;
+extern cvar_t avh_modipelectrify;
+extern cvar_t avh_modmotiontracking;
+extern cvar_t avh_modvampirism;
+
+extern cvar_t avh_infinite_ammo;
+extern cvar_t avh_infinite_energy;
+extern cvar_t avh_infinite_jetpack;
+extern cvar_t avh_vampire_factor;
+extern cvar_t avh_balance_mvm;
+extern cvar_t avh_balance_ava;
+extern cvar_t avh_balance_faded;
+extern cvar_t avh_last_stand;
+extern cvar_t avh_self_weld;
+extern cvar_t avh_golden_deagle;
+extern cvar_t avh_fadedgamemode;
+extern cvar_t avh_commheight;
+extern cvar_t avh_commcustomcam;
+extern cvar_t avh_heavyjp;
+extern cvar_t avh_fallsafe;
+extern cvar_t avh_worldlight;
+
+
 extern cvar_t avh_combattime;
 extern cvar_t *avh_cheats;
 extern cvar_t avh_defaultteam;
@@ -94,7 +133,6 @@ extern cvar_t *violence_ablood;
 extern cvar_t *violence_hgibs;
 extern cvar_t *violence_agibs;
 extern cvar_t avh_killdelay;
-extern cvar_t avh_autoswap;
 extern cvar_t *showtriggers;
 
 extern cvar_t *showtriggers;
@@ -146,6 +184,21 @@ float	ns_cvar_float(const cvar_t *cvar);
 
 #define kvBlockScripts              "mp_blockscripts"
 #define kvJumpMode					"sv_jumpmode"
+#define kvReverseLerk				"sv_reverselerk"
+#define kvFastOnosCharge			"sv_fastonoscharge"
+#define kvBhopLimit					"sv_bhoplimit"
+#define kvBhopMarine				"sv_bhopmarine"
+#define kvBhopSkulk					"sv_bhopskulk"
+#define kvBhopGorge					"sv_bhopgorge"
+#define kvBhopFade					"sv_bhopfade"
+#define kvBhopOnos					"sv_bhoponos"
+#define kvRestockGrenades			"sv_restocknades"
 #define kvAutoSwap					"sv_autoswap"
+#define kvKillRewards				"sv_killrewards"
+#define kvModRTUpgrade				"sv_modrtupgrade"
+#define kvModNuke					"sv_modnuke"
+#define kvModIPElectrify			"sv_modipelectrify"
+#define kvModMotionTracking			"sv_modmotiontracking"
+#define kvModVampirism				"sv_modvampirism"
 
 #endif

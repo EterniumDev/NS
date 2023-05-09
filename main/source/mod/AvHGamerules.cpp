@@ -343,7 +343,11 @@ AvHGamerules::AvHGamerules() : mTeamA(TEAM_ONE), mTeamB(TEAM_TWO)
 	RegisterServerVariable(&avh_autoswap);
 	RegisterServerVariable(&avh_killrewards);
 	RegisterServerVariable(&avh_turretupgradesound);
-	//RegisterServerVariable(&avh_turretupgradesound);
+	RegisterServerVariable(&avh_modrtupgrade);
+	RegisterServerVariable(&avh_modnuke);
+	RegisterServerVariable(&avh_modipelectrify);
+	RegisterServerVariable(&avh_modmotiontracking);
+	RegisterServerVariable(&avh_modvampirism);
 
 	RegisterServerVariable(&avh_infinite_ammo);
 	RegisterServerVariable(&avh_infinite_energy);
