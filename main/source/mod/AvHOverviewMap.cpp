@@ -253,7 +253,11 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 		outG = 0.44;
 		outB = 0.61;
 	}
-	
+	else if (entity.mTeam == TEAM_IND) {
+		outR = 0.5;
+		outG = 0.5;
+		outB = 0.5;
+	}
     else if (team == mTeam && !isStructure)    {
 		
 

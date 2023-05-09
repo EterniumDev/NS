@@ -1105,7 +1105,6 @@ bool AvHBasePlayerWeapon::Resupply()
         int theCurrentPrimary = this->m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
         int theMaxPrimary = theItemInfo.iMaxAmmo1;
 
-		a
         // Add ammo
         this->m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = min(theCurrentPrimary + theAmountToAdd, theMaxPrimary);
 
