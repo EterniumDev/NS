@@ -199,11 +199,14 @@ public:
 	// AvHPlayer stuff
     AvHPlayer();
 
+
+
 	//public everything cause my name is alien and i dislike private variables!!! xd jk
 	float				mTimeOfLastResupply;
 	float				mTimeOfLastNadeRestock;
 	float				mTimeGestationStarted;
 	int					mAutoSwapValue; //added by alien for cl_autoswap
+	bool				UpdatedCosts;
 
 	void			AddDebugEnemyBlip(float inX, float inY, float inZ);
 	void			PrintWeaponListToClient(CBaseEntity *theAvHPlayer);

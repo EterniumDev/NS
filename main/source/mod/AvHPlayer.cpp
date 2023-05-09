@@ -10391,6 +10391,7 @@ void AvHPlayer::UpdateTechNodes()
 {
     bool theIsCombatMode = GetGameRules()->GetIsCombatMode();
 	bool theIsNSMode = GetGameRules()->GetIsNSMode();
+	bool theGameStarted = GetGameRules()->GetGameStarted();
     if((this->GetUser3() == AVH_USER3_COMMANDER_PLAYER) || theIsCombatMode || this->GetIsAlien())
     {
         AvHTeam* theTeam = this->GetTeamPointer();
@@ -10441,8 +10442,8 @@ void AvHPlayer::UpdateTechNodes()
                 theTechNodes.SetIsResearchable(ALIEN_EVOLUTION_ELEVEN, true);
                 theTechNodes.SetIsResearchable(ALIEN_EVOLUTION_TWELVE, true);
 				
-				// If not Gorge, set buildables to be unavailable
-                if(theLifeform != ALIEN_LIFEFORM_TWO)
+				// If not Gorge or game started, set buildables to be unavailable
+                if(theLifeform != ALIEN_LIFEFORM_TWO || !theGameStarted)
                 {
                     theTechNodes.SetIsResearchable(ALIEN_BUILD_HIVE, false);
                     theTechNodes.SetIsResearchable(ALIEN_BUILD_RESOURCES, false);
@@ -10523,6 +10524,16 @@ void AvHPlayer::UpdateTechNodes()
                 }
             }
             
+			if (UpdatedCosts && !theGameStarted)
+			{
+				UpdatedCosts = false;
+			}
+			else if (theGameStarted && !UpdatedCosts)
+			{
+				theTechNodes.processBalanceChange();
+				UpdatedCosts = true;
+			}
+
 			theTechNodes.GetDelta( this->mClientTechNodes,this->mClientTechDelta );
 			if( !mClientTechDelta.empty() )
 			{

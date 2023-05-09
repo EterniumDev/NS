@@ -157,8 +157,7 @@ void AvHBileBomb::BileBombTouch(CBaseEntity* pOther)
 			}
 		}
 
-		//ALERT(at_console, "WELDER CLEARING PROC \n");
-
+		
 		const float kWelderClearingRadius = 30;
 		CBaseEntity* thePotentialWelder = NULL;
 		while ((thePotentialWelder = UTIL_FindEntityInSphere(thePotentialWelder, this->pev->origin, kWelderClearingRadius)) != NULL)

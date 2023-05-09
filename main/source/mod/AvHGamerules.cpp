@@ -4545,6 +4545,7 @@ int	AvHGamerules::GetBaseHealthForMessageID(AvHMessageID inMessageID) const
 int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 {
 	float time = 0.0f;
+	bool theGameStarted = GetGameRules()->GetGameStarted();
 	const float CO_Scalar = this->GetIsCombatMode() ? BALANCE_VAR(kCombatModeTimeScalar) : 1.0f;
 	const float CO_GScalar = this->GetIsCombatMode() ? BALANCE_VAR(kCombatModeGestationTimeScalar) : 1.0f;
 
@@ -4598,24 +4599,24 @@ int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 		case ALIEN_BUILD_HIVE:				time = BALANCE_VAR(kHiveBuildTime); break;
 
 		// Alien Evolutions
-		case ALIEN_EVOLUTION_ONE:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_TWO:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_THREE:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_SEVEN:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_EIGHT:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_NINE:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_TEN:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_ELEVEN:		time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-		case ALIEN_EVOLUTION_TWELVE:		time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-        case ALIEN_HIVE_TWO_UNLOCK:			time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
-        case ALIEN_HIVE_THREE_UNLOCK:		time = BALANCE_VAR(kEvolutionGestateTime)*CO_Scalar;	break;
+		case ALIEN_EVOLUTION_ONE:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_TWO:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_THREE:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_SEVEN:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_EIGHT:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_NINE:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_TEN:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_ELEVEN:		time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+		case ALIEN_EVOLUTION_TWELVE:		time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+        case ALIEN_HIVE_TWO_UNLOCK:			time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
+        case ALIEN_HIVE_THREE_UNLOCK:		time = BALANCE_VAR(kEvolutionGestateTime) * CO_Scalar;	break;
 	
 		// Alien Lifeforms
-		case ALIEN_LIFEFORM_ONE:		time = BALANCE_VAR(kSkulkGestateTime)*CO_GScalar; break;
-		case ALIEN_LIFEFORM_TWO:		time = BALANCE_VAR(kGorgeGestateTime)*CO_GScalar; break;
-		case ALIEN_LIFEFORM_THREE:		time = BALANCE_VAR(kLerkGestateTime)*CO_GScalar; break;
-		case ALIEN_LIFEFORM_FOUR:		time = BALANCE_VAR(kFadeGestateTime)*CO_GScalar; break;
-		case ALIEN_LIFEFORM_FIVE:		time = BALANCE_VAR(kOnosGestateTime)*CO_GScalar; break;
+		case ALIEN_LIFEFORM_ONE:		time = BALANCE_VAR(kSkulkGestateTime) * CO_GScalar * theGameStarted; break;
+		case ALIEN_LIFEFORM_TWO:		time = BALANCE_VAR(kGorgeGestateTime) * CO_GScalar * theGameStarted; break;
+		case ALIEN_LIFEFORM_THREE:		time = BALANCE_VAR(kLerkGestateTime) * CO_GScalar * theGameStarted; break;
+		case ALIEN_LIFEFORM_FOUR:		time = BALANCE_VAR(kFadeGestateTime) * CO_GScalar * theGameStarted; break;
+		case ALIEN_LIFEFORM_FIVE:		time = BALANCE_VAR(kOnosGestateTime) * CO_GScalar * theGameStarted; break;
 	}
 	
 	if( time > 0 )
@@ -4623,7 +4624,7 @@ int	AvHGamerules::GetBuildTimeForMessageID(AvHMessageID inMessageID) const
 		time = max( time, 1.0f ); //for cases where combat scalars would  result in fractional seconds
 	}
 	if (avh_balance_ava.value == 1) {
-		time = max(time*0.9f, 1.0f); //for the ava enhanced balanced, reduce evo time by 10% and then make sure its at least 1 second
+		time = max(time*0.95f, 1.0f); //for the ava enhanced balanced, reduce evo time by 5% and then make sure its at least 1 second
 	}
 	if (avh_last_stand.value == 1) {
 		time = min(time, 5.0f); //for the last stand gamemode

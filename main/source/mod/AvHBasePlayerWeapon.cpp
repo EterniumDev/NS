@@ -1235,6 +1235,7 @@ void AvHBasePlayerWeapon::UpdateInventoryEnabledState(int inNumActiveHives)
 {
 	// Process here
 	int theEnabledState = 1;
+	bool theGameStarted = GetGameRules()->GetGameStarted();
 				
 	ItemInfo theItemInfo;
 	if(this->GetItemInfo(&theItemInfo) != 0)
@@ -1242,9 +1243,19 @@ void AvHBasePlayerWeapon::UpdateInventoryEnabledState(int inNumActiveHives)
 		int theWeaponFlags = theItemInfo.iFlags;
 		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(this->m_pPlayer);
 		ASSERT(thePlayer);
-	
+
 		// If we don't have the hives required, or we're ensnared
-		if	(/*thePlayer->GetIsTemporarilyInvulnerable() ||*/
+		if (!theGameStarted)
+		{
+			if (!thePlayer->GetIsAbleToAct() ||
+				(thePlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5 && (theWeaponFlags & ONE_HIVE_REQUIRED)) ||
+				(theWeaponFlags & TWO_HIVES_REQUIRED) ||
+				(theWeaponFlags & THREE_HIVES_REQUIRED))
+			{
+				theEnabledState = 0;
+			}
+		}
+		else if (/*thePlayer->GetIsTemporarilyInvulnerable() ||*/
 			!thePlayer->GetIsAbleToAct() || 
 			((inNumActiveHives < 1) && (theWeaponFlags & ONE_HIVE_REQUIRED)) ||
 			((inNumActiveHives < 2) && (theWeaponFlags & TWO_HIVES_REQUIRED)) ||
