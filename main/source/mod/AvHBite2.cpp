@@ -86,6 +86,7 @@ int	AvHBite2::GetDeployAnimation() const
 int AvHBite2::GetDamageType() const
 {
 	return AvHBite::GetDamageType();
+	//return NS_DMG_BLAST;
 }
 
 float AvHBite2::GetDeployTime() const

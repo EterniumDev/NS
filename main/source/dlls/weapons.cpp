@@ -71,6 +71,7 @@
 #include "../mod/AvHPlayer.h"
 #include "../mod/AvHGamerules.h"
 #include "../mod/AvHNetworkMessages.h"
+#include "../mod/AvHServerVariables.h"
 
 extern CGraph	WorldGraph;
 extern int gEvilImpulse101;
@@ -435,7 +436,10 @@ void W_Precache(void)
     UTIL_PrecacheOtherWeapon(kwsKnife);
     UTIL_PrecacheOtherWeapon(kwsMachineGun);
     UTIL_PrecacheOtherWeapon(kwsPistol);
-    UTIL_PrecacheOtherWeapon(kwsShotGun);
+#ifdef AVH_WEAPON_PISTOLB
+	UTIL_PrecacheOtherWeapon(kwsPistolB);
+#endif
+	UTIL_PrecacheOtherWeapon(kwsShotGun);
     UTIL_PrecacheOtherWeapon(kwsHeavyMachineGun);
     UTIL_PrecacheOtherWeapon(kwsGrenadeGun);
     UTIL_PrecacheOtherWeapon(kwsGrenade);
@@ -509,6 +513,7 @@ void W_Precache(void)
 	UTIL_PrecacheOther(kwsDeployedMine);
 	UTIL_PrecacheOther(kwsHealth);
     UTIL_PrecacheOther(kwsCatalyst);
+	UTIL_PrecacheOther(kwsNano);
 	UTIL_PrecacheOther(kwsGenericAmmo);
 	UTIL_PrecacheOther(kwsHeavyArmor);
 	UTIL_PrecacheOther(kwsJetpack);
@@ -891,6 +896,7 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
 
+	
 	ALERT(at_console, "autopick \n");
 	if (pPlayer)
 	{
@@ -914,6 +920,7 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 		}
 	}
 	
+
 	// can I have this?
 	if ( !g_pGameRules->CanHavePlayerItem( pPlayer, this ) )
 	{
@@ -970,7 +977,10 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 		// Add them to the clip
 		m_iClip += j;
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+
+		if (avh_infinite_ammo.value != 2) {
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+		}
 
 		m_pPlayer->TabulateAmmo();
 
@@ -1236,6 +1246,8 @@ void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal, int body )
 BOOL CBasePlayerWeapon :: AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, int iMaxCarry )
 {
 	int iIdAmmo;
+	
+	
 
 	if (iMaxClip < 1)
 	{
@@ -1659,6 +1671,24 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 	}
 
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
+
+	/*
+	ALERT(at_console, "autopick \n");
+	if (pPlayer)
+	{
+		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(pPlayer);
+		if (thePlayer) {
+			ALERT(at_console, "player's auto pickup is %d \n", thePlayer->mAutoPickupValue);
+			if (thePlayer->mAutoPickupValue == 2 && thePlayer->m_pActiveItem) //added by alien for cl_autoswap
+			//auto pickup regardless if the player doesn't have a weapon out
+			{
+				return;
+			}
+		}
+	}
+	*/
+
+
 	int i;
 
 // dole out ammo

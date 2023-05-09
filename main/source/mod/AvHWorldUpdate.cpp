@@ -359,7 +359,7 @@ void UpdateWorldEntity(CBaseEntity* inBaseEntity)
 	}
 	
 
-	// Deteted by sensory chambers
+	// Detected by sensory chambers
     if(theUser3 == AVH_USER3_MARINE_PLAYER )
    {
 		if(AvHSUGetInRangeOfEnemySensoryChamber(inBaseEntity))

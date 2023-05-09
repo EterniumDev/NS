@@ -600,6 +600,9 @@
     <ClCompile Include="hudgl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\mod\AvHPistolB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\mod\AvHAlienAbilities.h">

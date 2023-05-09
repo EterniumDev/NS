@@ -122,6 +122,7 @@
 #include "../common/com_model.h"
 #include "AvHHulls.h"
 #include "AnimationUtil.h"
+#include "AvHServerVariables.h"
 
 int   NS_PointContents(const hull_t *hull, int num, float p[3]);
 float NS_TraceLineAgainstEntity(int inEntityIndex, float inTime, const float inRayOrigin[3], const float inRayDirection[3]);
@@ -679,11 +680,13 @@ void AvHSUResupplyFriendliesInRange(int inNumEntitiesToCreate, AvHPlayer* inPlay
 		// : 1017 combat resupply amount
 		BOOL theHelpedPlayer = AvHHealth::GiveHealth(thePlayer, BALANCE_VAR(kPointsPerHealth));
 
+		//we didnt help them
 		if(!theHelpedPlayer)
 		{
 			theHelpedPlayer = AvHGenericAmmo::GiveAmmo(thePlayer);
 		}
 
+		//we did heal them
 		if(theHelpedPlayer)
 		{
 			// Play event for each person helped
@@ -1052,6 +1055,13 @@ void AvHSUResearchComplete(CBaseEntity* inResearchEntity, AvHMessageID inResearc
 					{
 						edict_t* theSpawnPoint = GetGameRules()->SelectSpawnPoint(theEntity);
 
+						//add in new code here for having modded recall for distress beacon where instead of going to marine start
+						//like that select spawn point func does we instead go to somewhere nearby the obs
+
+						//check my var for retarded beaconing to obs
+						//if(AvHSUGetIsEnoughRoomForHull(theSpawnOrigin, AvHMUGetHull(false, inPlayer->pev->iuser3), inPlayer->edict()))
+
+
 						if(theSpawnPoint)
 						{
 							if ( VectorDistance(theSpawnPoint->v.origin, theEntity->pev->origin) > BALANCE_VAR(kDistressBeaconRange)) 
@@ -1087,6 +1097,7 @@ void AvHSUResearchComplete(CBaseEntity* inResearchEntity, AvHMessageID inResearc
 			{
 			case BUILD_RESOURCES:
 			case BUILD_TURRET_FACTORY:
+			case BUILD_INFANTRYPORTAL:
 			case TURRET_FACTORY_UPGRADE:
 				SetUpgradeMask(&theBuildable->pev->iuser4, MASK_UPGRADE_11);
 				break;
@@ -1134,10 +1145,11 @@ bool AvHSUGetIsResearchApplicable(CBaseEntity* inResearchEntity, AvHMessageID in
 		break;
 	case RESEARCH_HEAVYARMOR:
 	case RESEARCH_JETPACKS:
+	case RESEARCH_HEALTH:
 		theIsApplicable = isMember<AvHPrototypeLab>(inResearchEntity);
 		break;
 	case RESEARCH_ELECTRICAL:
-		theIsApplicable = isMember<AvHResourceTower>(inResearchEntity) || isMember<AvHTurretFactory>(inResearchEntity);
+		theIsApplicable = isMember<AvHInfantryPortal>(inResearchEntity) || isMember<AvHResourceTower>(inResearchEntity) || isMember<AvHTurretFactory>(inResearchEntity);
 		break;
 	}
 	return theIsApplicable;
@@ -1235,7 +1247,8 @@ CBaseEntity* AvHSUGetEntityFromIndex(int inEntityIndex)
 
 CGrenade* AvHSUShootServerGrenade(entvars_t* inOwner, Vector inOrigin, Vector inVelocity, float inTime, bool inHandGrenade)
 {
-	CGrenade* theGrenade = CGrenade::ShootExplosiveTimed(inOwner, inOrigin, inVelocity, inTime, inHandGrenade ? NS_DMG_NORMAL : NS_DMG_BLAST );
+	CGrenade* theGrenade = CGrenade::ShootExplosiveTimed(inOwner, inOrigin, inVelocity, inTime, NS_DMG_BLAST); // inHandGrenade ? NS_DMG_NORMAL : NS_DMG_BLAST );
+	//CGrenade* theGrenade = CGrenade::ShootExplosiveTimed(inOwner, inOrigin, inVelocity, inTime, inHandGrenade ? NS_DMG_NORMAL : NS_DMG_BLAST );
     ASSERT(theGrenade);
     
 	theGrenade->pev->team = inOwner->team;
@@ -1272,6 +1285,19 @@ void AvHSUKnockPlayerAbout(CBaseEntity* inAttcker, CBaseEntity* inVictim, int in
 
 			if(theVictim->GetIsMarine() && theVictim->GetHasHeavyArmor())
 				inForce = inForce * 0.50; 
+			if (theVictim->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5)
+			{
+				inForce = inForce * 0.10;
+			}
+			else if (theVictim->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4)
+			{
+				inForce = inForce * 0.20;
+			}
+
+			if (avh_balance_ava.value == 1)
+			{
+				inForce = inForce * 0.75;
+			}
 
 			//If they are in the air they have another 50% less knockback (to prevent them from becoming superplayer
 			if(!(theVictim->pev->flags & FL_ONGROUND) || !theVictim->pev->groundentity)
@@ -1402,7 +1428,7 @@ void AvHTraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS 
                 {
                     ptr->flFraction = t;
                     ptr->pHit       = theEdict;
-                    ptr->iHitgroup  = 0; // NS doesn't use hit groups.
+                    //ptr->iHitgroup  = 0; // NS doesn't use hit groups. location change for sv_balance_headshot
                 }
 
             }
@@ -1442,18 +1468,22 @@ void AvHSUServerTraceBullets(const Vector& inStart, const Vector& inEnd, IGNORE_
 	{
 		if(GetHasUpgrade(theEntityHit->pev->iuser4, MASK_UMBRA))
 		{
-			const int theUmbraEffectiveness = BALANCE_VAR(kUmbraEffectiveness);
+			//const int theUmbraEffectiveness = BALANCE_VAR(kUmbraEffectiveness);
 			
 			// Block most shots but not all
-			if(RANDOM_LONG(0, theUmbraEffectiveness) != 0)
-			{
+			//if(RANDOM_LONG(0, theUmbraEffectiveness) != 0)
+			//{
 				outProtected = true;
-			}
+			//}
 		}
 		else
 		{
 			// Check if bullets pass through an umbra cloud before hitting target
 			// If so, don't hit the target
+
+			// Added by Alien
+			// Don't bother doing this because umbra doesn't block bullets it enhances the aliens temporarily to resist bullets
+			// ^^^ lore-friendly explanation of why I won't do this but in reality it's cuz I have no idea
 		}
 	}
 }

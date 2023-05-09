@@ -53,6 +53,8 @@ int GetRenderModeForModelName(int inRenderMode, char* inName)
 	{
 		theRenderMode = kRenderTransAdd;
 	}
+
+	//theRenderMode = kRenderGlow;
 	
 	return theRenderMode;
 }
@@ -73,6 +75,7 @@ void CStudioModelRenderer::Init( void )
 	m_pCvarHiModels			= IEngineStudio.GetCvar( "cl_himodels" );
 	m_pCvarDeveloper		= IEngineStudio.GetCvar( "developer" );
 	m_pCvarDrawEntities		= IEngineStudio.GetCvar( "r_drawentities" );
+	m_pCvarShowBright		= IEngineStudio.GetCvar("cl_showbright");
 
 	m_pChromeSprite			= IEngineStudio.GetChromeSprite();
 
@@ -99,6 +102,7 @@ CStudioModelRenderer::CStudioModelRenderer( void )
 	m_pCvarHiModels		= NULL;
 	m_pCvarDeveloper	= NULL;
 	m_pCvarDrawEntities	= NULL;
+	m_pCvarShowBright	= NULL;
 	m_pChromeSprite		= NULL;
 	m_pStudioModelCount	= NULL;
 	m_pModelsDrawn		= NULL;
@@ -1253,7 +1257,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		return 0;
 	}
 
-    /*
+	/*
 	// Now render eyebeam if model is marine //
 	// If player is a marine
 	if(m_pCurrentEntity->curstate.iuser3 == AVH_USER3_MARINE_PLAYER)
@@ -1269,9 +1273,10 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		// Get endpoint
 		
 		// Draw red additive light along this line
-		//gEngfuncs.pEfxAPI->R_RocketTrail();
+		gEngfuncs.pEfxAPI->R_RocketTrail();
 	}
-    */
+	*/
+    
 
 	if (m_pCurrentEntity->curstate.renderfx == kRenderFxDeadPlayer)
 	{
@@ -1351,7 +1356,20 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	if (flags & STUDIO_RENDER)
 	{
 		lighting.plightvec = dir;
+		
+		//VectorSet(lighting.color, 1.0f, 1.0f, 1.0f);
 		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting );
+
+		if (m_pCvarShowBright->value == 1 || (m_pCvarShowBright->value == 2 && m_pCurrentEntity->player == TRUE)) {
+			lighting.shadelight = 128;
+			lighting.ambientlight = 192;
+			lighting.plightvec[0] = 0.0f;
+			lighting.plightvec[1] = 0.0f;
+			lighting.plightvec[2] = -1.0f;
+			lighting.color[0] = 1.0f;
+			lighting.color[1] = 1.0f;
+			lighting.color[2] = 1.0f;
+		}
 
 		IEngineStudio.StudioEntityLight( &lighting );
 
@@ -1658,7 +1676,19 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
         */
 
 		lighting.plightvec = dir;
+		
 		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting );
+
+		if (m_pCvarShowBright->value == 1 || (m_pCvarShowBright->value == 2 && m_pCurrentEntity->player == TRUE)) {
+			lighting.shadelight = 128;
+			lighting.ambientlight = 192;
+			lighting.plightvec[0] = 0.0f;
+			lighting.plightvec[1] = 0.0f;
+			lighting.plightvec[2] = -1.0f;
+			lighting.color[0] = 1.0f;
+			lighting.color[1] = 1.0f;
+			lighting.color[2] = 1.0f;
+		}
 
 		IEngineStudio.StudioEntityLight( &lighting );
 
@@ -1831,13 +1861,65 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware( void )
 	int rendermode;
 	
 	rendermode = IEngineStudio.GetForceFaceFlags() ? kRenderTransAdd : m_pCurrentEntity->curstate.rendermode;
+
+	if (CVAR_GET_FLOAT("cl_showrender") != 0) {
+		//rendermode = kRenderTransColor;
+
+
+		if (CVAR_GET_FLOAT("cl_showrender") == 2 && m_pCurrentEntity->curstate.iuser3 == AVH_USER3_MARINE_PLAYER) {
+			rendermode = kRenderTransAdd;
+		}
+		else if (CVAR_GET_FLOAT("cl_showrender") == 3){
+			if (m_pCurrentEntity->curstate.iuser3 == AVH_USER3_ALIEN_PLAYER1 ||
+				m_pCurrentEntity->curstate.iuser3 == AVH_USER3_ALIEN_PLAYER2 ||
+				m_pCurrentEntity->curstate.iuser3 == AVH_USER3_ALIEN_PLAYER3 ||
+				m_pCurrentEntity->curstate.iuser3 == AVH_USER3_ALIEN_PLAYER4 ||
+				m_pCurrentEntity->curstate.iuser3 == AVH_USER3_ALIEN_PLAYER5 ||
+				m_pCurrentEntity->curstate.iuser3 == AVH_USER3_ALIEN_EMBRYO)
+			{
+				rendermode = kRenderTransAdd;
+			}
+		}
+		else{
+			rendermode = kRenderTransAdd;
+		}
+		//m_pCurrentEntity->curstate.renderamt = 255;
+	}
+	/*
+	else if (CVAR_GET_FLOAT("cl_showrender") == 2) {
+		rendermode = kRenderTransTexture;
+	}
+	else if (CVAR_GET_FLOAT("cl_showrender") == 3) {
+		rendermode = kRenderGlow;
+	}
+	else if (CVAR_GET_FLOAT("cl_showrender") == 4) {
+		rendermode = kRenderTransAlpha;
+	}
+	else if (CVAR_GET_FLOAT("cl_showrender") == 5) {
+		rendermode = kRenderTransAdd;
+	}
+	else if (CVAR_GET_FLOAT("cl_showrender") == 6) {
+		rendermode = kRenderNormal;
+	}
+	*/
+		//kRenderNormal,			// src
+		//kRenderTransColor,		// c*a+dest*(1-a)
+		//kRenderTransTexture,	// src*a+dest*(1-a)
+			//kRenderGlow,			// src*a+dest -- No Z buffer checks
+			//kRenderTransAlpha,		// src*srca+dest*(1-srca)
+			//kRenderTransAdd,		// src*a+dest
+	
+
+
 	IEngineStudio.SetupRenderer( rendermode );
 	
 	if (m_pCvarDrawEntities->value == 2)
+	//if (CVAR_GET_FLOAT("cl_showrender") == 7)
 	{
 		IEngineStudio.StudioDrawBones();
 	}
 	else if (m_pCvarDrawEntities->value == 3)
+	//else if (CVAR_GET_FLOAT("cl_showrender") == 7)
 	{
 		IEngineStudio.StudioDrawHulls();
 	}
@@ -1874,7 +1956,7 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware( void )
 			IEngineStudio.GL_StudioDrawShadow();
 		}
 	}
-
+	
 	if ( m_pCvarDrawEntities->value == 4 )
 	{
 		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );

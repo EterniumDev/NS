@@ -525,6 +525,10 @@ extern const char* getModName(void);
 #define kwMachineGun				weapon_machinegun
 #define kwsPistol					"weapon_pistol"
 #define kwPistol					weapon_pistol
+#ifdef AVH_WEAPON_PISTOLB
+#define kwsPistolB					"weapon_pistoltec"
+#define kwPistolB					weapon_pistoltec
+#endif
 #define kwsShotGun					"weapon_shotgun"
 #define kwShotGun					weapon_shotgun
 #define kwsHeavyMachineGun			"weapon_heavymachinegun"
@@ -552,6 +556,9 @@ extern const char* getModName(void);
 
 #define kwsCatalyst                 "item_catalyst"
 #define kwCatalyst                 item_catalyst
+
+#define kwsNano						"item_nano"
+#define kwNano						item_nano
 
 #define kwsGenericAmmo				"item_genericammo"
 #define kwGenericAmmo				item_genericammo
@@ -994,6 +1001,7 @@ const int		kNumericalInfoResourcesEvent			= 0;
 const int		kNumericalInfoHealthEvent				= 1;
 const int		kNumericalInfoResourcesDonatedEvent		= 2;
 const int		kNumericalInfoAmmoEvent					= 3;
+//const int		kNumericalInfoArmorEvent				= 4; //was gonna add an extra numerical event for bilebomb dealing armor-only damage
 
 const int		kGameStatusReset						= 0;
 const int		kGameStatusResetNewMap					= 1;

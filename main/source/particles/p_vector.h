@@ -22,6 +22,8 @@
 #define drand48() (((float) rand())/((float) RAND_MAX))
 #define srand48(x) srand(x)
 
+// This is because their stupid compiler thinks it's smart.
+//#define inline __forceinline
 #endif
 
 class pVector

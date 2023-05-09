@@ -276,6 +276,8 @@ bool AvHResearchManager::SetResearching(AvHMessageID inMessageID, int inEntityIn
 {
 	bool theCouldStart = true;
 	
+	//ALERT(at_console, "Set Research Proc \n");
+
 	// Search through researching tech and make sure this entity isn't already researching something
 	for(ResearchListType::iterator theIter = this->mResearchingTech.begin(); theIter != this->mResearchingTech.end(); theIter++)
 	{

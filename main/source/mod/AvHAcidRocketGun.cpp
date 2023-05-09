@@ -127,7 +127,7 @@ void AvHAcidRocket::AcidRocketTouch(CBaseEntity* pOther)
 	//AvHSUExplosiveForce(this->pev->origin, kAcidRocketRadius, theForceScalar, theAttacker);
 
 	// Explode with splash damage
-	RadiusDamage(this->pev->origin, this->pev, VARS(theRocketOwner), this->mDamage, BALANCE_VAR(kAcidRocketRadius), CLASS_NONE, NS_DMG_ACID);
+	RadiusDamage(this->pev->origin, this->pev, VARS(theRocketOwner), this->mDamage, BALANCE_VAR(kAcidRocketRadius), CLASS_NONE, NS_DMG_BLAST);
 
 	// Kill the Acid entity
 	UTIL_Remove(this);

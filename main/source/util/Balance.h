@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include "Balance.txt"	//default balancing source - this used to be ../Balance.txt
+#include "Changelog.txt"
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // BalanceValueContainerFactory -- facade that creates, stores, and 
@@ -189,7 +190,7 @@ protected:
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #ifdef BALANCE_ENABLED //use Balance.txt values on server, no-source/explicitly set values for client
-	#ifdef SERVER
+	#ifndef SERVER
 		#define BALANCE_DEFNAME BalanceValueContainerFactory::getDefaultFilename()
 	#else
 		#define BALANCE_DEFNAME ""

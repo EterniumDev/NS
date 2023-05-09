@@ -101,14 +101,21 @@ void AvHAmbientSound::UpdateVolume(const Vector& inListenerPosition)
 		theVolume = this->mVolume - this->mVolume*(theDistance/(float)this->mFadeDistance);
 	}
 
-		if (CVAR_GET_FLOAT("cl_ambientsound") != 1.0f)
-		{
-			theVolume = 0;
-		}
-		else
-		{
-			theVolume = min(max(0, theVolume), 255);
-		}
+	//theVolume = min(max(0, theVolume), 255);
+	
+	if (CVAR_GET_FLOAT("cl_ambientsound") <= 0.0f)
+	{
+		theVolume = 0; //CVAR_GET_FLOAT("cl_ambientsound")
+	}
+	else if (CVAR_GET_FLOAT("cl_ambientsound") < 2.0f)
+	{
+		theVolume = min(max(0, (int)((float)theVolume*(CVAR_GET_FLOAT("cl_ambientsound"))) ), 255);
+	}
+	else
+	{
+		theVolume = min(max(0, theVolume), 255);
+	}
+	
 
         FMOD_INSTANCE* theFMOD = gHUD.GetFMOD();
 

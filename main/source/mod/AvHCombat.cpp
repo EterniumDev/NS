@@ -5,6 +5,7 @@
 #include "AvHGamerules.h"
 #include "AvHMarineEquipment.h"
 #include "AvHSharedUtil.h"
+#include "AvHServerVariables.h"
 
 extern int gLevelUpEventID;
 
@@ -176,6 +177,7 @@ void AvHPlayer::AwardExperienceForObjective(float inHealthChange, AvHMessageID i
         {
         case ALIEN_BUILD_HIVE:
         case BUILD_COMMANDSTATION:
+		case BUILD_ARMORY:
             theAwardExperience = true;
             break;
         }
@@ -186,6 +188,9 @@ void AvHPlayer::AwardExperienceForObjective(float inHealthChange, AvHMessageID i
         int theMaxHealth = GetGameRules()->GetBaseHealthForMessageID(inMessageID);
         float thePercentageOfHealth = inHealthChange/theMaxHealth;
         int theCombatObjectiveExperienceScalar = BALANCE_VAR(kCombatObjectiveExperienceScalar);
+		if (inMessageID == BUILD_ARMORY) {
+			theCombatObjectiveExperienceScalar = 250;
+		}
         float theExperienceGained = thePercentageOfHealth*theCombatObjectiveExperienceScalar;
         this->SetExperience(this->GetExperience() + theExperienceGained);
     }
@@ -337,10 +342,14 @@ void AvHPlayer::RemoveCombatUpgradesPremptedBy(AvHMessageID inMessageID)
     switch(inMessageID)
     {
     case BUILD_JETPACK:
-        this->RemoveCombatUpgrade(BUILD_HEAVY);
+		if (avh_heavyjp.value == 0) {
+			this->RemoveCombatUpgrade(BUILD_HEAVY);
+		}
         break;
     case BUILD_HEAVY:
-        this->RemoveCombatUpgrade(BUILD_JETPACK);
+		if (avh_heavyjp.value == 0) {
+			this->RemoveCombatUpgrade(BUILD_JETPACK);
+		}
         break;
     case BUILD_HMG:
         this->RemoveCombatUpgrade(BUILD_SHOTGUN);
@@ -480,7 +489,7 @@ void AvHPlayer::InternalCombatThink()
             theServerPlayerData->SetPurchasedCombatUpgrades(this->mPurchasedCombatUpgrades);
             theServerPlayerData->SetExperienceLevelsSpent(this->mExperienceLevelsSpent);
         }
-
+		
         // If it's time for an update
         float theCurrentTime = gpGlobals->time;
         const float theCombatThinkInterval = BALANCE_VAR(kCombatThinkInterval);
@@ -513,7 +522,7 @@ void AvHPlayer::InternalCombatThink()
                 if(this->GetHasCombatModeUpgrade(BUILD_CAT))
                 {
                     // Catalyst player after he gets a kill
-                    if(this->pev->frags > this->mSavedCombatFrags)
+                    if(this->pev->frags > this->mSavedCombatFrags || this->m_iDeaths > this->mSavedCombatDeaths)
                     {
                         //if(RANDOM_LONG(0, 1) == 0)
                         //{
@@ -522,6 +531,7 @@ void AvHPlayer::InternalCombatThink()
                         //}
                     }
                 }
+				this->mSavedCombatDeaths = this->m_iDeaths;
                 this->mSavedCombatFrags = this->pev->frags;
 
 				// Does player have scan upgrade?
@@ -532,7 +542,7 @@ void AvHPlayer::InternalCombatThink()
 
 					// Look in sphere for cloakables
 					CBaseEntity* theSphereEntity = NULL;
-					while ((theSphereEntity = UTIL_FindEntityInSphere(theSphereEntity, this->pev->origin, BALANCE_VAR(kScanRadius))) != NULL)
+					while ((theSphereEntity = UTIL_FindEntityInSphere(theSphereEntity, this->pev->origin, BALANCE_VAR(kScanRadius)*0.6f)) != NULL)
 					{
 						if(!AvHSUGetIsExternalClassName(STRING(theSphereEntity->pev->classname)))
 						{
@@ -607,8 +617,33 @@ void AvHPlayer::InternalCombatThink()
             }
         }
 	}
-}
+	else if (avh_fadedgamemode.value == 1) {
+		float theCurrentTime = gpGlobals->time;
+		const float theCombatThinkInterval = 10.0f;
 
+		// Give support from a fake commander
+		if (this->GetIsMarine() && this->GetIsRelevant() && !this->GetIsBeingDigested())
+		{
+			if (this->mTimeOfLastCombatThink == 0 || (theCurrentTime > (this->mTimeOfLastCombatThink + theCombatThinkInterval)))
+			{
+				float theHealthPercentage = 1.0f;//this->pev->health / AvHPlayerUpgrade::GetMaxHealth(this->pev->iuser4, (AvHUser3)this->pev->iuser3, this->GetExperienceLevel());
+				bool theAmmoResupply = this->GetShouldResupplyAmmo();
+
+				if ((theHealthPercentage < BALANCE_VAR(kCombatResupplyHealthPercentage)) || theAmmoResupply) //(theAmmoPercentage < BALANCE_VAR(kCombatResupplyAmmoPercentage)))
+				{
+					// Resupply player
+					this->GiveCombatModeUpgrade(BUILD_RESUPPLY);
+					//BOOL theHelpedPlayer = AvHGenericAmmo::GiveAmmo(this);
+					//if(theHelpedPlayer)
+					//{
+						// Play event for each person helped
+						//PLAYBACK_EVENT_FULL(0, this->edict(), gPhaseInEventID, 0, this->pev->origin, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0);
+					//}
+				}
+			}
+		}
+	}
+}
 
 void AvHTeam::InitializeCombatTechNodes()
 {
@@ -634,7 +669,8 @@ void AvHTeam::InitializeCombatTechNodes()
 
         this->AddTechNode(BUILD_RESUPPLY, TECH_THREE_LEVEL_ONE, TECH_NULL, TECH_NULL, false, false);
         this->AddTechNode(BUILD_CAT, TECH_THREE_LEVEL_ONE, TECH_NULL, TECH_NULL, false, false);
-		
+		//this->AddTechNode(RESEARCH_HEALTH, TECH_THREE_LEVEL_ONE, TECH_NULL, TECH_NULL, false, false);
+
 		this->AddTechNode(BUILD_WELDER, TECH_THREE_LEVEL_ONE, TECH_NULL, TECH_NULL, false, false);
 		this->AddTechNode(BUILD_MINES, TECH_THREE_LEVEL_ONE, TECH_NULL, TECH_NULL, false, false);
         this->AddTechNode(RESEARCH_GRENADES, TECH_THREE_LEVEL_ONE, TECH_NULL, TECH_NULL, false, false);
@@ -667,7 +703,7 @@ void AvHTeam::InitializeCombatTechNodes()
 	}
 }
 
-void AvHGamerules::AwardExperience(AvHPlayer* inPlayer, int inTargetLevel, bool inAwardFriendliesInRange)
+void AvHGamerules::AwardExperience(AvHPlayer* inPlayer, int inTargetLevel, AvHPlayer* enemyPlayer, bool inAwardFriendliesInRange)
 {
 	PlayerListType thePlayerList;
 	thePlayerList.push_back(inPlayer);
@@ -698,6 +734,20 @@ void AvHGamerules::AwardExperience(AvHPlayer* inPlayer, int inTargetLevel, bool 
 	float theExperienceFactor = GetGameRules()->GetIsIronMan() ? BALANCE_VAR(kCombatIronManExperienceScalar) : 1.0f;
 
 	int theExperienceToAward = BALANCE_VAR(kCombatExperienceBaseAward) + inTargetLevel*BALANCE_VAR(kCombatExperienceLevelAward);
+
+	//if this xp is coming from an actual kill and not smthn else
+	if (inPlayer->pev->team != enemyPlayer->pev->team) { //avh_combatelastic 1
+		//if the person killed is at least 2 levels higher than you
+		if (enemyPlayer->GetExperienceLevel() >= inPlayer->GetExperienceLevel() + 2) {
+			theExperienceToAward += 20;
+		}
+
+		//award xp to person who got killed if they're at least 2 levels behind
+		if (enemyPlayer->GetExperienceLevel() < inPlayer->GetExperienceLevel() - 1) {
+			enemyPlayer->SetExperience(enemyPlayer->GetExperience() + 80.0f);
+		}
+	}
+
 
 	float theExperienceForEach = (theExperienceToAward/(float)thePlayerList.size() + BALANCE_VAR(kCombatExperienceCrowdAward))*theExperienceFactor;
 

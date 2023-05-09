@@ -80,7 +80,7 @@ public:
                     AvHBasePlayerWeapon();
 	virtual void	PrintWeaponToClient(CBaseEntity *theAvHPlayer);
 	virtual int		AddToPlayer( CBasePlayer *pPlayer );
-
+	float					mDamage;
     virtual float   ComputeAttackInterval() const;
 
 	virtual void	DeductCostForShot(void);
@@ -212,7 +212,7 @@ public:
 	virtual bool	UsesAmmo(void) const;
 
 	virtual BOOL	UseDecrement(void);
-
+	
 	virtual void    WeaponIdle();
 
 protected:
@@ -244,7 +244,7 @@ protected:
 	unsigned short          mEndEvent;
 
 	float					mRange;
-	float					mDamage;
+	
 	bool					mAttackButtonDownLastFrame;
 	float					mTimeOfLastResupply;
     

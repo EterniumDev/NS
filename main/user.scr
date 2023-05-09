@@ -1,5 +1,5 @@
 // NOTE:  THIS FILE IS AUTOMATICALLY REGENERATED, 
-//DO NOT EDIT THIS HEADER, YOUR COMMENTS WILL BE LOST IF YOU DO
+//DO NOT EDIT THIS HEADER, YOUR COMMENTS WILL BE LOST IF YOU DO aaa
 // User options script
 //
 // Format:
@@ -80,10 +80,11 @@ DESCRIPTION INFO_OPTIONS
 		"Marine minimap zoom level"
 		{
 			LIST
-			"No map" "0"
-			"No Zoom (X1)" "1"
-			"Medium Zoom (2X)" "2"
-			"Full Zoom (3X) " "3"
+			"No minimap" "0"
+			"Less Zoom (1X)" "1"
+			"Normal Zoom (2X)" "2"
+			"Medium Zoom (3X)" "3"
+			"Full Zoom (4X) " "4"
 		}
 		{ "3.000000" }
 	}
@@ -195,7 +196,7 @@ DESCRIPTION INFO_OPTIONS
 
 	"cl_ambientsound"
 	{
-		"Ambient sound (requies map reload)"
+		"Ambient sound (requires map reload)"
 		{
 			LIST
 			"None" "0"

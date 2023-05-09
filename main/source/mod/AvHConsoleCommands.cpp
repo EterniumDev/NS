@@ -433,7 +433,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 					sscanf(CMD_ARGV(1), "%d", &theTargetLevel);
 				}
 
-				GetGameRules()->AwardExperience(thePlayer, theTargetLevel);
+				GetGameRules()->AwardExperience(thePlayer, theTargetLevel, thePlayer);
 
 				theSuccess = true;
 			}
@@ -480,7 +480,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	# endif
 	else if(FStrEq(pcmd, kcSetBalanceVar))
 	{
-		if( theAvHPlayer && theAvHPlayer->GetIsAuthorized(AUTH_ACTION_ADJUST_BALANCE,0) )
+		if( theAvHPlayer && (theAvHPlayer->GetIsAuthorized(AUTH_ACTION_ADJUST_BALANCE,0)) || this->GetCheatsEnabled())
 		{
 			BalanceValueContainer* container = BalanceValueContainerFactory::get(BalanceValueContainerFactory::getDefaultFilename());
 			int theNumArgs = CMD_ARGC();
@@ -503,6 +503,10 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 					container->insert(name,ivalue);
 				}
 			}
+		}
+		else
+		{
+			UTIL_SayText("You're not authorized to balancevar.", theAvHPlayer);
 		}
 		
 		theSuccess = true;
@@ -771,6 +775,27 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			}
 		}
 	}
+	else if (FStrEq(pcmd, "setviewheight"))
+	{
+	if (theAvHPlayer && (theIsServerOp || (theAvHPlayer->GetIsInTopDownMode(false) == true) || theIsPlaytest || this->GetCheatsEnabled()))
+	{
+		float thenewheight = 0.0f;
+		if (sscanf(CMD_ARGV(1), "%f", &thenewheight) == 1)
+		{
+			//GetGameRules()->GetMapExtents().SetMaxViewHeight(thenewheight);
+			this->mMapExtents.SetMaxViewHeight(thenewheight);
+			
+
+			avh_commheight.value = thenewheight;
+			avh_commcustomcam.value = 1;
+			CVAR_SET_FLOAT("sv_commheight", avh_commheight.value);
+			CVAR_SET_FLOAT("sv_commcustomcam", avh_commcustomcam.value);
+		}
+		char* theMessage = UTIL_VarArgs("view height is %f\n", this->mMapExtents.GetMaxViewHeight());
+		theSuccess = true;
+		UTIL_SayText(theMessage, theAvHPlayer);
+	}
+	}	
 	else if (FStrEq(pcmd, kcSetGamma))
 	{
 		if(this->GetCheatsEnabled())
@@ -956,9 +981,19 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			theSuccess = true;
 		}
 	}
+	else if (FStrEq(pcmd, kcHighSpeed))
+	{
+		if (this->GetCheatsEnabled())
+		{
+			// Toggle hispeed cheat
+			bool theHiSpeedEnabled = GetGameRules()->GetIsCheatEnabled(kcHighSpeed);
+			GetGameRules()->SetCheatEnabled(kcHighSpeed, !theHiSpeedEnabled);
+			theSuccess = true;
+		}
+	}
 	else if (FStrEq(pcmd, kcBuildMiniMap))
 	{
-		if(this->GetCheatsEnabled() && theAvHPlayer)
+		if(this->GetCheatsEnabled() && theAvHPlayer) //cl_makeminimap
 		{
 			const char* theCStrLevelName = STRING(gpGlobals->mapname);
 			if(theCStrLevelName && !FStrEq(theCStrLevelName, ""))
@@ -967,6 +1002,66 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 				theSuccess = true;
 			}
 		}
+	}
+	else if (FStrEq(pcmd, "forcerr"))
+	{
+	if (theAvHPlayer && (theIsServerOp || theIsPlaytest))
+	{
+		
+		/*
+		if (theAvHPlayer)
+		{
+			if (!(theAvHPlayer->pev->flags & FL_FAKECLIENT))
+			{
+				if (!theAvHPlayer->GetIsBeingDigested())
+				{
+					theAvHPlayer->SetPlayMode(PLAYMODE_READYROOM, true);
+				}
+				
+			}
+		}
+		*/
+
+		// Loop through players, find the closest player to inPlayerOrigin, to see which player is being predicted.  Is there a better way?
+		AvHPlayer* theClosestPlayer = NULL;
+		float theClosestDistance = 10000;
+
+		FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
+			theEntity->SetPlayMode(PLAYMODE_READYROOM, true);
+		END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
+		theSuccess = true;
+
+	}
+	}
+	else if (FStrEq(pcmd, "forceasgn"))
+	{
+	if (theAvHPlayer && (theIsServerOp || theIsPlaytest))
+	{
+
+		/*
+		if (theAvHPlayer)
+		{
+			if (!(theAvHPlayer->pev->flags & FL_FAKECLIENT))
+			{
+				if (!theAvHPlayer->GetIsBeingDigested())
+				{
+					theAvHPlayer->SetPlayMode(PLAYMODE_READYROOM, true);
+				}
+
+			}
+		}
+		*/
+
+		// Loop through players, find the closest player to inPlayerOrigin, to see which player is being predicted.  Is there a better way?
+		AvHPlayer* theClosestPlayer = NULL;
+		float theClosestDistance = 10000;
+
+		FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
+			this->AutoAssignPlayer(theEntity);
+		END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
+			theSuccess = true;
+
+	}
 	}
     else if(FStrEq(pcmd, "votemap"))
     {
@@ -1006,7 +1101,6 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			theSuccess = true;
 		}
 	}
-#ifdef DEBUG
     else if(FStrEq(pcmd, "catalyst"))
     {
         if(this->GetCheatsEnabled())
@@ -1017,6 +1111,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
             }
         }
     }
+#ifdef DEBUG
 	else if(FStrEq(pcmd, "showmenu"))
 	{
 		short theSlots = 0x1f;
@@ -1118,6 +1213,29 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			theSuccess = true;
 		}
 	}
+	else if (FStrEq(pcmd, kcParasite))
+	{
+		if (this->GetCheatsEnabled())
+		{
+			SetUpgradeMask(&theAvHPlayer->pev->iuser4, MASK_PARASITED);
+		}
+	}
+	else if (FStrEq(pcmd, kcStun))
+	{
+		if (this->GetCheatsEnabled() && theAvHPlayer)
+		{
+			theAvHPlayer->SetIsStunned(true, 4.0f);
+			theSuccess = true;
+		}
+	}
+	else if (FStrEq(pcmd, kcWeb))
+	{
+		if (this->GetCheatsEnabled())
+		{
+			theAvHPlayer->SetEnsnareState(true);
+			theSuccess = true;
+		}
+	}
 #ifdef DEBUG
 	else if(FStrEq(pcmd, kcAdjustScore))
 	{
@@ -1161,16 +1279,6 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			}
 		}
 	}
-	else if(FStrEq(pcmd, kcHighSpeed))
-	{
-		if(this->GetCheatsEnabled())
-		{
-			// Toggle hispeed cheat
-			bool theHiSpeedEnabled = GetGameRules()->GetIsCheatEnabled(kcHighSpeed);
-			GetGameRules()->SetCheatEnabled(kcHighSpeed, !theHiSpeedEnabled);
-			theSuccess = true;
-		}
-	}
 	else if (FStrEq(pcmd, kcCrash))
 	{
 		if(this->GetCheatsEnabled())
@@ -1211,29 +1319,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			}
 		}
 	}
-	else if(FStrEq(pcmd, kcParasite))
-	{
-		if(this->GetCheatsEnabled())
-		{
-			SetUpgradeMask(&theAvHPlayer->pev->iuser4, MASK_PARASITED);
-		}
-	}
-	else if(FStrEq( pcmd, kcStun) )
-	{
-		if(this->GetCheatsEnabled() && theAvHPlayer)
-		{
-			theAvHPlayer->SetIsStunned(true, 4.0f);
-			theSuccess = true;
-		}
-	}
-	else if (FStrEq(pcmd, kcWeb))
-	{
-		if(this->GetCheatsEnabled())
-		{
-			theAvHPlayer->SetEnsnareState(true);
-			theSuccess = true;
-		}
-	}
+	
 	else if(FStrEq(pcmd, kcDigest))
 	{
 		if(this->GetCheatsEnabled())
@@ -1465,6 +1551,18 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		if(this->GetCheatsEnabled() && theAvHPlayer)
 		{
 			int theAmount = 20;
+
+
+			int theNumArgs = CMD_ARGC();
+			if (theNumArgs == 2)
+			{
+				sscanf(CMD_ARGV(1), "%d", &theAmount);
+				
+			}
+			//if (theAmount < 0)
+			//{
+			//	theAmount = 0;
+			//}
 
 			theAvHPlayer->SetResources(theAvHPlayer->GetResources() + theAmount, true);
 

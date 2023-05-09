@@ -66,8 +66,9 @@
 #ifdef AVH_SERVER
 #include "AvHGamerules.h"
 #include "AvHServerUtil.h"
-#endif
 
+#endif
+#include "AvHServerVariables.h"
 #include "AvHParticleConstants.h"
 #include "AvHSharedUtil.h"
 
@@ -162,7 +163,7 @@ void AvHDivineWind::Explode(void)
 
 		// Make sure weapon team is the same as player team so we don't damage friends when friendly fire is off
 		this->pev->team = thePlayer->pev->team;
-		::RadiusDamage(thePlayer->pev->origin, this->pev, thePlayer->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_NORMAL);
+		::RadiusDamage(thePlayer->pev->origin, this->pev, thePlayer->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_BLAST);
 		
 		// Shake view of those around us!
 		float theShakeAmplitude = 30;
@@ -222,6 +223,13 @@ void AvHDivineWind::Spawn()
 	Precache();
 
 	this->m_iId = AVH_WEAPON_DIVINEWIND;
+
+#ifdef AVH_SERVER
+	if (avh_balance_ava.value == 1)
+	{
+		this->mDamage = BALANCE_VAR(kDivineWindDamage) * 1.2;
+	}
+#endif
 
     // Set our class name
 	this->pev->classname = MAKE_STRING(kwsDivineWind);

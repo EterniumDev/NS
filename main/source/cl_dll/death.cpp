@@ -246,11 +246,12 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 	}
 	else
 	{
-		if ( killer == victim || killer == 0 )
+		if (killer == victim || killer == 0) {
 			rgDeathNoticeList[i].iSuicide = TRUE;
-
-		if ( !strcmp( killed_with.c_str(), "d_teammate" ) )
+		}
+		else if (!strcmp(killed_with.c_str(), "d_teammate") || g_PlayerExtraInfo[killer].teamnumber == g_PlayerExtraInfo[victim].teamnumber) {
 			rgDeathNoticeList[i].iTeamKill = TRUE;
+		}
 	}
 
 	// Find the sprite in the list
@@ -289,7 +290,7 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 		else if ( rgDeathNoticeList[i].iTeamKill )
 		{
 			ConsolePrint( rgDeathNoticeList[i].szKiller );
-			ConsolePrint( " killed his teammate " );
+			ConsolePrint( " teamkilled his teammate " );
 			ConsolePrint( rgDeathNoticeList[i].szVictim );
 		}
 		else

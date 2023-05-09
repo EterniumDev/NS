@@ -437,7 +437,7 @@ void CGrenade :: TumbleThink( void )
 		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * (pev->dmgtime - gpGlobals->time), 400, 0.1 );
 	}
 
-	if (pev->dmgtime <= gpGlobals->time)
+	if (pev->dmgtime <= gpGlobals->time )//|| (pev->velocity.Length() < 30.0f ))
 	{
 		SetThink( &CGrenade::Detonate );
 	}

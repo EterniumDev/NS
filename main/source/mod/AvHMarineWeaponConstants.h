@@ -135,7 +135,7 @@ const int		kMGBarrelLength		= 25;
 
 // Pistol constants.
 const int		kHGRange			= 8192;
-const float		kHGXPunch			= 1.8f;
+const float		kHGXPunch			= 0.8f;
 #define			kHGEjectModel		"models/shell.mdl"
 #define			kHGEventName		"events/Pistol.sc"
 #define			kHGVModel			"models/v_hg.mdl"
@@ -151,8 +151,26 @@ const float		kHGXPunch			= 1.8f;
 const int		kHGBarrelLength		= 10;
 #define			kHGSpread			VECTOR_CONE_1DEGREES
 
+// Pistol constants.
+const int		kTECRange = 8192;
+const float		kTECXPunch = 9.8f;
+#define			kTECEjectModel		"models/shell.mdl"
+#define			kTECEventName		"events/PistolB.sc"
+#define			kTECVModel			"models/v_hg.mdl"
+#define			kTECHVVModel			"models/v_hg_hv.mdl"
+#define			kTECWModel			"models/w_hg.mdl"
+#define			kTECPModel			"models/p_hg.mdl"
+#define			kTECFireSound1		"weapons/hg-1.wav"
+#define			kTECFireSound2		"weapons/hg-2.wav"
+#define			kTECFireSound3		"weapons/hg-3.wav"
+#define			kTECFireSound4		"weapons/hg-4.wav"
+#define			kTECReloadSound		"weapons/g_reload.wav"
+#define			kTECDeploySound		"weapons/hg-deploy.wav"
+const int		kTECBarrelLength = 10;
+#define			kTECSpread			VECTOR_CONE_20DEGREES
+
 // Sonic/Shot gun constants.
-const int		kSGRange			= 700;
+const int		kSGRange			= 8192;
 const float		kSGXPunch			= .8f;
 #define			kSGEjectModel		"models/shotshell.mdl"
 #define			kSGEventName		"events/SonicGun.sc"
@@ -173,7 +191,7 @@ const int		kSGBarrelLength		= 25;
 #define			kSGInnerSpread		VECTOR_CONE_3DEGREES
 
 // Heavy machine gun
-const int		kHMGRange			= 6000;
+const int		kHMGRange			= 8192;
 const float		kHMGXPunch			= 2;
 #define			kHMGEjectModel		"models/pshell.mdl"
 #define			kHMGEventName		"events/HeavyMachineGun.sc"

@@ -524,6 +524,25 @@ int CBaseEntity :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, 
     {
         return 0;
     }
+
+	//return 0;
+	//if (bitsDamageType == NS_DMG_ACID)
+	{
+		//if (this->IsPlayer())
+		//if (pevAttacker->team == this->pev->team)
+		{
+			//bool bileBombMelt = true;
+			//ALERT(at_console, "IGNORING BILE BOMB HP PLAYER DAMAGE \n");
+			//return 0;
+			//if (this->pev->armorvalue > 0) {
+			//	this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
+			//	ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", (flDamage / 10.0f));
+			//}
+			//flDamage = 0.0f;
+			//return 0;
+		}
+	}
+
 	
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 

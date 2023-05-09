@@ -281,6 +281,31 @@ int	AvHPistol::iItemSlot(void)
 	return AVH_SECOND_SLOT + 1;
 }
 
+#ifdef AVH_WEAPON_PISTOLB
+int AvHPistolB::GetItemInfo(ItemInfo *p) const
+{
+	p->iSlot = AVH_SECOND_SLOT;
+	p->iPosition = 8;
+	
+	p->pszName = STRING(pev->classname);
+	p->pszAmmo1 = "TECAmmo";
+	p->iMaxAmmo1 = BALANCE_VAR(kHGMaxAmmo);
+	p->pszAmmo2 = NULL;
+	p->iMaxAmmo2 = BALANCE_VAR(kHGDamage);
+	p->iMaxClip = BALANCE_VAR(kHGMaxClip);
+	p->iFlags = ITEM_FLAG_NOAUTOSWITCHEMPTY | SECONDARY_WEAPON;
+	p->iId = AVH_WEAPON_PISTOLB;
+	p->iWeight = kDefaultSecondaryWeaponWeight;
+
+	return 1;
+}
+
+int	AvHPistolB::iItemSlot(void)
+{
+	return AVH_SECOND_SLOT + 1;
+}
+#endif
+
 int AvHSonicGun::GetItemInfo(ItemInfo *p) const
 {
 	p->iSlot = AVH_FIRST_SLOT;

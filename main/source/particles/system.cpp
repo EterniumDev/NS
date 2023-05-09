@@ -417,495 +417,492 @@ void _pAddActionToList(ParticleAction *S, int size)
 ////////////////////////////////////////////////////////
 // State setting calls
 
-extern "C" {
+PARTICLEDLL_API void pColor(float red, float green, float blue, float alpha)
+{
+	_ParticleState &_ps = _GetPState();
 
-	void pColor(float red, float green, float blue, float alpha)
+	_ps.Alpha = alpha;
+	_ps.Color = pDomain(PDPoint, red, green, blue);
+}
+
+PARTICLEDLL_API void pColorD(float alpha, PDomainEnum dtype,
+			 float a0, float a1, float a2,
+			 float a3, float a4, float a5,
+			 float a6, float a7, float a8)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.Alpha = alpha;
+	_ps.Color = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+PARTICLEDLL_API void pVelocity(float x, float y, float z)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.Vel = pDomain(PDPoint, x, y, z);
+}
+
+PARTICLEDLL_API void pVelocityD(PDomainEnum dtype,
+				float a0, float a1, float a2,
+				float a3, float a4, float a5,
+				float a6, float a7, float a8)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.Vel = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+PARTICLEDLL_API void pVertexB(float x, float y, float z)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.VertexB = pDomain(PDPoint, x, y, z);
+}
+
+PARTICLEDLL_API void pVertexBD(PDomainEnum dtype,
+			   float a0, float a1, float a2,
+			   float a3, float a4, float a5,
+			   float a6, float a7, float a8)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.VertexB = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+
+PARTICLEDLL_API void pVertexBTracks(bool trackVertex)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.vertexB_tracks = trackVertex;
+}
+
+PARTICLEDLL_API void pSize(float size_x, float size_y, float size_z)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.Size = pDomain(PDPoint, size_x, size_y, size_z);
+}
+
+PARTICLEDLL_API void pSizeD(PDomainEnum dtype,
+			   float a0, float a1, float a2,
+			   float a3, float a4, float a5,
+			   float a6, float a7, float a8)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.Size = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+PARTICLEDLL_API void pStartingAge(float age, float sigma)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.Age = age;
+	_ps.AgeSigma = sigma;
+}
+
+PARTICLEDLL_API void pTimeStep(float newDT)
+{
+	_ParticleState &_ps = _GetPState();
+
+	_ps.dt = newDT;
+}
+
+////////////////////////////////////////////////////////
+// Action List Calls
+
+PARTICLEDLL_API int pGenActionLists(int action_list_count)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(_ps.in_new_list)
+		return -1; // ERROR
+	
+	_PLock();
+
+	int ind = _ps.GenerateLists(action_list_count);
+	
+	for(int i=ind; i<ind+action_list_count; i++)
 	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Alpha = alpha;
-		_ps.Color = pDomain(PDPoint, red, green, blue);
+		_ps.alist_list[i] = new PAHeader[8];
+		_ps.alist_list[i]->actions_allocated = 8;
+		_ps.alist_list[i]->type = PAHeaderID;
+		_ps.alist_list[i]->count = 1;
 	}
 
-	 void pColorD(float alpha, PDomainEnum dtype,
-		float a0, float a1, float a2,
-		float a3, float a4, float a5,
-		float a6, float a7, float a8)
+	_PUnLock();
+
+	return ind;
+}
+
+PARTICLEDLL_API void pNewActionList(int action_list_num)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(_ps.in_new_list)
+		return; // ERROR
+	
+	_ps.pact = _ps.GetListPtr(action_list_num);
+	
+	if(_ps.pact == NULL)
+		return; // ERROR
+	
+	_ps.list_id = action_list_num;
+	_ps.in_new_list = true;
+
+	// Remove whatever used to be in the list.
+	_ps.pact->count = 1;
+}
+
+PARTICLEDLL_API void pEndActionList()
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(!_ps.in_new_list)
+		return; // ERROR
+	
+	_ps.in_new_list = false;
+	
+	_ps.pact = NULL;
+	_ps.list_id = -1;
+}
+
+PARTICLEDLL_API void pDeleteActionLists(int action_list_num, int action_list_count)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(_ps.in_new_list)
+		return; // ERROR
+
+	if(action_list_num < 0)
+		return; // ERROR
+
+	if(action_list_num + action_list_count > _ps.alist_count)
+		return; // ERROR
+
+	_PLock();
+
+	for(int i = action_list_num; i < action_list_num + action_list_count; i++)
 	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Alpha = alpha;
-		_ps.Color = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
-	}
-
-	 void pVelocity(float x, float y, float z)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Vel = pDomain(PDPoint, x, y, z);
-	}
-
-	 void pVelocityD(PDomainEnum dtype,
-		float a0, float a1, float a2,
-		float a3, float a4, float a5,
-		float a6, float a7, float a8)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Vel = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
-	}
-
-	 void pVertexB(float x, float y, float z)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.VertexB = pDomain(PDPoint, x, y, z);
-	}
-
-	 void pVertexBD(PDomainEnum dtype,
-		float a0, float a1, float a2,
-		float a3, float a4, float a5,
-		float a6, float a7, float a8)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.VertexB = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
-	}
-
-
-	 void pVertexBTracks(bool trackVertex)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.vertexB_tracks = trackVertex;
-	}
-
-	 void pSize(float size_x, float size_y, float size_z)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Size = pDomain(PDPoint, size_x, size_y, size_z);
-	}
-
-	 void pSizeD(PDomainEnum dtype,
-		float a0, float a1, float a2,
-		float a3, float a4, float a5,
-		float a6, float a7, float a8)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Size = pDomain(dtype, a0, a1, a2, a3, a4, a5, a6, a7, a8);
-	}
-
-	 void pStartingAge(float age, float sigma)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.Age = age;
-		_ps.AgeSigma = sigma;
-	}
-
-	 void pTimeStep(float newDT)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		_ps.dt = newDT;
-	}
-
-	////////////////////////////////////////////////////////
-	// Action List Calls
-
-	 int pGenActionLists(int action_list_count)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return -1; // ERROR
-
-		_PLock();
-
-		int ind = _ps.GenerateLists(action_list_count);
-
-		for (int i = ind; i < ind + action_list_count; i++)
+		if(_ps.alist_list[i])
 		{
-			_ps.alist_list[i] = new PAHeader[8];
-			_ps.alist_list[i]->actions_allocated = 8;
-			_ps.alist_list[i]->type = PAHeaderID;
-			_ps.alist_list[i]->count = 1;
-		}
-
-		_PUnLock();
-
-		return ind;
-	}
-
-	 void pNewActionList(int action_list_num)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return; // ERROR
-
-		_ps.pact = _ps.GetListPtr(action_list_num);
-
-		if (_ps.pact == NULL)
-			return; // ERROR
-
-		_ps.list_id = action_list_num;
-		_ps.in_new_list = true;
-
-		// Remove whatever used to be in the list.
-		_ps.pact->count = 1;
-	}
-
-	 void pEndActionList()
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (!_ps.in_new_list)
-			return; // ERROR
-
-		_ps.in_new_list = false;
-
-		_ps.pact = NULL;
-		_ps.list_id = -1;
-	}
-
-	 void pDeleteActionLists(int action_list_num, int action_list_count)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return; // ERROR
-
-		if (action_list_num < 0)
-			return; // ERROR
-
-		if (action_list_num + action_list_count > _ps.alist_count)
-			return; // ERROR
-
-		_PLock();
-
-		for (int i = action_list_num; i < action_list_num + action_list_count; i++)
-		{
-			if (_ps.alist_list[i])
-			{
-				delete[] _ps.alist_list[i];
-				_ps.alist_list[i] = NULL;
-			}
-			else
-			{
-				_PUnLock();
-				return; // ERROR
-			}
-		}
-
-		_PUnLock();
-	}
-
-	 void pCallActionList(int action_list_num)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-		{
-			// Add this call as an action to the current list.
-			// <<< cgc >>> commented out predeclaration
-			//void _pSendAction(ParticleAction *S, PActionEnum type, int size);
-
-			PACallActionList S;
-			S.action_list_num = action_list_num;
-
-			_pSendAction(&S, PACallActionListID, sizeof(PACallActionList));
+			delete [] _ps.alist_list[i];
+			_ps.alist_list[i] = NULL;
 		}
 		else
 		{
-			// Execute the specified action list.
-			PAHeader* pa = _ps.GetListPtr(action_list_num);
-
-			if (pa == NULL)
-				return; // ERRROR
-
-			// XXX A temporary hack.
-			pa->dt = _ps.dt;
-
-			_ps.in_call_list = true;
-
-			_pCallActionList(pa + 1, pa->count - 1, _ps.pgrp);
-
-			_ps.in_call_list = false;
-		}
-	}
-
-	////////////////////////////////////////////////////////
-	// Particle Group Calls
-
-	// Create particle groups, each with max_particles allocated.
-	 int pGenParticleGroups(int p_group_count, int max_particles)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return -1; // ERROR
-
-		_PLock();
-		// cerr << "Generating pg " << _ps.tid << " cnt= " << max_particles << endl;
-
-		int ind = _ps.GenerateGroups(p_group_count);
-
-		for (int i = ind; i < ind + p_group_count; i++)
-		{
-			_ps.group_list[i] = (ParticleGroup*)new
-				Particle[max_particles + 2];
-			_ps.group_list[i]->max_particles = max_particles;
-			_ps.group_list[i]->particles_allocated = max_particles;
-			_ps.group_list[i]->p_count = 0;
-		}
-
-		_PUnLock();
-
-		return ind;
-	}
-
-	 void pDeleteParticleGroups(int p_group_num, int p_group_count)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (p_group_num < 0)
-			return; // ERROR
-
-		if (p_group_num + p_group_count > _ps.group_count)
-			return; // ERROR
-
-		_PLock();
-
-		for (int i = p_group_num; i < p_group_num + p_group_count; i++)
-		{
-			if (_ps.group_list[i])
-			{
-				delete[] _ps.group_list[i];
-				_ps.group_list[i] = NULL;
-			}
-			else
-			{
-				_PUnLock();
-				return; // ERROR
-			}
-		}
-
-		_PUnLock();
-	}
-
-	// Change which group is current.
-	 void pCurrentGroup(int p_group_num)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return; // ERROR
-
-		_ps.pgrp = _ps.GetGroupPtr(p_group_num);
-		if (_ps.pgrp)
-			_ps.group_id = p_group_num;
-		else
-			_ps.group_id = -1;
-	}
-
-	 ParticleGroup* pGetCurrentGroup(void)
-	{
-		_ParticleState& _ps = _GetPState();
-		ParticleGroup* pg = _ps.pgrp;
-		return pg;
-	}
-
-	// Change the maximum number of particles in the current group.
-	 int pSetMaxParticles(int max_count)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return 0; // ERROR
-
-		ParticleGroup* pg = _ps.pgrp;
-		if (pg == NULL)
-			return 0; // ERROR
-
-		if (max_count < 0)
-			return 0; // ERROR
-
-		// Reducing max.
-		if (pg->particles_allocated >= max_count)
-		{
-			pg->max_particles = max_count;
-
-			// May have to kill particles.
-			if (pg->p_count > pg->max_particles)
-				pg->p_count = pg->max_particles;
-
-			return max_count;
-		}
-
-		_PLock();
-
-		// Allocate particles.
-		ParticleGroup* pg2 = (ParticleGroup*)new Particle[max_count + 2];
-		if (pg2 == NULL)
-		{
-			// Not enough memory. Just give all we've got.
-			// ERROR
-			pg->max_particles = pg->particles_allocated;
-
 			_PUnLock();
-
-			return pg->max_particles;
+			return; // ERROR
 		}
+	}
 
-		memcpy(pg2, pg, (pg->p_count + 2) * sizeof(Particle));
+	_PUnLock();
+}
 
-		delete[] pg;
+PARTICLEDLL_API void pCallActionList(int action_list_num)
+{
+	_ParticleState &_ps = _GetPState();
 
-		_ps.group_list[_ps.group_id] = _ps.pgrp = pg2;
-		pg2->max_particles = max_count;
-		pg2->particles_allocated = max_count;
+	if(_ps.in_new_list)
+	{
+		// Add this call as an action to the current list.
+		// <<< cgc >>> commented out predeclaration
+		//void _pSendAction(ParticleAction *S, PActionEnum type, int size);
 
-		_PUnLock();
+		PACallActionList S;
+		S.action_list_num = action_list_num;
+		
+		_pSendAction(&S, PACallActionListID, sizeof(PACallActionList));
+	}
+	else
+	{
+		// Execute the specified action list.
+		PAHeader *pa = _ps.GetListPtr(action_list_num);
+		
+		if(pa == NULL)
+			return; // ERRROR
+		
+		// XXX A temporary hack.
+		pa->dt = _ps.dt;
+		
+		_ps.in_call_list = true;
+		
+		_pCallActionList(pa+1, pa->count-1, _ps.pgrp);
+		
+		_ps.in_call_list = false;
+	}
+}
+
+////////////////////////////////////////////////////////
+// Particle Group Calls
+
+// Create particle groups, each with max_particles allocated.
+PARTICLEDLL_API int pGenParticleGroups(int p_group_count, int max_particles)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(_ps.in_new_list)
+		return -1; // ERROR
+
+	_PLock();
+	// cerr << "Generating pg " << _ps.tid << " cnt= " << max_particles << endl;
+
+	int ind = _ps.GenerateGroups(p_group_count);
+	
+	for(int i=ind; i<ind+p_group_count; i++)
+	{
+		_ps.group_list[i] = (ParticleGroup *)new
+			Particle[max_particles + 2];
+		_ps.group_list[i]->max_particles = max_particles;
+		_ps.group_list[i]->particles_allocated = max_particles;
+		_ps.group_list[i]->p_count = 0;
+	}
+
+	_PUnLock();
+	
+	return ind;
+}
+
+PARTICLEDLL_API void pDeleteParticleGroups(int p_group_num, int p_group_count)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(p_group_num < 0)
+		return; // ERROR
+
+	if(p_group_num + p_group_count > _ps.group_count)
+		return; // ERROR
+	
+	_PLock();
+
+	for(int i = p_group_num; i < p_group_num + p_group_count; i++)
+	{
+		if(_ps.group_list[i])
+		{
+			delete [] _ps.group_list[i];
+			_ps.group_list[i] = NULL;
+		}
+		else
+		  {
+		  	_PUnLock();
+			return; // ERROR
+		  }
+	}
+
+	_PUnLock();
+}
+
+// Change which group is current.
+PARTICLEDLL_API void pCurrentGroup(int p_group_num)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(_ps.in_new_list)
+		return; // ERROR
+	
+	_ps.pgrp = _ps.GetGroupPtr(p_group_num);
+	if(_ps.pgrp)
+		_ps.group_id = p_group_num;
+	else
+		_ps.group_id = -1;
+}
+
+PARTICLEDLL_API ParticleGroup* pGetCurrentGroup(void)
+{
+	_ParticleState &_ps = _GetPState();
+	ParticleGroup *pg = _ps.pgrp;
+	return pg;
+}
+
+// Change the maximum number of particles in the current group.
+PARTICLEDLL_API int pSetMaxParticles(int max_count)
+{
+	_ParticleState &_ps = _GetPState();
+
+	if(_ps.in_new_list)
+		return 0; // ERROR
+	
+	ParticleGroup *pg = _ps.pgrp;
+	if(pg == NULL)
+		return 0; // ERROR
+	
+	if(max_count < 0)
+		return 0; // ERROR
+
+	// Reducing max.
+	if(pg->particles_allocated >= max_count)
+	{
+		pg->max_particles = max_count;
+
+		// May have to kill particles.
+		if(pg->p_count > pg->max_particles)
+			pg->p_count = pg->max_particles;
 
 		return max_count;
 	}
 
-	// Copy from the specified group to the current group.
-	 void pCopyGroup(int p_src_group_num, int index, int copy_count)
+	_PLock();
+	
+	// Allocate particles.
+	ParticleGroup *pg2 =(ParticleGroup *)new Particle[max_count + 2];
+	if(pg2 == NULL)
 	{
-		_ParticleState& _ps = _GetPState();
+		// Not enough memory. Just give all we've got.
+		// ERROR
+		pg->max_particles = pg->particles_allocated;
 
-		if (_ps.in_new_list)
-			return; // ERROR
+		_PUnLock();
+		
+		return pg->max_particles;
+	}
+	
+	memcpy(pg2, pg, (pg->p_count + 2) * sizeof(Particle));
+	
+	delete [] pg;
+	
+	_ps.group_list[_ps.group_id] = _ps.pgrp = pg2;
+	pg2->max_particles = max_count;
+	pg2->particles_allocated = max_count;
 
-		ParticleGroup* srcgrp = _ps.GetGroupPtr(p_src_group_num);
-		if (srcgrp == NULL)
-			return; // ERROR
+	_PUnLock();
 
-		ParticleGroup* destgrp = _ps.pgrp;
-		if (destgrp == NULL)
-			return; // ERROR
+	return max_count;
+}
 
-		// Find out exactly how many to copy.
-		int ccount = copy_count;
-		if (ccount > srcgrp->p_count - index)
-			ccount = srcgrp->p_count - index;
-		if (ccount > destgrp->max_particles - destgrp->p_count)
-			ccount = destgrp->max_particles - destgrp->p_count;
+// Copy from the specified group to the current group.
+PARTICLEDLL_API void pCopyGroup(int p_src_group_num, int index, int copy_count)
+{
+	_ParticleState &_ps = _GetPState();
 
-		// #pragma critical
-		// cerr << p_src_group_num << ": " << ccount << " " << srcgrp->p_count << " " << index << endl;
+	if(_ps.in_new_list)
+		return; // ERROR
+	
+	ParticleGroup *srcgrp = _ps.GetGroupPtr(p_src_group_num);
+	if(srcgrp == NULL)
+		return; // ERROR
 
-		if (ccount < 0)
-			ccount = 0;
+	ParticleGroup *destgrp = _ps.pgrp;
+	if(destgrp == NULL)
+		return; // ERROR
 
-		// Directly copy the particles to the current list.
-		for (int i = 0; i < ccount; i++)
+	// Find out exactly how many to copy.
+	int ccount = copy_count;
+	if(ccount > srcgrp->p_count - index)
+		ccount = srcgrp->p_count - index;
+	if(ccount > destgrp->max_particles - destgrp->p_count)
+		ccount = destgrp->max_particles - destgrp->p_count;
+
+	// #pragma critical
+	// cerr << p_src_group_num << ": " << ccount << " " << srcgrp->p_count << " " << index << endl;
+
+	if(ccount<0)
+	  ccount = 0;
+
+	// Directly copy the particles to the current list.
+	for(int i=0; i<ccount; i++)
+	{
+		destgrp->list[destgrp->p_count+i] =
+			srcgrp->list[index+i];
+	}
+	destgrp->p_count += ccount;
+}
+
+PARTICLEDLL_API ParticleGroup* pGetParticleGroupRef(int p_group_num)
+{
+	ParticleGroup* theGroup = NULL;
+
+	_ParticleState &_ps = _GetPState();
+
+	if(!_ps.in_new_list)
+	{	
+		theGroup = _ps.GetGroupPtr(p_group_num);
+	}
+	return theGroup;
+}
+
+// Copy from the current group to application memory.
+PARTICLEDLL_API int pGetParticles(int index, int count, float *verts,
+				  float *color, float *vel, float *size, float *age)
+{
+	_ParticleState &_ps = _GetPState();
+
+	// XXX I should think about whether color means color3, color4, or what.
+	// For now, it means color4.
+
+	if(_ps.in_new_list)
+		return -1; // ERROR
+		
+	ParticleGroup *pg = _ps.pgrp;
+	if(pg == NULL)
+		return -2; // ERROR
+
+	if(index < 0 || count < 0)
+		return -3; // ERROR
+
+	if(index + count > pg->p_count)
+	  {
+	    count = pg->p_count - index;
+	    if(count <= 0)
+	      return -4; // ERROR index out of bounds.
+	  }
+
+	int vi = 0, ci = 0, li = 0, si = 0, ai = 0;
+
+	// This could be optimized.
+	for(int i=0; i<count; i++)
+	{
+		Particle &m = pg->list[index + i];
+
+		if(verts)
 		{
-			destgrp->list[destgrp->p_count + i] =
-				srcgrp->list[index + i];
+			verts[vi++] = m.pos.x;
+			verts[vi++] = m.pos.y;
+			verts[vi++] = m.pos.z;
 		}
-		destgrp->p_count += ccount;
+
+		if(color)
+		{
+			color[ci++] = m.color.x;
+			color[ci++] = m.color.y;
+			color[ci++] = m.color.z;
+			color[ci++] = m.alpha;
+		}
+
+		if(vel)
+		{
+			vel[li++] = m.vel.x;
+			vel[li++] = m.vel.y;
+			vel[li++] = m.vel.z;
+		}
+
+		if(size)
+		{
+			size[si++] = m.size.x;
+			size[si++] = m.size.y;
+			size[si++] = m.size.z;
+		}
+
+		if(age)
+		{
+			age[ai++] = m.age;
+		}
 	}
 
-	 ParticleGroup* pGetParticleGroupRef(int p_group_num)
-	{
-		ParticleGroup* theGroup = NULL;
+	return count;
+}
 
-		_ParticleState& _ps = _GetPState();
+// Returns the number of particles currently in the group.
+PARTICLEDLL_API int pGetGroupCount()
+{
+	_ParticleState &_ps = _GetPState();
 
-		if (!_ps.in_new_list)
-		{
-			theGroup = _ps.GetGroupPtr(p_group_num);
-		}
-		return theGroup;
-	}
+	if(_ps.in_new_list)
+		return 0; // ERROR
+	
+	if(_ps.pgrp == NULL)
+		return 0; // ERROR
 
-	// Copy from the current group to application memory.
-	 int pGetParticles(int index, int count, float* verts,
-		float* color, float* vel, float* size, float* age)
-	{
-		_ParticleState& _ps = _GetPState();
-
-		// XXX I should think about whether color means color3, color4, or what.
-		// For now, it means color4.
-
-		if (_ps.in_new_list)
-			return -1; // ERROR
-
-		ParticleGroup* pg = _ps.pgrp;
-		if (pg == NULL)
-			return -2; // ERROR
-
-		if (index < 0 || count < 0)
-			return -3; // ERROR
-
-		if (index + count > pg->p_count)
-		{
-			count = pg->p_count - index;
-			if (count <= 0)
-				return -4; // ERROR index out of bounds.
-		}
-
-		int vi = 0, ci = 0, li = 0, si = 0, ai = 0;
-
-		// This could be optimized.
-		for (int i = 0; i < count; i++)
-		{
-			Particle& m = pg->list[index + i];
-
-			if (verts)
-			{
-				verts[vi++] = m.pos.x;
-				verts[vi++] = m.pos.y;
-				verts[vi++] = m.pos.z;
-			}
-
-			if (color)
-			{
-				color[ci++] = m.color.x;
-				color[ci++] = m.color.y;
-				color[ci++] = m.color.z;
-				color[ci++] = m.alpha;
-			}
-
-			if (vel)
-			{
-				vel[li++] = m.vel.x;
-				vel[li++] = m.vel.y;
-				vel[li++] = m.vel.z;
-			}
-
-			if (size)
-			{
-				size[si++] = m.size.x;
-				size[si++] = m.size.y;
-				size[si++] = m.size.z;
-			}
-
-			if (age)
-			{
-				age[ai++] = m.age;
-			}
-		}
-
-		return count;
-	}
-
-	// Returns the number of particles currently in the group.
-	 int pGetGroupCount()
-	{
-		_ParticleState& _ps = _GetPState();
-
-		if (_ps.in_new_list)
-			return 0; // ERROR
-
-		if (_ps.pgrp == NULL)
-			return 0; // ERROR
-
-		return _ps.pgrp->p_count;
-	}
+	return _ps.pgrp->p_count;
 }

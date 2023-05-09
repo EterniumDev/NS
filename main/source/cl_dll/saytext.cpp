@@ -177,7 +177,11 @@ int CHudSayText :: MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 		cl_entity_s* theEntity = gEngfuncs.GetEntityByIndex(client_index);
 		cl_entity_s* theLocalPlayer = gEngfuncs.GetLocalPlayer();
 
-		if(theEntity && theLocalPlayer && (theEntity->curstate.team == theLocalPlayer->curstate.team))
+		//cl_showchatloc 1
+		//if(theEntity && theLocalPlayer)
+		//if (CVAR_GET_FLOAT("cl_showpos") != 0) {
+		//}
+		if (theEntity && theLocalPlayer && (theEntity->curstate.team == theLocalPlayer->curstate.team || (CVAR_GET_FLOAT("cl_showchatpos") != 0)))
 		{
 			// Search for first : so we can insert location 
 			int theColonIndex = (int)content.find_first_of(":");

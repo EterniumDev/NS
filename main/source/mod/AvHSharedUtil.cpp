@@ -741,6 +741,7 @@ bool AvHSHUGetIsDroppableOnRTs(AvHMessageID inMessageID)
 		case BUILD_HMG:
 		case BUILD_GRENADE_GUN:
 		case BUILD_CAT:
+		case BUILD_NANO:
 		case BUILD_HEAVY:
 		case BUILD_JETPACK:
 		case BUILD_RESOURCES:
@@ -1132,6 +1133,10 @@ bool AvHSHUGetBuildTechClassName(AvHMessageID inMessageID, char*& outClassName)
 	case BUILD_AMMO:
 		outClassName = kwsGenericAmmo;
 		break;
+
+	case BUILD_NANO:
+		outClassName = kwsNano;
+		break;
 		
 	case BUILD_WELDER:
 		outClassName = kwsWelder;
@@ -1383,6 +1388,7 @@ bool AvHSHUGetIsBuildTech(AvHMessageID inMessageID)
 	case BUILD_AMMO:
 	case BUILD_HEALTH:
     case BUILD_CAT:
+	case BUILD_NANO:
 	case BUILD_WELDER:
     case BUILD_MINES:
 	case BUILD_SHOTGUN:
@@ -1723,6 +1729,12 @@ bool AvHSHUGetSizeForTech(AvHMessageID inMessageID, Vector& outMinSize, Vector& 
 		break;
 
     case BUILD_CAT:
+		outMinSize = kCatalystMinSize;
+		outMaxSize = kCatalystMaxSize;
+		theSuccess = true;
+		break;
+
+	case BUILD_NANO:
 		outMinSize = kCatalystMinSize;
 		outMaxSize = kCatalystMaxSize;
 		theSuccess = true;
@@ -2166,6 +2178,10 @@ char* AvHSHUGetBuildTechModelName(AvHMessageID inMessageID)
         theModelName = kCatalystModel;
         break;
 
+	case BUILD_NANO:
+		theModelName = kNanoModel;
+		break;
+
 	case BUILD_HEALTH:
 		theModelName = kHealthModel;
 		break;
@@ -2412,6 +2428,7 @@ bool AvHSHUGetCanBeBuiltOnPlayers(AvHMessageID inMessageID)
 		case BUILD_AMMO:
 		case BUILD_HEALTH:
 		case BUILD_CAT:
+		case BUILD_NANO:
 		case BUILD_MINES:
 		case BUILD_WELDER:
 		case BUILD_SHOTGUN:
@@ -3899,11 +3916,11 @@ bool AvHSHUGetForceHUDSound(AvHHUDSound inHUDSound)
     case HUD_SOUND_ALIEN_HIVE_ATTACK:
 	case HUD_SOUND_ALIEN_ENEMY_APPROACHES:
     case HUD_SOUND_MARINE_CCUNDERATTACK:
-    case HUD_SOUND_SQUAD1:
-    case HUD_SOUND_SQUAD2:
-    case HUD_SOUND_SQUAD3:
-    case HUD_SOUND_SQUAD4:
-    case HUD_SOUND_SQUAD5:
+    //case HUD_SOUND_SQUAD1:
+    //case HUD_SOUND_SQUAD2:
+    //case HUD_SOUND_SQUAD3:
+    //case HUD_SOUND_SQUAD4:
+    //case HUD_SOUND_SQUAD5:
         theForceSound = true;
         break;
     }

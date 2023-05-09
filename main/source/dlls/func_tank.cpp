@@ -20,6 +20,7 @@
 #include "explode.h"
 #include <math.h>
 #include "player.h"
+#include "mod/AvHServerUtil.h"
 
 
 #define SF_TANK_ACTIVE			0x0001
@@ -871,6 +872,11 @@ void CFuncTankLaser::Fire( const Vector &barrelEnd, const Vector &forward, entva
 				m_pLaser->FireAtPoint( tr );
 				m_pLaser->pev->nextthink = 0;
 			}
+
+
+
+
+
 			CFuncTank::Fire( barrelEnd, forward, pev );
 		}
 	}
@@ -886,11 +892,13 @@ public:
 	void Precache( void );
 	void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
 };
-LINK_ENTITY_TO_CLASS( func_tankrocket, CFuncTankRocket );
+//LINK_ENTITY_TO_CLASS( func_tankrocket, CFuncTankRocket );
+
+
 
 void CFuncTankRocket::Precache( void )
 {
-	UTIL_PrecacheOther( "rpg_rocket" );
+	UTIL_PrecacheOther( "grenade" );
 	CFuncTank::Precache();
 }
 
@@ -907,7 +915,7 @@ void CFuncTankRocket::Fire( const Vector &barrelEnd, const Vector &forward, entv
 		{
 			for ( i = 0; i < bulletCount; i++ )
 			{
-				CBaseEntity *pRocket = CBaseEntity::Create( "rpg_rocket", barrelEnd, pev->angles, edict() );
+				CBaseEntity *pRocket = CBaseEntity::Create( "grenade", barrelEnd, pev->angles, edict() );
 			}
 			CFuncTank::Fire( barrelEnd, forward, pev );
 		}
@@ -917,13 +925,106 @@ void CFuncTankRocket::Fire( const Vector &barrelEnd, const Vector &forward, entv
 }
 
 
+class CFuncTankElite : public CFuncTank
+{
+public:
+	void KeyValue(KeyValueData *pkvd);
+	void Fire(const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker);
+
+	virtual int	Save(CSave &save);
+	virtual int	Restore(CRestore &restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+
+private:
+	float	m_launchForce = 800.0f;
+	float	m_upForce = 0.0f;
+};
+//LINK_ENTITY_TO_CLASS(func_tankelite, CFuncTankElite);
+LINK_ENTITY_TO_CLASS(func_tankrocket, CFuncTankElite);
+
+
+TYPEDESCRIPTION	CFuncTankElite::m_SaveData[] =
+{
+	DEFINE_FIELD(CFuncTankElite, m_launchForce, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTankElite, m_upForce, FIELD_FLOAT),
+};
+
+IMPLEMENT_SAVERESTORE(CFuncTankElite, CFuncTank);
+
+void CFuncTankElite::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "iMagnitude"))
+	{
+		pev->impulse = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "launchforce"))
+	{
+		m_launchForce = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "upforce"))
+	{
+		m_upForce = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CFuncTank::KeyValue(pkvd);
+}
+
+
+void CFuncTankElite::Fire(const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker)
+{
+	if (m_fireLast != 0)
+	{
+		Vector test = forward;
+		int bulletCount = (gpGlobals->time - m_fireLast) * m_fireRate;
+		// Only create 1 explosion
+		if (bulletCount > 0)
+		{
+			TraceResult tr;
+
+			// TankTrace needs gpGlobals->v_up, etc.
+			UTIL_MakeAimVectors(pev->angles);
+
+			TankTrace(barrelEnd, test, gTankSpread[m_spread], tr);
+
+			//ExplosionCreate(tr.vecEndPos, pev->angles, edict(), pev->impulse, TRUE);
+
+			
+			//copied from AvHGrenadeGun
+			#ifdef AVH_SERVER
+
+			//Vector theOrigin;
+			//this->GetEventOrigin(theOrigin);
+
+			// Grenade gun uses velocity here instead of angles, assumes angles are the player angles (for both the server grenade and the client temp entity)
+			//Vector theVelocity;
+			//this->GetEventAngles(theVelocity);
+
+			// How to handle this?  Only generate entity on server, but we should do SOMETHING on the client, no?
+			test[2] += m_upForce;
+			CGrenade* theGrenade = AvHSUShootServerGrenade(pev, barrelEnd, forward*m_launchForce, 2.0f, false);
+			ASSERT(theGrenade);
+			theGrenade->pev->dmg = m_iBulletDamage;
+
+			#endif
+			
+
+			CFuncTank::Fire(barrelEnd, forward, pev);
+		}
+	}
+	else
+		CFuncTank::Fire(barrelEnd, forward, pev);
+}
+
 class CFuncTankMortar : public CFuncTank
 {
 public:
 	void KeyValue( KeyValueData *pkvd );
 	void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
 };
-LINK_ENTITY_TO_CLASS( func_tankmortar, CFuncTankMortar );
+LINK_ENTITY_TO_CLASS(func_tankmortar, CFuncTankMortar );
 
 
 void CFuncTankMortar::KeyValue( KeyValueData *pkvd )

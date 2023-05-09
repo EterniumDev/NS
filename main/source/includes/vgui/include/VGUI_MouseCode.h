@@ -14,10 +14,11 @@ namespace vgui
 {
 enum VGUIAPI MouseCode
 {
-	MOUSE_LEFT=0,
-	MOUSE_RIGHT,
-	MOUSE_MIDDLE,
-	MOUSE_LAST,
+	MOUSE_LEFT=0, //RIGHT
+	MOUSE_RIGHT=1, //LEFT
+	MOUSE_MIDDLE=2,
+	MOUSE_LAST=3,
+	
 };
 }
 

@@ -363,6 +363,7 @@ public:
 
     void            Render();
     void            RenderCommonUI();
+	void            RenderSpecExtraUI();
     void            RenderMarineUI();
     void            RenderCommanderUI();
     void            RenderAlienUI();
@@ -437,6 +438,7 @@ public:
 
     const AvHFont&  GetSmallFont() const;
 	cl_entity_s*	GetVisiblePlayer() const;
+	//AvHPlayer*	GetRealPlayer() const;
 
     float           GetServerVariableFloat(const char* inName) const;
 

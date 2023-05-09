@@ -624,7 +624,7 @@ void EV_HLDM_FireBulletsPlayer( int idx, float *forward, float *right, float *up
 					theSoundProbability = BALANCE_VAR(kSGBulletsPerShot)/2;
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType, theSoundProbability);
 
-					theSoundProbability = BALANCE_VAR(kSGBulletsPerShot)/2;
+					theSoundProbability = 1;//BALANCE_VAR(kSGBulletsPerShot)/2;
 					EV_HLDM_DecalGunshot( &tr, iBulletType, theSoundProbability);
 
                     if(thePlayBulletHitEffect)

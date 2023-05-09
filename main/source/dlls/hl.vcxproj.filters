@@ -512,6 +512,9 @@
     <ClCompile Include="compatibility.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="..\mod\AvHPistolB.cpp">
+      <Filter>mod\weapons</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">

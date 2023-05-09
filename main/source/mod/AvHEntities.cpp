@@ -687,7 +687,15 @@ void AvHNoBuild::Spawn()
 AvHMP3Audio::AvHMP3Audio()
 {
 	this->mUseState = false;
-	this->mSoundVolume = 255;
+	//bool ambtoggle = CVAR_GET_FLOAT("cl_ambientsound") != 1;
+	//if (ambtoggle)
+	//{
+	//	this->mSoundVolume = 0;
+	//}
+	//else
+	//{
+		this->mSoundVolume = 255;
+//	}
 	this->mLooping = false;
 }
 
@@ -705,7 +713,19 @@ void AvHMP3Audio::KeyValue( KeyValueData* pkvd )
 	}
 	else if(FStrEq(pkvd->szKeyName, "soundvolume"))
 	{
+		/*
+		bool ambtoggle = CVAR_GET_FLOAT("cl_ambientsound") != 1;
+		if (ambtoggle)
+		{
+			this->mSoundVolume = 0;
+		}
+		else
+		{
+			this->mSoundVolume = atoi(pkvd->szValue);
+		}
+		*/
 		this->mSoundVolume = atoi(pkvd->szValue);
+		
 		pkvd->fHandled = TRUE;
 	}
 	else if(FStrEq(pkvd->szKeyName, "fadedistance"))
@@ -874,6 +894,11 @@ void AvHMapInfo::KeyValue( KeyValueData* pkvd )
 		this->mMapExtents.SetMinViewHeight(atoi(pkvd->szValue));
 		pkvd->fHandled = TRUE;
 	}
+	//if (FStrEq(pkvd->szKeyName, "maxviewheight"))
+	//{
+	//	this->mMapExtents.SetMaxViewHeight(atoi(pkvd->szValue));
+	//	pkvd->fHandled = TRUE;
+	//}
 	if (FStrEq(pkvd->szKeyName, "minx"))
 	{
 		this->mMapExtents.SetMinMapX(atoi(pkvd->szValue));
@@ -2143,7 +2168,7 @@ void AvHFog::Spawn()
 AvHResourceTower::AvHResourceTower() : AvHBaseBuildable(TECH_NULL, BUILD_RESOURCES, kwsResourceTower, AVH_USER3_RESTOWER)
 {
 	this->mResourceEntityIndex = -1;
-	this->mTechLevel = 1;
+	this->mTechLevel = 0;
 	this->mTimeLastContributed = -1;
 	this->mTimeOfLastSound = -1;
 	this->mActivateTime = 0;
@@ -2152,7 +2177,7 @@ AvHResourceTower::AvHResourceTower() : AvHBaseBuildable(TECH_NULL, BUILD_RESOURC
 AvHResourceTower::AvHResourceTower(AvHTechID inTechID, AvHMessageID inMessageID, char* inClassName, int inUser4) : AvHBaseBuildable(inTechID, inMessageID, inClassName, inUser4)
 {
 	this->mResourceEntityIndex = -1;
-	this->mTechLevel = 1;
+	this->mTechLevel = 0;
 }
 
 int	AvHResourceTower::GetSequenceForBoundingBox() const

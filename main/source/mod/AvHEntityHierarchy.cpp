@@ -279,9 +279,12 @@ void AvHEntityHierarchy::BuildFromTeam(const AvHTeam* inTeam, BaseEntityListType
             }
         }
 		if ( inTeam->GetTeamType() == AVH_CLASS_TYPE_ALIEN ) {
-			sc=min(3, sc);
+			sc=min(3,sc);
 			dc=min(3,dc);
 			mc=min(3,mc);
+
+			
+
 			if ( this->mNumSensory != sc || this->mNumDefence != dc || this->mNumMovement != mc ) {
 				this->mNumSensory=sc;
 				this->mNumDefence=dc;

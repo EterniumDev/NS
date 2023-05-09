@@ -303,7 +303,7 @@ TYPEDESCRIPTION	gEntvarsDescription[] =
 	DEFINE_ENTITY_FIELD( speed, FIELD_FLOAT ),
 	DEFINE_ENTITY_FIELD( air_finished, FIELD_TIME ),
 	DEFINE_ENTITY_FIELD( pain_finished, FIELD_TIME ),
-	DEFINE_ENTITY_FIELD( radsuit_finished, FIELD_TIME ),
+	DEFINE_ENTITY_FIELD(eter_hack, FIELD_TIME),//DEFINE_ENTITY_FIELD( radsuit_finished, FIELD_TIME ), 
 };
 
 #define ENTVARS_COUNT		(sizeof(gEntvarsDescription)/sizeof(gEntvarsDescription[0]))
@@ -1245,6 +1245,11 @@ void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, 
 	{
 		// scale up blood effect in multiplayer for better visibility
 		amount *= 2;
+	}
+
+	if (avh_golden_deagle.value == 1)
+	{
+		amount *= 1.25;
 	}
 
 	if ( amount > 255 )

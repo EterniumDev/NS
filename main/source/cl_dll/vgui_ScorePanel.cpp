@@ -107,6 +107,17 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 );
 void LoadData(void* inBuffer, const unsigned char* inData, int inSizeToCopy, int& inSizeVariable);
 void SaveData(unsigned char* inBuffer, const void* inData, int inSizeToCopy, int& inSizeVariable);
 
+void Output(const char* szFormat, ...)
+{
+	char szBuff[1024];
+	va_list arg;
+	va_start(arg, szFormat);
+	_vsnprintf(szBuff, sizeof(szBuff), szFormat, arg);
+	va_end(arg);
+
+	OutputDebugString(szBuff);
+}
+
 int	ScorePanel_InitializeDemoPlayback(int inSize, unsigned char* inBuffer)
 {
 	int theBytesRead = 0;
@@ -387,7 +398,6 @@ ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tal
 	m_pCloseButton->setFont(tfont);
 	m_pCloseButton->setBoundKey( (char)255 );
 	m_pCloseButton->setContentAlignment(Label::a_center);
-	
 	Initialize();
 }
 
@@ -1090,7 +1100,10 @@ void ScorePanel::FillGrid()
 					}
 					*/
 					// set Player Color
-										
+					//Output((to_string(thePlayerId)+ string("\n")).c_str());
+					//ConsolePrint((to_string(thePlayerId)+ string("\n")).c_str());
+					
+					
 				
 					switch (theTeamNumber) {
 					case 1:
@@ -1133,7 +1146,7 @@ void ScorePanel::FillGrid()
 					if(pl_info)
 					{
 						
-						if (gHUD.GetServerVariableFloat(kvTournamentMode)) {
+						if (gHUD.GetServerVariableFloat(kvTournamentMode)) { //||(CVAR_GET_FLOAT("cl_freeradar") == 1)
 							sprintf(sz, "   %s  ", pl_info->name);
 							pLabel->setImage(m_pColorIcons[thePlayerId]);
 							pLabel->setFgColorAsImageColor(false);
@@ -1176,7 +1189,7 @@ void ScorePanel::FillGrid()
 					// No class for other team's members (unless allied or spectator, and make sure player is on our team)
 					strcpy(sz, "");
 
-					if(team_info && ((theLocalPlayerTeam == theTeamNumber) || (gHUD.GetPlayMode() == PLAYMODE_OBSERVER)))
+					if(team_info && ((theLocalPlayerTeam == theTeamNumber) || (CVAR_GET_FLOAT("cl_freetab") == 1)  || (gHUD.GetPlayMode() == PLAYMODE_OBSERVER))) //cl_freetab
 					{
 						switch(thePlayerClass)
 						{
@@ -1290,7 +1303,7 @@ void ScorePanel::FillGrid()
 					
 					
 					// Allow custom icons to override other general icons
-					if(thePlayerAuthentication & PLAYERAUTH_CUSTOM)
+					if(thePlayerAuthentication & PLAYERAUTH_CUSTOM) //|| (CVAR_GET_FLOAT("cl_freetab") == 1) //cl_allowcustomicons
 					{
 						if(theCustomIcon != "")
 						{
@@ -1314,16 +1327,13 @@ void ScorePanel::FillGrid()
 								pLabel->setFgColorAsImageColor(false);
 								
 								// Parse color (last 3 bytes are the RGB values 1-9)
-								string theColor = theCustomIcon.substr( strlen(theCustomIcon.c_str()) - 3, 3);
+								string theColor = theCustomIcon.substr( strlen(theCustomIcon.c_str())-3, 3);
 								
-								string rStr = theColor.substr(0, 1);
-								string bStr = theColor.substr(1, 1);
-								string gStr = theColor.substr(2, 1);
 
-								//pass reference type
-								int theRed = (MakeIntFromString(rStr) / 9.0f) * 255;
-								int theGreen = (MakeIntFromString(bStr) / 9.0f) * 255;
-								int theBlue = (MakeIntFromString(gStr) / 9.0f) * 255;
+
+								int theRed = (MakeIntFromString(theColor.substr(0, 1))/9.0f)*255;
+								int theGreen = (MakeIntFromString(theColor.substr(1, 1))/9.0f)*255;
+								int theBlue = (MakeIntFromString(theColor.substr(2, 1))/9.0f)*255;
 
 
 								pIcon->setColor(BuildColor(theRed, theGreen, theBlue, gHUD.GetGammaSlope()));
@@ -1354,8 +1364,14 @@ void ScorePanel::FillGrid()
 					}
 #endif
 					break;
+					/* case COLUMN_PLAYER_COLOR:
+					Preparation for Player Color in own column
+					pLabel->setImage(m_pCYellow);
+					pLabel->setFgColorAsImageColor(false);
+					m_pCYellow->setColor(BuildColor(255, 255, 255, gHUD.GetGammaSlope()));
+					break;*/
                 case COLUMN_SCORE:
-                    if(!theIsForEnemy && theLocalPlayerTeam != TEAM_IND || (gHUD.GetPlayMode() == PLAYMODE_OBSERVER))
+                    if(!theIsForEnemy && theLocalPlayerTeam != TEAM_IND || (CVAR_GET_FLOAT("cl_freetab") == 1)  || (gHUD.GetPlayMode() == PLAYMODE_OBSERVER))
                     {
                         const float kDeltaDisplayTime = 3.0f;
                         float theTimeSinceChange = gHUD.GetTimeOfLastUpdate() - theExtraPlayerInfo->timeOfLastScoreChange;
@@ -1404,7 +1420,7 @@ void ScorePanel::FillGrid()
 					break;
 
 				case COLUMN_EXTRA:
-					if ((theLocalPlayerTeam == theTeamNumber) || (gHUD.GetPlayMode() == PLAYMODE_OBSERVER))
+					if ((theLocalPlayerTeam == theTeamNumber) || (CVAR_GET_FLOAT("cl_freetab") == 1)  || (gHUD.GetPlayMode() == PLAYMODE_OBSERVER))
                     {
 						if ( isNsMode ) {
 							if ( theExtraPlayerInfo->teamnumber == TEAM_ONE || theExtraPlayerInfo->teamnumber == TEAM_THREE )  {
@@ -1428,6 +1444,7 @@ void ScorePanel::FillGrid()
 							else if ( theExtraPlayerInfo->teamnumber == TEAM_TWO || theExtraPlayerInfo->teamnumber == TEAM_FOUR ) {
 								sprintf(sz, "%d", theExtraPlayerInfo->extra);
 							}
+
 						}
 						else if ( theExtraPlayerInfo->teamnumber == TEAM_ONE || theExtraPlayerInfo->teamnumber == TEAM_TWO ||
 								  theExtraPlayerInfo->teamnumber == TEAM_THREE || theExtraPlayerInfo->teamnumber == TEAM_FOUR ) {

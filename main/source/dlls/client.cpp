@@ -773,6 +773,9 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	const char* theCurrentNetName = STRING(pEntity->v.netname);
 	const char* theNameKeyValue = g_engfuncs.pfnInfoKeyValue(infobuffer, "name");
 	
+
+
+
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
 	if ( pEntity->v.netname && STRING(pEntity->v.netname)[0] != 0 && !FStrEq(theCurrentNetName, theNameKeyValue) )
 	{
@@ -1174,6 +1177,12 @@ void ClientPrecache( void )
 	PRECACHE_UNMODIFIED_SOUND("player/pl_pain6.wav");
 	PRECACHE_UNMODIFIED_SOUND("player/pl_pain7.wav");
 
+	//ETER hack for long jump modules
+	PRECACHE_UNMODIFIED_MODEL("models/w_longjump.mdl");
+	PRECACHE_UNMODIFIED_MODEL("models/w_longjumpt.mdl");
+
+
+
 	PRECACHE_UNMODIFIED_MODEL("models/player.mdl");
 	PRECACHE_UNMODIFIED_MODEL(kReadyRoomModel);
 
@@ -1188,6 +1197,7 @@ void ClientPrecache( void )
 
     PRECACHE_UNMODIFIED_MODEL(kMarineCommanderModel);
     PRECACHE_UNMODIFIED_MODEL(kAlienGestateModel);
+	
 
 
 	// hud sounds, for marines and aliens (change AvHSharedUtil::AvHSHUGetCommonSoundName if these sound names change)
@@ -2050,6 +2060,8 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 	CBasePlayerWeapon *gun;
 	
 	ItemInfo II;
+
+	//ALERT(at_console, "GetWeaponData CALLED \n");
 
 	memset( info, 0, 32 * sizeof( weapon_data_t ) );
 
@@ -2941,6 +2953,28 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			// int theRange = BALANCE_VAR(kAlienFlashlightRange);
 			// marineGlow = (theDistance < ( theRange * theRange));
 			marineGlow = true;
+
+			//eter trying to add welder light to this
+			/*
+			//PLAYBACK_EVENT_FULL(0, player->edict(), gWelderConstEventID, 0, this->m_pPlayer->pev->origin, (float *)&g_vecZero, 0.0, 0.0, 1, 0, 0, 0);
+			int theIndex = inArgs->entindex;
+			cl_entity_t* thePlayer = GetEntity(theIndex);
+
+			// Make flashing lights
+			int theLightIndex = 20; // TODO: What do to about this index?
+			dlight_t* theLight = gEngfuncs.pEfxAPI->CL_AllocDlight(theLightIndex);
+			VectorCopy(thePlayer->origin, theLight->origin);
+
+			int theUpgradeLevel = AvHPlayerUpgrade::GetWeaponUpgrade(AVH_USER3_MARINE_PLAYER, GetUpgradeState(theIndex));
+
+			theLight->radius = 180 + theUpgradeLevel * 15;
+			theLight->color.r = 220;
+			theLight->color.g = 220;
+			theLight->color.b = 255;
+
+			// Have it die before it fires again, so it flickers on and off
+			theLight->die = gEngfuncs.GetClientTime() + BALANCE_VAR(kWelderROF) / 2.2f;
+			*/
 		}
 
 		if(( marineGlow || (ent->v.team == theReceivingPlayer->pev->team)) && (ent != theReceivingPlayer->edict()) && (ent->v.team != TEAM_IND) && (ent->v.team != TEAM_SPECT ) && (ent->v.classname != MAKE_STRING(kesTeamWebStrand)) )

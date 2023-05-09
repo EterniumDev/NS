@@ -176,7 +176,7 @@ typedef struct entvars_s
 	float		speed;
 	float		air_finished;
 	float		pain_finished;
-	float		radsuit_finished;
+	int eter_hack;//float		radsuit_finished;
 	
 	edict_t		*pContainingEntity;
 
@@ -206,6 +206,7 @@ typedef struct entvars_s
 	int			iuser2;
 	int			iuser3;
 	int			iuser4;
+	
 	float		fuser1;
 	float		fuser2;
 	float		fuser3;

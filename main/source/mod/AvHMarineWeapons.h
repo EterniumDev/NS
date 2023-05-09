@@ -194,9 +194,9 @@ protected:
 class AvHPistol : public AvHMarineWeapon 
 { 
 public: 
-					AvHPistol()
+					 AvHPistol()
 						{ this->Init(); } 
-	
+					 
 	virtual int		GetBarrelLength() const;
 
     virtual float   GetRateOfFire() const;
@@ -241,6 +241,61 @@ protected:
 	virtual float	GetReloadTime(void) const;
 
 };
+
+#ifdef AVH_WEAPON_PISTOLB
+class AvHPistolB : public AvHMarineWeapon
+{
+public:
+	AvHPistolB()
+	{
+		this->Init();
+	}
+
+	virtual int		GetBarrelLength() const;
+
+	virtual float   GetRateOfFire() const;
+
+	virtual int		GetDeployAnimation() const;
+
+	virtual char*	GetDeploySound() const;
+
+	virtual float	GetDeployTime() const;
+
+	virtual int		GetEmptyShootAnimation() const;
+
+	virtual bool	GetHasMuzzleFlash() const;
+
+	virtual char*	GetHeavyViewModel() const;
+
+	int				GetItemInfo(ItemInfo *p) const;
+
+	bool			GetMustPressTriggerForEachShot() const;
+
+	virtual char*	GetPlayerModel() const;
+
+	virtual Vector	GetProjectileSpread() const;
+
+	virtual char*	GetViewModel() const;
+
+	virtual char*	GetWorldModel() const;
+
+	virtual int		GetReloadAnimation() const;
+
+	virtual int		GetShootAnimation() const;
+
+	virtual int		iItemSlot(void);
+
+	virtual void	Precache(void);
+
+	virtual void	Spawn();
+
+protected:
+	virtual void	Init();
+
+	virtual float	GetReloadTime(void) const;
+
+};
+#endif
 
 class AvHSonicGun : public AvHReloadableMarineWeapon 
 { 
@@ -381,6 +436,8 @@ public:
 
 	virtual char*	GetDeploySound() const;
 
+	virtual float	GetDeployTime() const;
+
 	virtual int		GetEmptyShootAnimation() const;
 
 	virtual void	GetEventOrigin(Vector& outOrigin) const;
@@ -469,7 +526,7 @@ protected:
     virtual void    FireProjectiles(void);
 
 	#ifdef AVH_SERVER
-	bool			RepairTarget(CBaseEntity* inEntity, float inROF);
+	bool			RepairTarget(CBaseEntity* inEntity, float inROF, CBasePlayer* player);
 	#endif
 	
 	void EXPORT		WelderThink();

@@ -649,9 +649,12 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname
-	if ( strncmp( killer_weapon_name, "weapon_", 7 ) == 0 )
-		killer_weapon_name += 7;
-	else if ( strncmp( killer_weapon_name, "monster_", 8 ) == 0 )
+	if (strncmp(killer_weapon_name, "weapon_", 7) == 0) {
+		//if (pKiller->team != pVictim->pev->team) {
+			killer_weapon_name += 7;
+		//}
+	}
+	else if (strncmp(killer_weapon_name, "monster_", 8) == 0)
 		killer_weapon_name += 8;
 	else if ( strncmp( killer_weapon_name, "func_", 5 ) == 0 )
 		killer_weapon_name += 5;
@@ -670,11 +673,20 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	}
 	else if ( pKiller->flags & FL_CLIENT ) //killed by client
 	{
-		UTIL_LogPrintf( "%s killed %s with \"%s\"\n", 
-			GetLogStringForPlayer( ENT(pKiller) ).c_str(), 
-			GetLogStringForPlayer( pVictim->edict() ).c_str(), 
-			killer_weapon_name 
-		);
+		if (pKiller->team == pVictim->pev->team) {
+			UTIL_LogPrintf("%s team killed %s with \"%s\"\n",
+				GetLogStringForPlayer(ENT(pKiller)).c_str(),
+				GetLogStringForPlayer(pVictim->edict()).c_str(),
+				killer_weapon_name
+			);
+		}
+		else {
+			UTIL_LogPrintf("%s killed %s with \"%s\"\n",
+				GetLogStringForPlayer(ENT(pKiller)).c_str(),
+				GetLogStringForPlayer(pVictim->edict()).c_str(),
+				killer_weapon_name
+			);
+		}
 	}
 	else //killed by world
 	{ 

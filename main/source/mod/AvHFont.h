@@ -42,6 +42,7 @@ public:
      *
      */
     int DrawString(int inX, int inY, const char* inString, int r, int g, int b, int inRenderMode = kRenderTransAdd) const;
+	int DrawStringCustom(int inX, int inY, const char* inString, int r, int g, int b, int inRenderMode = kRenderTransAdd) const;
 
     /**
      *

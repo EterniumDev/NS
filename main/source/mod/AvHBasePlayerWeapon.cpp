@@ -82,6 +82,8 @@ extern int g_runfuncs;
 #include "../pm_shared/pm_defs.h"
 #include "AvHMarineEquipmentConstants.h"
 #include "AvHMarineWeapons.h"
+//#include "../mod/AvHServerVariables.h"
+#include "AvHServerVariables.h"
 
 #ifdef AVH_SERVER
 #include "AvHServerUtil.h"
@@ -143,8 +145,9 @@ AvHBasePlayerWeapon::AvHBasePlayerWeapon()
 	this->mRange = 8012;
 	this->mDamage = 10;
 	this->mAttackButtonDownLastFrame = false;
-	this->mTimeOfLastResupply = -1;
-    this->mTimeOfLastPrime = -1;
+	this->mTimeOfLastResupply = 0;
+	//this->mTimeOfLastNadeRestock = 0;
+	this->mTimeOfLastPrime = -1;
     this->mWeaponPrimeStarted = false;
 
 #ifdef AVH_SERVER
@@ -374,6 +377,11 @@ char* AvHBasePlayerWeapon::GetAnimationExtension() const
 		case AVH_WEAPON_PISTOL:
 			theAnimExt = "pistol";
 			break;
+#ifdef AVH_WEAPON_PISTOLB
+		case AVH_WEAPON_PISTOLB:
+			theAnimExt = "pistol";
+			break;
+#endif
 		case AVH_WEAPON_MG:
 			theAnimExt = "lmg";
 			break;
@@ -659,7 +667,8 @@ void AvHBasePlayerWeapon::ItemPostFrame( void )
 	this->m_flNextPrimaryAttack -= theClientTimePassedThisTick;
 	this->m_flTimeWeaponIdle -= theClientTimePassedThisTick;
 	this->mTimeOfLastResupply -= theClientTimePassedThisTick;
-    this->mTimeOfLastPrime -= theClientTimePassedThisTick;
+	//this->mTimeOfLastNadeRestock -= theClientTimePassedThisTick;
+	this->mTimeOfLastPrime -= theClientTimePassedThisTick;
 }
 
 void AvHBasePlayerWeapon::Precache(void)
@@ -802,7 +811,14 @@ bool AvHBasePlayerWeapon::GetIsGunPositionValid() const
 
 void AvHBasePlayerWeapon::DeductCostForShot(void)
 {
-	this->m_iClip--;
+
+#ifdef AVH_SERVER
+	if (avh_infinite_ammo.value != 1) 
+	
+#endif
+	{
+		this->m_iClip--;
+	}
 
 	// On a successful attack, decloak the player if needed
 	#ifdef AVH_SERVER
@@ -881,6 +897,13 @@ void AvHBasePlayerWeapon::PlaybackEvent(unsigned short inEvent, int inIparam2, i
 
 		float theVolume = AvHPlayerUpgrade::GetSilenceVolumeLevel(theUser3, theUpgrades);
 		
+		#ifdef AVH_CLIENT
+			if (CVAR_GET_FLOAT("cl_allowsilence") == 0) {
+				theVolume = 1.0f;
+			}
+		#endif
+
+
 		//( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
 		PLAYBACK_EVENT_FULL(flags, this->m_pPlayer->edict(), theEvent, 0, (float *)&theEventOrigin, (float *)&theEventAngles, theVolume, 0.0, theRandomNumber, inIparam2, 0, 0 );
 	}
@@ -915,6 +938,15 @@ void AvHBasePlayerWeapon::FireProjectiles(void)
 	float theDamageMultiplier;
 	AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier, &theTracerFreq);
 	theDamage *= theDamageMultiplier;
+
+	/*
+#ifdef AVH_SERVER
+	if (avh_golden_deagle.value == 1) {
+		theDamage *= 3;
+	}
+#endif
+	*/
+
 
 	Vector theSpread = this->GetProjectileSpread();
 	this->m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, theSpread, theRange, BULLET_PLAYER_MP5, theTracerFreq, theDamage, this->m_pPlayer->pev, this->m_pPlayer->random_seed);
@@ -1073,13 +1105,14 @@ bool AvHBasePlayerWeapon::Resupply()
         int theCurrentPrimary = this->m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
         int theMaxPrimary = theItemInfo.iMaxAmmo1;
 
+		a
         // Add ammo
         this->m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = min(theCurrentPrimary + theAmountToAdd, theMaxPrimary);
 
         const float theDelay = 1.0f;
 		//bugfix - don't let resupply shorten reload time
         this->m_pPlayer->m_flNextAttack = max(this->m_pPlayer->m_flNextAttack,UTIL_WeaponTimeBase() + theDelay);
-        this->mTimeOfLastResupply = UTIL_WeaponTimeBase() + theDelay;
+        //this->mTimeOfLastResupply = UTIL_WeaponTimeBase() + theDelay;
 	}
 
 	return theResupplied;
@@ -1165,6 +1198,8 @@ int	AvHBasePlayerWeapon::GetResourceCost() const
 
 void AvHBasePlayerWeapon::VirtualDestroyItem(void)
 {
+	
+
 	if(this->GetIsPersistent())
 	{
 		// Make this weapon invisible until map reset

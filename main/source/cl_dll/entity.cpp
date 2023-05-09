@@ -41,13 +41,41 @@ int CL_DLLEXPORT HUD_AddEntity( int type, struct cl_entity_s *ent, const char *m
 	// Particle entities have a model so they will be forced through this function,
 	// but we don't want to draw them.
 	int theSpecialState = ent->curstate.iuser3;
+
+#ifndef AVH_NO_CHEESE
+	if (CVAR_GET_FLOAT("cl_showcloak") != 0) {
+		if ((theSpecialState == AVH_USER3_MARINE_PLAYER) ||
+			(theSpecialState == AVH_USER3_DEFENSE_CHAMBER) ||
+			(theSpecialState == AVH_USER3_MOVEMENT_CHAMBER) ||
+			(theSpecialState == AVH_USER3_OFFENSE_CHAMBER) ||
+			(theSpecialState == AVH_USER3_SENSORY_CHAMBER) ||
+			(theSpecialState == AVH_USER3_ALIENRESTOWER) ||
+			(theSpecialState == AVH_USER3_ALIEN_PLAYER1) ||
+			(theSpecialState == AVH_USER3_ALIEN_PLAYER2) ||
+			(theSpecialState == AVH_USER3_ALIEN_PLAYER3) ||
+			(theSpecialState == AVH_USER3_ALIEN_PLAYER4) ||
+			(theSpecialState == AVH_USER3_ALIEN_PLAYER5) ||
+			(theSpecialState == AVH_USER3_ALIEN_EMBRYO)
+			)
+		{
+			if (ent->curstate.renderamt < 180)
+			{
+				ent->curstate.renderamt = 180;
+			}
+		}
+		else if (CVAR_GET_FLOAT("cl_showcloak") == 2) {
+			ent->curstate.renderamt = 255;
+		}
+	}
+#endif
+
 	if( (theSpecialState == AVH_USER3_PARTICLE_ON) ||
 		(theSpecialState == AVH_USER3_PARTICLE_OFF) ||
 		(theSpecialState == AVH_USER3_AUDIO_ON) ||
 		(theSpecialState == AVH_USER3_AUDIO_OFF) ||
 		(theSpecialState == AVH_USER3_NOBUILD))
 	{
-		return 0;
+			return 0;
 	}
 
 	switch ( type )

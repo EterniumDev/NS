@@ -135,7 +135,6 @@ cvar_t	*cl_highdetail;
 cvar_t	*cl_cmhotkeys;
 cvar_t	*cl_forcedefaultfov;
 cvar_t	*cl_dynamiclights;
-cvar_t	*r_dynamic;
 cvar_t	*cl_buildmessages;
 cvar_t	*cl_particleinfo;
 cvar_t	*cl_widescreen;
@@ -385,6 +384,11 @@ void KeyDown (kbutton_t *b)
 
 	int theBlockScripts = (int)gHUD.GetServerVariableFloat(kvBlockScripts);
 
+
+	
+
+	
+
 	char *pCmd = gEngfuncs.Cmd_Argv(0);
 
 	if(theBlockScripts && pCmd)
@@ -401,18 +405,19 @@ void KeyDown (kbutton_t *b)
 				break;
 			}
 		}
-		
 
-		if(!bFound 
-			&& strcmp(pCmd, "+mlook") 
-			&& strcmp(pCmd, "+jlook")
-			&& strcmp(pCmd, "+showscores")
-			&& strcmp(pCmd, "+use"))
-		{
-			gEngfuncs.pfnCenterPrint("Scripting is not allowed on this server.");
-			b->down[0] = b->down[1] = 0;
-			b->state = 4;	// impulse up
-			return;
+		if (CVAR_GET_FLOAT("cl_scriptbypass") == 0) {
+			if (!bFound
+				&& strcmp(pCmd, "+mlook")
+				&& strcmp(pCmd, "+jlook")
+				&& strcmp(pCmd, "+showscores")
+				&& strcmp(pCmd, "+use"))
+			{
+				gEngfuncs.pfnCenterPrint("Scripting is not allowed on this server.");
+				b->down[0] = b->down[1] = 0;
+				b->state = 4;	// impulse up
+				return;
+			}
 		}
 	}
 
@@ -563,9 +568,11 @@ int CL_DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBind
     
 	if (theBlockScripts && AvHContainsBlockedCommands(pszCurrentBinding))
 	{
-		if(down)//: only show when going down.
-			gEngfuncs.pfnCenterPrint("Scripting is not allowed on this server.\n"); 
-		return 0;
+		if (CVAR_GET_FLOAT("cl_scriptbypass") == 0) {
+			if (down)//: only show when going down.
+				gEngfuncs.pfnCenterPrint("Scripting is not allowed on this server.\n");
+			return 0;
+		}
 	}
 
 	if(pszCurrentBinding)
@@ -780,7 +787,7 @@ void IN_AttackUp(void)
 {
 	KeyUp( &in_attack );
 	in_cancel = 0;
-	//IN_Attack2Up();
+	IN_Attack2Up();
 }
 
 void IN_AttackDownForced(void)
@@ -1074,7 +1081,11 @@ void CL_DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int ac
 				if(theScrollX || theScrollY || theScrollZ)
 				{
 					// Commander move speed
-					float kCommanderMoveSpeed = 1000;					
+					float kCommanderMoveSpeed = 1000;
+					if (CVAR_GET_FLOAT("cl_commspeed") > 1)
+					{
+						kCommanderMoveSpeed = CVAR_GET_FLOAT("cl_commspeed");
+					}
 					cmd->upmove += kCommanderMoveSpeed * theScrollY;
 					cmd->sidemove += kCommanderMoveSpeed * theScrollX;
 					cmd->forwardmove += kCommanderMoveSpeed * theScrollZ;
@@ -1332,6 +1343,8 @@ int CL_ButtonBits( int bResetState )
 	}
 	// :
 
+	
+
 	if (in_jump.state & 3)
 	{
 		bits |= IN_JUMP;
@@ -1551,7 +1564,7 @@ void InitInput (void)
 	cl_forcedefaultfov	= gEngfuncs.pfnRegisterVariable ( kvForceDefaultFOV, "0", FCVAR_ARCHIVE );
 	cl_particleinfo		= gEngfuncs.pfnRegisterVariable ( kvParticleInfo, "0", FCVAR_ARCHIVE );
 	cl_widescreen		= gEngfuncs.pfnRegisterVariable	( kvWidescreen, "1", FCVAR_ARCHIVE );
-	cl_ambientsound		= gEngfuncs.pfnRegisterVariable	( kvAmbientSound, "0", FCVAR_ARCHIVE);
+	cl_ambientsound		= gEngfuncs.pfnRegisterVariable	( kvAmbientSound, "0.05", FCVAR_ARCHIVE);
 	senslock			= gEngfuncs.pfnRegisterVariable	("senslock", "0", FCVAR_ARCHIVE);
 	hud_style			= gEngfuncs.pfnRegisterVariable	("hud_style", "1", FCVAR_ARCHIVE);
 	cl_chatbeep			= gEngfuncs.pfnRegisterVariable	("cl_chatbeep", "1", FCVAR_ARCHIVE);

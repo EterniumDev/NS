@@ -27,6 +27,8 @@
 //#include "saverestore.h"
 #include <cmath>
 #include "plats.h"
+#include "mod/AvHSpecials.h"
+#include "mod/AvHBaseBuildable.h"
 
 static void PlatSpawnInsideTrigger(entvars_t* pevPlatform);
 
@@ -479,7 +481,15 @@ void CFuncPlat :: Blocked( CBaseEntity *pOther )
 {
 	ALERT( at_aiconsole, "%s Blocked by %s\n", STRING(pev->classname), STRING(pOther->pev->classname) );
 	// Hurt the blocker a little
-	pOther->TakeDamage(pev, pev, 1, DMG_CRUSH);
+	float damage = 2;
+
+	//if (this->pev->iuser4 == MASK_BUILDABLE) {
+	AvHBaseBuildable *theBuild = dynamic_cast<AvHBaseBuildable *>(pOther);
+	if (theBuild) {
+		damage = 100 + round(pOther->pev->health/5);
+	}
+	pOther->TakeDamage(pev, pev, damage, DMG_CRUSH);
+	
 
 	if(pev->noiseMovement)
 		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
@@ -653,15 +663,23 @@ void CFuncTrain :: KeyValue( KeyValueData *pkvd )
 }
 
 
-void CFuncTrain :: Blocked( CBaseEntity *pOther )
+void CFuncTrain::Blocked(CBaseEntity *pOther)
 
 {
-	if ( gpGlobals->time < m_flActivateFinished)
+	if (gpGlobals->time < m_flActivateFinished)
 		return;
 
 	m_flActivateFinished = gpGlobals->time + 0.5;
-	
-	pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+
+	float damage = pev->dmg;
+
+	//if (this->pev->iuser4 == MASK_BUILDABLE) {
+	//if ((pOther->pev->iuser4 & MASK_BUILDABLE) == MASK_BUILDABLE) {
+	AvHBaseBuildable *theBuild = dynamic_cast<AvHBaseBuildable *>(pOther);
+	if (theBuild) {
+		damage *= 10;
+	}
+	pOther->TakeDamage(pev, pev, damage, DMG_CRUSH);
 }
 
 
@@ -1005,7 +1023,16 @@ void CFuncTrackTrain :: Blocked( CBaseEntity *pOther )
 	if ( pev->dmg <= 0 )
 		return;
 	// we can't hurt this thing, so we're not concerned with it
-	pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+
+	float damage = pev->dmg;
+
+	//if (this->pev->iuser4 == MASK_BUILDABLE) {
+	AvHBaseBuildable *theBuild = dynamic_cast<AvHBaseBuildable *>(pOther);
+	if (theBuild) {
+		damage *= 10;
+	}
+
+	pOther->TakeDamage(pev, pev, damage, DMG_CRUSH);
 }
 
 

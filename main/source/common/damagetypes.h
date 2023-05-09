@@ -25,7 +25,9 @@
 #define NS_DMG_ORGANIC		DMG_FREEZE		// Only damages living things (players, living structures)
 #define NS_DMG_STRUCTURAL	DMG_ENERGYBEAM	// Doesn't damage players
 #define NS_DMG_LIGHT		DMG_SHOCK		// Half damage to heavily armored targets
-#define NS_DMG_ACID			DMG_MORTAR		// Double armor damage
+#define NS_DMG_ACID			DMG_MORTAR		// Bile bomb special, 100% vs structures, only damage player armor and is 90% less
+#define NS_DMG_LETHALITY	DMG_SLASH		// Double damage against low health targets
+
 
 // time-based damage
 //mask off TF-specific stuff too

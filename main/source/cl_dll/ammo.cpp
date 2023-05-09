@@ -380,8 +380,16 @@ void WeaponsResource::UserCmd_MovementOn()
 	case AVH_USER3_ALIEN_PLAYER1:
 		wID = AVH_ABILITY_LEAP;
 		break;
+	case AVH_USER3_ALIEN_PLAYER2:
+		//wID = AVH_ABILITY_LEAP;
+		IN_Attack2Down();
+		//wID = AVH_WEAPON_HEALINGSPRAY;
+		//IN_ReloadDown();
+		break;
 	case AVH_USER3_ALIEN_PLAYER3:
 		// TODO: Add flap
+		
+		IN_Attack2Down();
 		break;
 	case AVH_USER3_ALIEN_PLAYER4:
 		wID = AVH_WEAPON_BLINK;

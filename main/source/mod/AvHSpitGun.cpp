@@ -227,12 +227,20 @@ void AvHSpitGun::FireProjectiles(void)
 	
 	UTIL_SetOrigin(theSpit->pev, vecSrc);
 
+	//gorge spit moves faster from focus
+	float theFocusScalar = 1.0f;
+	if (AvHSHUGetIsWeaponFocusable(AvHWeaponID(this->m_iId)))
+	{
+		theFocusScalar = AvHPlayerUpgrade::GetFocusDamageUpgrade(this->m_pPlayer->pev->iuser4);
+	}
+
+
 	// This needs to be the same as in EV_SpitGun
 	Vector theBaseVelocity;
 	VectorScale(this->pev->velocity, kSpitParentVelocityScalar, theBaseVelocity);
 	
 	Vector theStartVelocity;
-	VectorMA(theBaseVelocity, kSpitVelocity, vecAiming, theStartVelocity);
+	VectorMA(theBaseVelocity, kSpitVelocity*theFocusScalar, vecAiming, theStartVelocity);
 
 	VectorCopy(theStartVelocity, theSpit->pev->velocity);
 
@@ -243,12 +251,7 @@ void AvHSpitGun::FireProjectiles(void)
 	theSpit->pev->team = this->m_pPlayer->pev->team;
 
 	// Set amount of damage it will do
-    float theFocusScalar = 1.0f;
-
-    if(AvHSHUGetIsWeaponFocusable(AvHWeaponID(this->m_iId)))
-    {
-        theFocusScalar = AvHPlayerUpgrade::GetFocusDamageUpgrade(this->m_pPlayer->pev->iuser4);
-    }
+    
 
 	float theDamage = this->mDamage*AvHPlayerUpgrade::GetAlienRangedDamageUpgrade(this->m_pPlayer->pev->iuser4)*theFocusScalar;
 	theSpit->SetDamage(theDamage);

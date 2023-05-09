@@ -1330,6 +1330,11 @@
 	iMagnitude(Integer) : "Explosion Magnitude" : 100
 ]
 
+@SolidClass base(BaseTank, ZHLTLightFlags) = func_tankelite : "Brush Elite Turret" 
+[
+	iMagnitude(Integer) : "Explosion Magnitude" : 100
+]
+
 @SolidClass base(Trackchange) = func_trackautochange : "Automatic track changing platform"
 [
 	_minlight(string) : "Minimum light level"

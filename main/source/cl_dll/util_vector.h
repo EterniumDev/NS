@@ -29,7 +29,7 @@ typedef unsigned int	func_t;		//
 typedef unsigned int	string_t;	// from engine's pr_comp.h;
 typedef float vec_t;				// needed before including progdefs.h
 
-#include "vectorclasses.h"
+#include "common/vectorclasses.h"
 
 #ifndef THEVECTOR3T
 #define THEVECTOR3T

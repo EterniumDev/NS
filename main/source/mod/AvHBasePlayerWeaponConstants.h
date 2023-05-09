@@ -29,6 +29,9 @@
 #ifndef AVHBASEPLAYERWEAPONCONSTANTS_H
 #define AVHBASEPLAYERWEAPONCONSTANTS_H
 
+
+//#define AVH_WEAPON_MG 33
+
 typedef enum
 {
 	AVH_WEAPON_NONE = 0,
@@ -38,8 +41,8 @@ typedef enum
 	AVH_WEAPON_SPIT,
 	AVH_WEAPON_SPORES,
 	AVH_WEAPON_SPIKE,
-	AVH_WEAPON_BITE,		// Level 1 bite
-	AVH_WEAPON_BITE2,		// Level 3 bite
+	AVH_WEAPON_BITE,		// Skulk bite
+	AVH_WEAPON_BITE2,		// Lerk bite
 	AVH_WEAPON_SWIPE,
 	AVH_WEAPON_WEBSPINNER,
 	AVH_WEAPON_METABOLIZE,
@@ -69,6 +72,8 @@ typedef enum
 	AVH_WEAPON_GRENADE,
 	AVH_WEAPON_STOMP,
 	AVH_WEAPON_DEVOUR,
+	
+
 
 	// Can't go over 32 (client.cpp, GetWeaponData())
 

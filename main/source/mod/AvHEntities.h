@@ -647,6 +647,8 @@ public:
 
 	virtual char*	GetActiveSoundList() const;
 
+	
+
 private:
 	void EXPORT		ActivateThink();
 	

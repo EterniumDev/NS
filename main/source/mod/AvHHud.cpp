@@ -383,9 +383,30 @@ bool AvHHud::OnKeyEvent(int virtualKey, int scanCode, bool pressed)
 
 }
 
+const AvHHud* gHack;
+extern "C" int gHackGetGameTime();
+extern "C" int gHackGetServerVariableFloat(const char* inName);
+
+int gHackGetGameTime()
+{
+	const AvHHud* theHack = gHack;
+
+	return theHack->GetGameTime();
+}
+
+int gHackGetServerVariableFloat(const char* inName)
+{
+	const AvHHud* theHack = gHack;
+
+	return theHack->GetServerVariableFloat(inName);
+}
+
+
 int AvHHud::GetGameTime() const
 {
 	int theGameTime = 0;
+
+	gHack = this;
 
 	if(this->mGameTime > 0)
 	{
@@ -1031,6 +1052,32 @@ cl_entity_s* AvHHud::GetVisiblePlayer() const
 
 	return thePlayer;
 }
+
+/*
+AvHPlayer* AvHHud::GetRealPlayer() const
+{
+	cl_entity_s* thePlayer = gEngfuncs.GetLocalPlayer();
+	int test = thePlayer->index;
+
+	//CBasePlayer* theNadedPlayer = dynamic_cast<CBasePlayer*>(test);
+	//AvHPlayer* theNadedPlayer = dynamic_cast<AvHPlayer*>(test);
+
+	//AvHPlayer* thePlayer = gEngfuncs.GetLocalPlayer();
+	if (g_iUser1 == OBS_IN_EYE)
+	{
+		
+	}
+	cl_entity_t* theEnt = gEngfuncs.GetEntityByIndex(test);
+	//AvHPlayer* theNadedPlayer = dynamic_cast<AvHPlayer*>(thePlayer);
+	if (theEnt)
+	{
+		thePlayer = theEnt;
+	}
+
+	return 0;// AvHPlayer* &test;
+}
+*/
+
 
 int	AvHHud::GetLocalUpgrades() const
 {
@@ -4790,6 +4837,7 @@ cvar_t *lightgamma = NULL;
 cvar_t *texgamma = NULL;
 cvar_t *r_detailtextures = NULL;
 cvar_t *gl_max_size = NULL;
+cvar_t *r_fullbright = NULL;
 
 void AvHHud::InitExploitPrevention() {
 	gl_monolights = gEngfuncs.pfnGetCvarPointer("gl_monolights");
@@ -4804,6 +4852,7 @@ void AvHHud::InitExploitPrevention() {
 	texgamma = gEngfuncs.pfnGetCvarPointer("texgamma");
 	r_detailtextures = gEngfuncs.pfnGetCvarPointer("r_detailtextures");
 	gl_max_size = gEngfuncs.pfnGetCvarPointer("gl_max_size");
+	r_fullbright = gEngfuncs.pfnGetCvarPointer("r_fullbright");
 
 	ForceCvar("gl_monolights", gl_monolights, 0.0f);
 	ForceCvar("gl_overbright", gl_overbright, 0.0f);
@@ -4814,6 +4863,7 @@ void AvHHud::InitExploitPrevention() {
 	ForceCvar("s_show", s_show, 0.0f);
 	ForceCvar("r_detailtextures", r_detailtextures, 0.0f);
 	ForceCvar("gl_max_size", gl_max_size, 256.0f);
+	ForceCvar("r_fullbright", r_fullbright, 1.0f);
 
 	RemoveAlias("lightgamma");
 	if(lightgamma && lightgamma->value < 2.0) {
@@ -4838,15 +4888,17 @@ void AvHHud::UpdateExploitPrevention()
 	ForceCvar("gl_monolights", gl_monolights, 0.0f);
 	ForceCvar("gl_overbright", gl_overbright, 0.0f);
 	ForceCvar("gl_clear", gl_clear, 0.0f);
-	ForceCvar("hud_draw", hud_draw, 1.0f);
-	ForceCvar("r_drawviewmodel", r_drawviewmodel, 1.0f);
+	//ForceCvar("hud_draw", hud_draw, 1.0f); //useful feature for screenshots, idk why this would ever be disabled
+	//ForceCvar("r_drawviewmodel", r_drawviewmodel, 1.0f); //useful feature for screenshots, and potentially useful in game, perhaps this should be uncommented for tourney play
 	float movespeedkey=AvHMUGetWalkSpeedFactor(this->GetHUDUser3());
 	ForceCvar("cl_movespeedkey", cl_movespeedkey, movespeedkey);
 	ForceCvar("gl_d3dflip", gl_d3dflip, 1.0f);
 	ForceCvar("s_show", s_show, 0.0f);
-	ForceCvar("r_detailtextures", r_detailtextures, 0.0f);
+	//ForceCvar("r_detailtextures", r_detailtextures, 0.0f); //was disabled cuz of potential for fullbright cheating, reenabled since that's such a minor issue
 	ForceCvar("gl_max_size", gl_max_size, 256.0f);
+	ForceCvar("r_fullbright", r_fullbright, 1.0f);
 
+	
 	if(lightgamma && lightgamma->value < 2.0) {
 		ForceCvar("lightgamma", lightgamma, 2.0f);
 	}
@@ -4859,6 +4911,8 @@ void AvHHud::UpdateExploitPrevention()
 	if(texgamma && texgamma->value > 5.0) {
 		ForceCvar("texgamma", texgamma, 5.0f);
 	}
+	
+	
 }
 
 void AvHHud::UpdateAlienUI(float inCurrentTime)
@@ -4948,7 +5002,7 @@ bool AvHHud::GetCommanderLabelText(std::string& outCommanderName) const
 
 		if(thePlayerInfo->name)
 		{
-			const int kMaxCommNameLen = 8;
+			const int kMaxCommNameLen = 12;
 			theStream << string(thePlayerInfo->name).substr(0, kMaxCommNameLen);
 		}
 
@@ -5356,7 +5410,7 @@ bool AvHHud::GetEntityInfoString(int inEntityID, string& outEntityInfoString, bo
 			string thePrePendString;
 
 			// Don't show cloaked enemies
-			if((theTeam != TEAM_IND) && !this->GetInTopDownMode() && ((theEntity->curstate.team == theTeam) || (theEntity->curstate.rendermode == kRenderNormal)))
+			//if((theTeam != TEAM_IND) && !this->GetInTopDownMode() && ((theEntity->curstate.team == theTeam) || (theEntity->curstate.rendermode == kRenderNormal)))
 			{
 				//string thePostPendString;
 				if((theEntity->curstate.team == theTeam))
@@ -5379,6 +5433,115 @@ bool AvHHud::GetEntityInfoString(int inEntityID, string& outEntityInfoString, bo
 			if(thePlayerInfo.name)
 			{
 				outEntityInfoString += thePlayerInfo.name;// + thePostPendString;
+				//me bugging the game out
+				string extrastuffString;
+				//sprintf(extrastuffString, " (health: %d)", theEntity->curstate.health);
+				//outEntityInfoString += extrastuffString;
+
+				//if marines
+				if ((CVAR_GET_FLOAT("cl_showups") != 0)&& (theEntity->curstate.team != theTeam ||CVAR_GET_FLOAT("cl_showups") == 1)) {
+					if (theEntity->curstate.iuser3 == AVH_USER3_MARINE_PLAYER)
+					{
+						int test = 0;
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_1))
+						{
+							test = 1;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_2))
+						{
+							test = 2;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_3))
+						{
+							test = 3;
+						}
+						sprintf(extrastuffString, " [W %d]", test, 0);
+						outEntityInfoString += extrastuffString;
+						test = 0;
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_4))
+						{
+							test = 1;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_5))
+						{
+							test = 2;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_6))
+						{
+							test = 3;
+						}
+						sprintf(extrastuffString, " [A %d]", test, 0);
+						outEntityInfoString += extrastuffString;
+					}
+					else {
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_1))
+						{
+							sprintf(extrastuffString, " [Carapace]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_2))
+						{
+							sprintf(extrastuffString, " [Regen]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_3))
+						{
+							sprintf(extrastuffString, " [Redemption]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_4))
+						{
+							sprintf(extrastuffString, " [Celerity]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_5))
+						{
+							sprintf(extrastuffString, " [Adrenaline]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_6))
+						{
+							sprintf(extrastuffString, " [Silence]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_7))
+						{
+							sprintf(extrastuffString, " [Cloaking]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_8))
+						{
+							sprintf(extrastuffString, " [Focus]");
+							outEntityInfoString += extrastuffString;
+						}
+						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_9))
+						{
+							sprintf(extrastuffString, " [Fear]");
+							outEntityInfoString += extrastuffString;
+						}
+					}
+				}
+
+				if (CVAR_GET_FLOAT("cl_showparasite") != 0 && theEntity->curstate.team == theTeam)
+				{
+					if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_PARASITED))
+					{
+						sprintf(extrastuffString, " [Parasited]");
+						outEntityInfoString += extrastuffString;
+					}
+				}
+				//if aliens
+				//iuser4
+				
+				//if(GetHasUpgrade(inEntity->iuser4, MASK_VIS_SIGHTED))
+				
+				//outEntityInfoString += " hp ";
+				//outEntityInfoString += theEntity->curstate.health;//theEntity->curstate.health;
+				//theEntity->curstate.health;
+				//outEntityInfoString += " ";
+				//strcat(*outEntityInfoString, ".txt");
+				
+
 
 				// Get string from status bar and append it
 				const char* theStatusCStr = this->m_StatusBar.GetStatusString();
@@ -5554,12 +5717,19 @@ void AvHHud::UpdateEntityID(float inCurrentTime)
 	
 	if(theEntityIndex > 0)
 	{
-		// Don't draw info for cloaked structures
+		
 		cl_entity_s* theProgressEntity = gEngfuncs.GetEntityByIndex(theEntityIndex);
 		if(theProgressEntity)
 		{
-			if((theProgressEntity->curstate.rendermode != kRenderTransTexture) || (theProgressEntity->curstate.renderamt > kAlienStructureCloakAmount))
+			// Don't draw info for cloaked structures
+			if((theProgressEntity->curstate.rendermode != kRenderTransTexture) || (theProgressEntity->curstate.renderamt > kAlienStructureCloakAmount) || (CVAR_GET_FLOAT("cl_showcloak") != 0))
 			{
+#ifndef AVH_NO_CHEESE
+				if (CVAR_GET_FLOAT("cl_showcloak") != 0) {
+					theProgressEntity->curstate.renderamt = 255;
+				}
+#endif
+
 				if(std::find(this->mBuildingEffectsEntityList.begin(), this->mBuildingEffectsEntityList.end(), theEntityIndex) == this->mBuildingEffectsEntityList.end())
 				{
 					this->mBuildingEffectsEntityList.push_back(theEntityIndex);
@@ -5604,7 +5774,7 @@ void AvHHud::UpdateEntityID(float inCurrentTime)
 					}
 				}
 			}
-			else
+			//else
 			{
 				//char theMessage[128];
 				//sprintf(theMessage, "Entity %d cloaked, not drawing circle.", theProgressEntity->curstate.iuser3);
@@ -5664,7 +5834,19 @@ string AvHHud::GetRankTitle(bool inShowUnspentLevels) const
 
 	char theCharArray[512];
 	sprintf(theCharArray, kRankText, theTeamName, theCurrentLevel);
-	LocalizeString(theCharArray, theText);
+	if (theCurrentLevel > 10)
+	{
+		if (this->GetIsMarine()) {
+			theText = "Elite Rank " + MakeStringFromInt(theCurrentLevel);
+		}
+		else {
+			theText = "Predator Tier " + MakeStringFromInt(theCurrentLevel);
+		}
+	}
+	else {
+		LocalizeString(theCharArray, theText);
+	}
+	
 
 	// Add unspent levels, if any
 	int theUnspentLevels = (this->mExperienceLevel - this->mExperienceLevelSpent - 1);
@@ -6407,6 +6589,7 @@ void AvHHud::UpdateTechNodes()
 						}
 						else if(theMessageID == BUILD_RECYCLE)
 						{
+							
 							this->mTechEvent = theMessageID;
 						}
 					}
@@ -6486,7 +6669,7 @@ void AvHHud::UpdateFromEntities(float inCurrentTime)
 					if(theEntity)
 					{
 						// Don't add cloaked entities (I wish this could be more general purpose)
-						if((theEntity->team == this->GetHUDTeam()) || (theEntity->rendermode == kRenderNormal))
+						if((theEntity->team == this->GetHUDTeam()) || (theEntity->rendermode == kRenderNormal) || (CVAR_GET_FLOAT("cl_showcloak") != 0))
 						{
 							int theUser3 = theEntity->iuser3;
 							vec3_t theEntityOrigin = AvHSHUGetRealLocation(theEntity->origin, theEntity->mins, theEntity->maxs);
@@ -6894,7 +7077,7 @@ void AvHHud::UpdateEnableState(PieMenu* inMenu)
 void AvHHud::ShowMap()
 {
 	bool isNsMode=false;
-	if ( strnicmp(gHUD.GetMapName().c_str(), "ns_", 3) == 0 )
+	//if ( strnicmp(gHUD.GetMapName().c_str(), "ns_", 3) == 0 )
 		isNsMode=true;
 	
     if ( (!sShowMap || gEngfuncs.IsSpectateOnly()) && isNsMode )
@@ -7176,6 +7359,8 @@ void AvHHud::StopStream()
 {
     gHUD.StopInternetStream();
 }
+
+
 
 float AvHHud::GetServerVariableFloat(const char* inName) const
 {

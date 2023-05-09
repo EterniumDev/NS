@@ -14,7 +14,7 @@
     <SccLocalPath />
     <SccProvider />
     <ProjectGuid>{665C1DAF-9248-E06F-4E5C-A664BAFDE9D8}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'" Label="Configuration">
@@ -22,7 +22,7 @@
     <UseOfMfc>false</UseOfMfc>
     <UseOfAtl>false</UseOfAtl>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -33,14 +33,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">F:\Steam\steamapps\common\Half-Life\ns\cl_dlls</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">.</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">$(SolutionDir)$(Configuration)/\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">$(Configuration)/\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">$(TargetPath)%3b*.obj%3b*.ilk%3b*.pdb%3b*.tlb%3b*.tli%3b*.tlh%3b*.tmp%3b*.rsp%3b*.bat</ExtensionsToDeleteOnClean>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">false</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">client</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">
-    <IncludePath>.;zlib-1.2.8;includes\zlib-1.2.8;source\includes\zlib-1.2.8;main\source\includes\zlib-1.2.8;$(IncludePath)</IncludePath>
+    <IncludePath>.;Z:\HalfLifeENSL\NS-develop\main\source;zlib-1.2.8;includes\zlib-1.2.8;source\includes\zlib-1.2.8;main\source\includes\zlib-1.2.8;$(IncludePath)</IncludePath>
     <CustomBuildAfterTargets />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">
@@ -49,7 +49,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\particles;$(SolutionDir)\includes\lpng1251;$(SolutionDir)\includes\zlib-1.2.8;$(SolutionDir)\includes\fmod\inc;$(SolutionDir)\includes\vgui\include;../public;../common;../external;../pm_shared;../game_shared;../mod;../util;../ui;../engine;../cl_dll;../dlls</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>USE_NETWORK_METERING;NDEBUG;WIN32;_WINDOWS;AVH_CLIENT;USE_OLDAUTH;_X86_</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_NETWORK_METERING;NDEBUG;WIN32;_WINDOWS;BALANCE_ENABLED;AVH_CLIENT;USE_OLDAUTH;_X86_</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader>
@@ -89,7 +89,7 @@
       <TreatLinkerWarningAsErrors>
       </TreatLinkerWarningAsErrors>
       <AdditionalOptions>/NODEFAULTLIB:LIBCMT %(AdditionalOptions)</AdditionalOptions>
-      <OutputFile>F:\Steam\steamapps\common\Half-Life\ns\cl_dlls\client.dll</OutputFile>
+      <OutputFile>$(SolutionDir)..\cl_dlls\client.dll</OutputFile>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -477,6 +477,10 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\mod\AvHPistol.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="..\mod\AvHPistolB.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">MaxSpeed</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Playtest|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

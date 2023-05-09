@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29911.84
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_dll.dll", "cl_dll\cl_dll.vcxproj", "{665C1DAF-9248-E06F-4E5C-A664BAFDE9D8}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,8 +33,8 @@ Global
 		{665C1DAF-9248-E06F-4E5C-A664BAFDE9D8}.Playtest|Win32.Build.0 = Playtest|Win32
 		{665C1DAF-9248-E06F-4E5C-A664BAFDE9D8}.Release|Win32.ActiveCfg = Playtest|Win32
 		{665C1DAF-9248-E06F-4E5C-A664BAFDE9D8}.Release|Win32.Build.0 = Playtest|Win32
-		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Debug|Win32.ActiveCfg = Developer - release|Win32
-		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Debug|Win32.Build.0 = Developer - release|Win32
+		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Debug|Win32.ActiveCfg = Developer - debug|Win32
+		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Debug|Win32.Build.0 = Developer - debug|Win32
 		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Developer - debug|Win32.ActiveCfg = Developer - debug|Win32
 		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Developer - release|Win32.ActiveCfg = Developer - release|Win32
 		{BC87A180-F17B-83FC-5D7D-470FAD003ABC}.Playtest - balance disabled|Win32.ActiveCfg = Playtest - balance disabled|Win32

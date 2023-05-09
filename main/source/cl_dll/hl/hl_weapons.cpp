@@ -109,6 +109,9 @@ vec3_t previousorigin;
 AvHKnife			gKnife;
 AvHMachineGun		gMachineGun;
 AvHPistol			gPistol;
+#ifdef AVH_WEAPON_PISTOLB
+AvHPistolB			gPistolB;
+#endif
 AvHSonicGun			gSonicGun;
 AvHHeavyMachineGun	gHeavyMachineGun;
 AvHGrenadeGun		gGrenadeGun;
@@ -551,6 +554,9 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 						theVolumeScalar = (float)BALANCE_VAR(kSilenceLevel3Volume);
 						break;
 					}
+					if (CVAR_GET_FLOAT("cl_allowsilence") == 0) {
+						theVolumeScalar = 1.0f;
+					}
 					HUD_PlaySound( kLeapSound,  theVolumeScalar);
 					AvHMUDeductAlienEnergy(m_pPlayer->pev->fuser3, theWeapon->GetEnergyForAttack() );
 					gEngfuncs.pEventAPI->EV_WeaponAnimation(3, 2);
@@ -583,6 +589,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 				if (enabled && (this->m_flLastAnimationPlayed + (float)BALANCE_VAR(kLeapROF) <= gpGlobals->time))
 				{
+					//cl_allowsilence
 					float theVolumeScalar = 1.0f;
 					cl_entity_t *player = gEngfuncs.GetLocalPlayer();
 					int theSilenceLevel = AvHGetAlienUpgradeLevel(player->curstate.iuser4, MASK_UPGRADE_6);
@@ -597,6 +604,9 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 					case 3:
 						theVolumeScalar = (float)BALANCE_VAR(kSilenceLevel3Volume);
 						break;
+					}
+					if (CVAR_GET_FLOAT("cl_allowsilence") == 0) {
+						theVolumeScalar = 1.0f;
 					}
 					HUD_PlaySound( kLeapSound,  theVolumeScalar);
 					AvHMUDeductAlienEnergy(m_pPlayer->pev->fuser3, theWeapon->GetEnergyForAttack() );
@@ -926,6 +936,9 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &gKnife, &player);
 	HUD_PrepEntity( &gMachineGun, &player);
 	HUD_PrepEntity( &gPistol, &player);
+#ifdef AVH_WEAPON_PISTOLB
+	HUD_PrepEntity( &gPistolB, &player);
+#endif
 	HUD_PrepEntity( &gSonicGun, &player);
 	HUD_PrepEntity( &gHeavyMachineGun, &player);
 	HUD_PrepEntity( &gGrenadeGun, &player);
@@ -1023,6 +1036,11 @@ CBasePlayerWeapon* HUD_GetWeaponForID(int inID)
 	case AVH_WEAPON_PISTOL:
 		pWeapon = &gPistol;
 		break;
+#ifdef AVH_WEAPON_PISTOLB
+	case AVH_WEAPON_PISTOLB:
+		pWeapon = &gPistolB;
+		break;
+#endif
 	case AVH_WEAPON_SONIC:
 		pWeapon = &gSonicGun;
 		break;

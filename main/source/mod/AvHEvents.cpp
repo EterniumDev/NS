@@ -222,6 +222,7 @@ extern "C" Vector						gPredictedPlayerOrigin;
 AVH_DECLARE_EVENT(Knife)
 AVH_DECLARE_EVENT(MachineGun)
 AVH_DECLARE_EVENT(Pistol)
+AVH_DECLARE_EVENT(PistolB)
 AVH_DECLARE_EVENT(SonicGun)
 AVH_DECLARE_EVENT(HeavyMachineGun)
 AVH_DECLARE_EVENT(GrenadeGun)
@@ -317,6 +318,7 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( kKNEventName, EV_Knife );
 	gEngfuncs.pfnHookEvent( kMGEventName, EV_MachineGun );
 	gEngfuncs.pfnHookEvent( kHGEventName, EV_Pistol );
+	gEngfuncs.pfnHookEvent( kTECEventName, EV_PistolB );
 	gEngfuncs.pfnHookEvent( kSGEventName, EV_SonicGun );
 	gEngfuncs.pfnHookEvent( kHMGEventName, EV_HeavyMachineGun );
 	gEngfuncs.pfnHookEvent( kGGEventName, EV_GrenadeGun );
@@ -405,6 +407,7 @@ void Game_HookEvents( void )
 
 #define	WEAPON_ACTIVITY_VOLUME	64
 
+#define VECTOR_CONE_0DEGREES	Vector( 0.0f, 0.0f, 0.0f)
 #define VECTOR_CONE_1DEGREES	Vector( 0.00873, 0.00873, 0.00873 )
 #define VECTOR_CONE_2DEGREES	Vector( 0.01745, 0.01745, 0.01745 )
 #define VECTOR_CONE_3DEGREES	Vector( 0.02618, 0.02618, 0.02618 )
@@ -860,6 +863,94 @@ void EV_Pistol(struct event_args_s* args)
 	}
 }
 
+void EV_PistolB(struct event_args_s* args)
+{
+	// What to do about this static member?
+	static int tracerCount[32];
+
+	// Figure out which weapon description to assocate this weapon with
+	int theWeaponIndex = args->iparam1;
+
+	// Play attack animation and add muzzle flash
+	int idx;
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t velocity;
+
+	vec3_t vecSrc, vecAiming;
+	vec3_t up, right, forward;
+
+	idx = args->entindex;
+	VectorCopy(args->origin, origin);
+	VectorCopy(args->angles, angles);
+	VectorCopy(args->velocity, velocity);
+
+	//AngleVectors( angles, forward, right, up );
+	gEngfuncs.pfnAngleVectors(angles, forward, right, up);
+
+	// Get upgrade
+	int theTracerFreq;
+	int theUpgradeLevel = AvHPlayerUpgrade::GetWeaponUpgrade(AVH_USER3_MARINE_PLAYER, GetUpgradeState(idx), NULL, &theTracerFreq);
+
+	// Vary flange effect more with higher upgrade
+	int theUpperBound = theUpgradeLevel * 10;
+	int thePitch = 100 + (gEngfuncs.pfnRandomLong(0, theUpperBound) - theUpperBound);
+
+	if (EV_IsLocal(idx))
+	{
+		// Add muzzle flash to current weapon model
+		if (theUpgradeLevel > 0)
+		{
+			EV_MuzzleFlash();
+		}
+
+		gEngfuncs.pEventAPI->EV_WeaponAnimation(args->iparam2, 2);
+	}
+
+	// General ejecting ammo if any
+	int shell = gEngfuncs.pEventAPI->EV_FindModelIndex(kTECEjectModel);
+	vec3_t ShellVelocity;
+	vec3_t ShellOrigin;
+
+	EV_GetDefaultShellInfo(args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4);
+
+	// Only eject brass when upgraded
+	//if(theUpgradeLevel > 0)
+	//{
+	//	VectorScale(ShellVelocity, theUpgradeLevel, ShellVelocity);
+	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL);
+	//}
+
+	// Play one of basic attack sounds
+	float theVolume = args->fparam1;
+	float theAttenuation = .8f + .3*theUpgradeLevel;
+
+	char* theSoundToPlay = kTECFireSound1;
+
+	gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, theSoundToPlay, theVolume, theAttenuation, 0, thePitch);
+
+	EV_GetGunPosition(args, vecSrc, origin);
+	VectorCopy(forward, vecAiming);
+
+	//EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, kHGRange, BULLET_PLAYER_MP5, 2, &tracerCount[idx-1] );
+	EV_HLDM_FireBulletsPlayer(idx, forward, right, up, 1, vecSrc, vecAiming, kTECRange, BULLET_PLAYER_357, theTracerFreq, &tracerCount[idx - 1], kTECSpread, args->iparam1);
+
+	// General x-punch axis
+	if (EV_IsLocal(idx))
+	{
+		// Multiply punch by upgrade level
+		//float theHalfSpread = (kHGXPunch/3.0f)*(theUpgradeLevel+1);
+
+		// Changed to ignore upgrade level
+		float theHalfSpread = (kTECXPunch / 3.0f);
+
+		if (theHalfSpread > 0.0f)
+		{
+			V_PunchAxis(0, gEngfuncs.pfnRandomFloat(-theHalfSpread, theHalfSpread));
+		}
+	}
+}
+
 void EV_SonicGun(struct event_args_s* args)
 {
     // What to do about this static member?
@@ -1030,7 +1121,15 @@ void EV_HeavyMachineGun(struct event_args_s* args)
 	VectorCopy( forward, vecAiming );
 	
 	//EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, kHMGRange, BULLET_PLAYER_357, theTracerLevel, &tracerCount[idx-1], theSpreadX, theSpreadY);
-	EV_HLDM_FireBulletsPlayer( idx, forward, right, up, 1, vecSrc, vecAiming, kHMGRange, BULLET_PLAYER_MP5, theTracerLevel, &tracerCount[idx-1], kHMGSpread, args->iparam1);
+	Vector testSpread = kHMGSpread;
+	//cl_entity_t* testPlayer = GetEntity(idx);
+	//physent_t* testPhys = GetPhysEntity(idx);
+	if (Length(velocity) < 10.0f) {
+		testSpread = VECTOR_CONE_5DEGREES;
+	}
+
+
+	EV_HLDM_FireBulletsPlayer( idx, forward, right, up, 1, vecSrc, vecAiming, kHMGRange, BULLET_PLAYER_MP5, theTracerLevel, &tracerCount[idx-1], testSpread, args->iparam1);
 	
 //	if(theUpgradeLevel > 1)
 //	{
@@ -1367,12 +1466,19 @@ void EV_SpitGun(struct event_args_s* inArgs)
 			theTempEntity->entity.curstate.framerate = 30;
 			theTempEntity->frameMax = 4;//theModel->numframes;
 			
+			//gorge spit moves faster from focus
+			int theIndex = inArgs->entindex;
+			cl_entity_t* thePlayer = GetEntity(theIndex);
+			float theFocusScalar = 1.0f;
+			theFocusScalar = AvHPlayerUpgrade::GetFocusDamageUpgrade(thePlayer->curstate.iuser4);
+			
+
 			// Temp entities interpret baseline origin as velocity.
 			Vector theBaseVelocity;
 			VectorScale(inArgs->velocity, kSpitParentVelocityScalar, theBaseVelocity);
 			
 			Vector theStartVelocity;
-			VectorMA(theBaseVelocity, kSpitVelocity, forward, theStartVelocity);
+			VectorMA(theBaseVelocity, kSpitVelocity*theFocusScalar, forward, theStartVelocity);
 			
 			VectorCopy(theStartVelocity, theTempEntity->entity.baseline.origin);
 			VectorCopy(theStartVelocity, theTempEntity->entity.baseline.velocity);
@@ -2720,6 +2826,13 @@ void EV_DivineWind(struct event_args_s* inArgs)
 	cl_entity_t* thePlayer = GetEntity(inArgs->entindex);
 
 	float theSilenceVolumeFactor = AvHPlayerUpgrade::GetSilenceVolumeLevel((AvHUser3)thePlayer->curstate.iuser3, thePlayer->curstate.iuser4);
+
+	#ifdef AVH_CLIENT
+		if (CVAR_GET_FLOAT("cl_allowsilence") == 0) {
+			theSilenceVolumeFactor = 1.0f;
+		}
+	#endif
+
 	int thePitch = gEngfuncs.pfnRandomLong(75, 150);
 
 	gEngfuncs.pEventAPI->EV_PlaySound(inArgs->entindex, inArgs->origin, CHAN_AUTO, kDivineWindFireSound, theSilenceVolumeFactor, ATTN_IDLE, 0, thePitch);

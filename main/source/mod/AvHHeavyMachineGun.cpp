@@ -74,6 +74,7 @@
 #include "../common/vector_util.h"
 #include "AvHMarineWeapons.h"
 #include "../dlls/util.h"
+#include "AvHServerVariables.h"
 
 LINK_ENTITY_TO_CLASS(kwHeavyMachineGun, AvHHeavyMachineGun);
 void V_PunchAxis( int axis, float punch );
@@ -106,11 +107,28 @@ char* AvHHeavyMachineGun::GetDeploySound() const
 
 float AvHHeavyMachineGun::GetDeployTime() const
 {
-	return .6f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 0.3f;
+	}
+	else {
+		return 0.7f;
+	}
+
+	//return .6f;
 }
 
 int AvHHeavyMachineGun::GetDamageType() const
 {
+#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		return NS_DMG_NORMAL;
+	}
+#endif
 	return NS_DMG_PIERCING;
 }
 
@@ -145,15 +163,22 @@ int	AvHHeavyMachineGun::GetIdleAnimation() const
 
 void AvHHeavyMachineGun::FireProjectiles(void)
 {
+
+	//I tried reimplementing the slow on firing the HMG but it's just so janky I can see why they removed it
+	
 	// Assumes we're on the ground
-//	const float kSlowDownScalar = .2f;
-//	vec3_t theXYVelocity;
-//	VectorCopy(this->m_pPlayer->pev->velocity, theXYVelocity);
+	const float kSlowDownScalar = .9f;
+	vec3_t theXYVelocity;
+	VectorCopy(this->m_pPlayer->pev->velocity, theXYVelocity);
 //
-//	VectorScale(theXYVelocity, kSlowDownScalar, theXYVelocity);
-//	theXYVelocity.z = this->m_pPlayer->pev->velocity.z;
+	VectorScale(theXYVelocity, kSlowDownScalar, theXYVelocity);
+	theXYVelocity.z = this->m_pPlayer->pev->velocity.z;
 //
-//	VectorCopy(theXYVelocity, this->m_pPlayer->pev->velocity);
+	VectorCopy(theXYVelocity, this->m_pPlayer->pev->velocity);
+
+
+	//VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
+	
 
 	AvHMarineWeapon::FireProjectiles();
 }
@@ -170,6 +195,29 @@ char* AvHHeavyMachineGun::GetPlayerModel() const
 
 Vector AvHHeavyMachineGun::GetProjectileSpread() const
 {
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+	vec3_t testVel = this->m_pPlayer->pev->velocity;
+
+
+	
+	/*
+	//if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	if (Length(testVel) < 10.0f)
+	{
+
+#ifdef AVH_SERVER
+		ALERT(at_console, "SERVER HMG SPREAD PROC \n");
+#endif
+#ifdef AVH_CLIENT
+		ALERT(at_console, "CLIENT HMG SPREAD PROC \n");
+#endif
+
+		return VECTOR_CONE_5DEGREES;
+	}
+	*/
+
+
+
 	return kHMGSpread;
 }
 
@@ -190,7 +238,18 @@ int	AvHHeavyMachineGun::GetReloadAnimation() const
 
 float AvHHeavyMachineGun::GetReloadTime(void) const
 {
-	return 6.3f;
+	int theUser4 = this->m_pPlayer->pev->iuser4;
+
+	// Speed attack if in range of primal scream
+	if (GetHasUpgrade(theUser4, MASK_BUFFED))
+	{
+		return 4.7f;
+	}
+	else {
+		return 6.3f;
+	}
+
+	//return 6.3f;
 }
 
 int	AvHHeavyMachineGun::GetShootAnimation() const
@@ -244,6 +303,13 @@ void AvHHeavyMachineGun::Spawn()
 
 	this->m_iId = AVH_WEAPON_HMG;
 	this->m_iDefaultAmmo = BALANCE_VAR(kHMGMaxClip);
+
+	#ifdef AVH_SERVER
+	if (avh_balance_mvm.value == 1)
+	{
+		this->mDamage *= 0.85f; //15% less damage
+	}
+	#endif
 
     // Set our class name
 	this->pev->classname = MAKE_STRING(kwsHeavyMachineGun);
