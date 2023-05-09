@@ -352,8 +352,8 @@ void AvHBaseBuildable::ConstructWeld(CBaseEntity *pActivator)
 
 
 
-					//special x2 fast build speed with welder
-					theBuildTime /= 1.5;
+					//special x30% fast build speed with welder
+					theBuildTime /= 1.3;
 
 					if (GetHasUpgrade(thePlayer->pev->iuser4, MASK_BUFFED) && (thePlayer->pev->iuser3 == AVH_USER3_MARINE_PLAYER)) {
 						theBuildTime /= 2;
