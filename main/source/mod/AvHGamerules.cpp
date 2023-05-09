@@ -575,13 +575,7 @@ void AvHGamerules::RewardPlayerForKill(AvHPlayer* inPlayer, CBaseEntity* inTarge
 						int enemyTeamRes = theEnemyTeamPointer->GetTotalResourcesGathered();
 						int maxDiffChange = 1;
 
-						if (enemyTeamRes > ourTeamRes + 50) {
-							maxDiffChange = 5;
-						}
-						else if (enemyTeamRes > ourTeamRes + 40) {
-							maxDiffChange = 4;
-						}
-						else if (enemyTeamRes > ourTeamRes + 30) {
+						if (enemyTeamRes > ourTeamRes + 40) {
 							maxDiffChange = 3;
 						}
 						else if (enemyTeamRes > ourTeamRes) {
