@@ -209,18 +209,65 @@ void CHud :: Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 
-    CVAR_CREATE( "cl_showspeed", "0", 0);
+    CVAR_CREATE("cl_showspeed", "0", 0);
+	CVAR_CREATE("cl_showdigest", "1", 0);
+	CVAR_CREATE("cl_showegg", "1", 0);
+	CVAR_CREATE("cl_commscroll", "0", 0); //above 0 makes commander scrolling 100% closer to the edge of your screen (0 - 1) float range
+	CVAR_CREATE("cl_commspeed", "1000", 0);
+	CVAR_CREATE("cl_showhivemarine", "0", 0);
+	CVAR_CREATE("cl_scriptbypass", "1", 0);
+	CVAR_CREATE("cl_freeradar", "0", 0);
+	CVAR_CREATE("cl_freetab", "0", 0);
+#ifndef AVH_NO_CHEESE
+	CVAR_CREATE("cl_showcloak", "0", 0);
+#endif
+	CVAR_CREATE("cl_showups", "0", 0); //1 - all player tags show their upgrades (race specific), 2 = only enemy players
+	CVAR_CREATE("cl_showparasite", "0", 0); //1 - teammate tag will say "Parasited"
+
+	CVAR_CREATE("cl_allowsilence", "1", 0);
+	CVAR_CREATE("cl_showpos", "0", 0);
+	CVAR_CREATE("cl_showchatpos", "0", 0); //setting this to 1 makes it so enemy chat will reveal their nearest info_location
+	//CVAR_CREATE("cl_showcount", "0", 0);
+	CVAR_CREATE("cl_showrender", "0", 0);
+	//CVAR_CREATE("cl_backwardlag", "0", 0); //setting this to 1 uses the old backwards movement for client side
+	//CVAR_CREATE("cl_showweird", "0", 0);
+	CVAR_CREATE("cl_showdamage", "1", 0);
+#ifndef AVH_NO_CHEESE
+	CVAR_CREATE("cl_showspotted", "0", 0);
+	CVAR_CREATE("cl_showdetected", "0", 0);
+#endif
+	CVAR_CREATE("cl_autoswap", "0", FCVAR_ARCHIVE | FCVAR_USERINFO);
+	
+	CVAR_CREATE("cl_showbright", "0", FCVAR_ARCHIVE);
+
 	CVAR_CREATE( kvLabelMaps, "3", FCVAR_ARCHIVE);
 	CVAR_CREATE( kvGammaRamp, "0", FCVAR_ARCHIVE);
 	CVAR_CREATE( kvCustomCrosshair, "1", FCVAR_ARCHIVE);
-	CVAR_CREATE( kvHudMapZoom, "3", FCVAR_ARCHIVE);
+	CVAR_CREATE( kvHudMapZoom, "4", FCVAR_ARCHIVE);
 	CVAR_CREATE( kvLabelHivesight, "1", FCVAR_ARCHIVE);
 	CVAR_CREATE( "cl_iconr", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE( "cl_icong", "149", FCVAR_ARCHIVE);
 	CVAR_CREATE( "cl_iconb", "221", FCVAR_ARCHIVE);
 
-	CVAR_CREATE("cl_autoswap", "0", FCVAR_ARCHIVE | FCVAR_USERINFO);
-	
+
+	CVAR_CREATE("cl_showminimapname", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("cl_showminimapnamescomm", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvMinimapNameRed, "255", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvMinimapNameGreen, "255", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvMinimapNameBlue, "255", FCVAR_ARCHIVE);
+
+	CVAR_CREATE(kvMarineHudRed, "0", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvMarineHudGreen, "153", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvMarineHudBlue, "255", FCVAR_ARCHIVE);
+
+	CVAR_CREATE(kvAlienHudRed, "255", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvAlienHudGreen, "160", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvAlienHudBlue, "0", FCVAR_ARCHIVE);
+
+	CVAR_CREATE(kvCommSelectionHudRed, "0", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvCommSelectionHudGreen, "153", FCVAR_ARCHIVE);
+	CVAR_CREATE(kvCommSelectionHudBlue, "255", FCVAR_ARCHIVE);
+
 	m_pSpriteList = NULL;
 
 	// Clear any old HUD list
