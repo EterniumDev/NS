@@ -6281,7 +6281,9 @@ void AvHPlayer::InternalAlienUpgradesRegenerationThink()
 
 	// Do we have the redemption?
     int theRedemptionLevel = AvHGetAlienUpgradeLevel(this->pev->iuser4, MASK_UPGRADE_3);
-    if(theRedemptionLevel > 0)
+
+	//Check if VAMPIRISM is not replacing REDEMPTION
+    if(theRedemptionLevel > 0 && avh_modvampirism.value == 0)
     {
         // Is the player really hurting?
         int theMaxHealth = AvHPlayerUpgrade::GetMaxHealth(this->pev->iuser4, (AvHUser3)this->pev->iuser3, this->GetExperienceLevel());
@@ -9577,12 +9579,21 @@ int AvHPlayer::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 		if (atkPlayer)
 		{
 			//vampirism factor
-			if (avh_vampire_factor.value != 0 || (avh_fadedgamemode.value == 1 && atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4))
+			if (avh_vampire_factor.value != 0 || (avh_fadedgamemode.value == 1 && atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4) || (avh_modvampirism.value != 0 && GetHasUpgrade(atkPlayer->pev->iuser4, MASK_UPGRADE_3)))
 			{
 				float vamp = 0.2f;
 				if (avh_vampire_factor.value > 0) {
 					vamp = avh_vampire_factor.value;
 				}
+
+				//do we have REDEMPTION and are an Alien currently AND vampirism is turned on
+				if (avh_modvampirism.value != 0 && GetHasUpgrade(atkPlayer->pev->iuser4, MASK_UPGRADE_3) && (atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER1 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER2 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER3 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5))
+				{
+					int theVampirismLevel = AvHGetAlienUpgradeLevel(this->pev->iuser4, MASK_UPGRADE_3);
+					vamp = 0.0f + ((float)theVampirismLevel*0.1f);
+
+				}
+
 				float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(atkPlayer->pev->iuser4, atkPlayer->GetUser3(), atkPlayer->GetExperienceLevel());
 				if (atkPlayer->pev->health < thePlayerMaxHealth)
 				{
