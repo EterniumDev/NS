@@ -1005,63 +1005,87 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if (FStrEq(pcmd, "forcerr"))
 	{
-	if (theAvHPlayer && (theIsServerOp || theIsPlaytest))
-	{
-		
-		/*
-		if (theAvHPlayer)
+		if (theAvHPlayer && (theIsServerOp || theIsPlaytest || this->GetCheatsEnabled()))
 		{
-			if (!(theAvHPlayer->pev->flags & FL_FAKECLIENT))
+		
+			/*
+			if (theAvHPlayer)
 			{
-				if (!theAvHPlayer->GetIsBeingDigested())
+				if (!(theAvHPlayer->pev->flags & FL_FAKECLIENT))
 				{
-					theAvHPlayer->SetPlayMode(PLAYMODE_READYROOM, true);
-				}
+					if (!theAvHPlayer->GetIsBeingDigested())
+					{
+						theAvHPlayer->SetPlayMode(PLAYMODE_READYROOM, true);
+					}
 				
+				}
 			}
+			*/
+
+			// Loop through players, find the closest player to inPlayerOrigin, to see which player is being predicted.  Is there a better way?
+			AvHPlayer* theClosestPlayer = NULL;
+			float theClosestDistance = 10000;
+
+			FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
+				theEntity->SetPlayMode(PLAYMODE_READYROOM, true);
+			END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
+			theSuccess = true;
+
 		}
-		*/
-
-		// Loop through players, find the closest player to inPlayerOrigin, to see which player is being predicted.  Is there a better way?
-		AvHPlayer* theClosestPlayer = NULL;
-		float theClosestDistance = 10000;
-
-		FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
-			theEntity->SetPlayMode(PLAYMODE_READYROOM, true);
-		END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
-		theSuccess = true;
-
-	}
 	}
 	else if (FStrEq(pcmd, "forceasgn"))
 	{
-	if (theAvHPlayer && (theIsServerOp || theIsPlaytest))
-	{
-
-		/*
-		if (theAvHPlayer)
+		if (theAvHPlayer && (theIsServerOp || theIsPlaytest || this->GetCheatsEnabled()))
 		{
-			if (!(theAvHPlayer->pev->flags & FL_FAKECLIENT))
+
+			/*
+			if (theAvHPlayer)
 			{
-				if (!theAvHPlayer->GetIsBeingDigested())
+				if (!(theAvHPlayer->pev->flags & FL_FAKECLIENT))
 				{
-					theAvHPlayer->SetPlayMode(PLAYMODE_READYROOM, true);
+					if (!theAvHPlayer->GetIsBeingDigested())
+					{
+						theAvHPlayer->SetPlayMode(PLAYMODE_READYROOM, true);
+					}
+
 				}
-
 			}
+			*/
+
+			// Loop through players, find the closest player to inPlayerOrigin, to see which player is being predicted.  Is there a better way?
+			AvHPlayer* theClosestPlayer = NULL;
+			float theClosestDistance = 10000;
+
+			FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
+				this->AutoAssignPlayer(theEntity);
+			END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
+				theSuccess = true;
+
 		}
-		*/
-
-		// Loop through players, find the closest player to inPlayerOrigin, to see which player is being predicted.  Is there a better way?
-		AvHPlayer* theClosestPlayer = NULL;
-		float theClosestDistance = 10000;
-
-		FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
-			this->AutoAssignPlayer(theEntity);
-		END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
-			theSuccess = true;
-
 	}
+	else if (FStrEq(pcmd, "forceresign"))
+	{
+		if (theAvHPlayer && (theIsServerOp || theIsPlaytest || this->GetCheatsEnabled()))
+		{
+			FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
+				if (theEntity && theEntity->GetIsInTopDownMode())
+				{
+					theEntity->SetUser3(AVH_USER3_MARINE_PLAYER);
+					theSuccess = true;
+				}
+				//this->AutoAssignPlayer(theEntity);
+			END_FOR_ALL_ENTITIES(kAvHPlayerClassName)
+
+			if (theSuccess)
+			{
+				UTIL_SayText("Force Resign was successful", theAvHPlayer);
+			}
+			else
+			{
+				UTIL_SayText("Force Resign was unsuccessful", theAvHPlayer);
+			}
+
+		}
 	}
     else if(FStrEq(pcmd, "votemap"))
     {
