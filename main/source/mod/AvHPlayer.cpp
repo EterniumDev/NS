@@ -2521,19 +2521,19 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                 break;
         
             case ALIEN_LIFEFORM_ONE:
-                if(theIsAlien && theGameStarted && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER1))
+                if(theIsAlien && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER1))
                 {
                     thePurchaseAllowed = true;
                 }
                 break;
             case ALIEN_LIFEFORM_TWO:
-                if(theIsAlien && theGameStarted && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER2))
+                if(theIsAlien && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER2))
                 {
                     thePurchaseAllowed = true;
                 }
                 break;
             case ALIEN_LIFEFORM_THREE:
-                if(theIsAlien && theGameStarted && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER3))
+                if(theIsAlien && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER3))
                 {
     //              if(theNumHives >= 1)
     //              {
@@ -2546,7 +2546,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                 }
                 break;
             case ALIEN_LIFEFORM_FOUR:
-                if(theIsAlien && theGameStarted && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER4))
+                if(theIsAlien && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER4))
                 {
     //              if(theNumHives >= 2)
     //              {
@@ -2559,7 +2559,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                 }
                 break;
             case ALIEN_LIFEFORM_FIVE:
-                if(theIsAlien && theGameStarted && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER5))
+                if(theIsAlien && (this->GetUser3() != AVH_USER3_ALIEN_PLAYER5))
                 {
     //              if(theNumHives >= 3)
     //              {
@@ -2575,10 +2575,14 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
             case ALIEN_BUILD_RESOURCES:
             case ALIEN_BUILD_HIVE:
 			case ALIEN_BUILD_OFFENSE_CHAMBER:
-                if(theIsBuilder)
+                if(theIsBuilder && theGameStarted)
                 {
                     thePurchaseAllowed = true;
                 }
+				else if (theIsBuilder && !theGameStarted)
+				{
+					theErrorMessage = kMustBeStarted;
+				}
                 else
                 {
                     theErrorMessage = kMustBeBuilder;
@@ -2609,7 +2613,7 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
             case ALIEN_BUILD_DEFENSE_CHAMBER:
             case ALIEN_BUILD_MOVEMENT_CHAMBER:
             case ALIEN_BUILD_SENSORY_CHAMBER:
-                if(theIsBuilder)
+                if(theIsBuilder && theGameStarted)
                 {
                     FOR_ALL_ENTITIES(kesTeamHive, AvHHive*)
                         if(theEntity && theEntity->GetIsActive() && (theEntity->pev->team == this->pev->team))
@@ -2646,6 +2650,10 @@ bool AvHPlayer::GetPurchaseAllowed(AvHMessageID inUpgrade, int& outCost, string*
                         }
                     }
                 }
+				else if (theIsBuilder && !theGameStarted)
+				{
+					theErrorMessage = kMustBeStarted;
+				}
                 else
                 {
                     theErrorMessage = kMustBeBuilder;

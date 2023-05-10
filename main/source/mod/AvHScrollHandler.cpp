@@ -65,6 +65,7 @@ void AvHScrollHandler::ClearScrollHeight()
 	sScrollZ = 0;
 }
 
+/*
 void AvHScrollHandler::KeyScrollLeft()
 {
 	if ( sKeyDown < 0 ) sKeyDown=0;
@@ -120,6 +121,7 @@ void AvHScrollHandler::KeyScrollRightStop()
 	if ( sKeyDown < 0 ) sKeyDown=0;
 	sScrollX=0;
 }
+*/
 
 
 void AvHScrollHandler::ScrollLeft()

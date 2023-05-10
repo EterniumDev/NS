@@ -751,17 +751,17 @@ void AvHHud::AddCommands()
 	gEngfuncs.pfnAddCommand ("-mousepopupmenu", AvHPieMenuHandler::ClosePieMenu);
 	
 	// Add scrolling commands
-    gEngfuncs.pfnAddCommand ("+scrollup", AvHScrollHandler::KeyScrollUp);
-    gEngfuncs.pfnAddCommand ("-scrollup", AvHScrollHandler::KeyScrollUpStop);
-	
-    gEngfuncs.pfnAddCommand ("+scrolldown", AvHScrollHandler::KeyScrollDown);
-    gEngfuncs.pfnAddCommand ("-scrolldown", AvHScrollHandler::KeyScrollDownStop);
-	
-    gEngfuncs.pfnAddCommand ("+scrollleft", AvHScrollHandler::KeyScrollLeft);
-    gEngfuncs.pfnAddCommand ("-scrollleft", AvHScrollHandler::KeyScrollLeftStop);
-	
-    gEngfuncs.pfnAddCommand ("+scrollright", AvHScrollHandler::KeyScrollRight);
-    gEngfuncs.pfnAddCommand ("-scrollright", AvHScrollHandler::KeyScrollRightStop);
+    //gEngfuncs.pfnAddCommand ("+scrollup", AvHScrollHandler::KeyScrollUp);
+    //gEngfuncs.pfnAddCommand ("-scrollup", AvHScrollHandler::KeyScrollUpStop);
+	//
+    //gEngfuncs.pfnAddCommand ("+scrolldown", AvHScrollHandler::KeyScrollDown);
+    //gEngfuncs.pfnAddCommand ("-scrolldown", AvHScrollHandler::KeyScrollDownStop);
+	//
+    //gEngfuncs.pfnAddCommand ("+scrollleft", AvHScrollHandler::KeyScrollLeft);
+    //gEngfuncs.pfnAddCommand ("-scrollleft", AvHScrollHandler::KeyScrollLeftStop);
+	//
+    //gEngfuncs.pfnAddCommand ("+scrollright", AvHScrollHandler::KeyScrollRight);
+    //gEngfuncs.pfnAddCommand ("-scrollright", AvHScrollHandler::KeyScrollRightStop);
 
     gEngfuncs.pfnAddCommand ("toggleeditps", AvHParticleEditorHandler::ToggleEdit);
 
@@ -2251,7 +2251,7 @@ void AvHHud::ResetComponentsForUser3()
 				{
 					this->mPieMenuControl = kSoldierCombatMenu;
 				}
-				else if(theIsNSMode)
+				else /* if(theIsNSMode) */
 				{
 					this->mPieMenuControl = kSoldierMenu;
 				}
@@ -2297,7 +2297,7 @@ void AvHHud::ResetComponentsForUser3()
 				{
 					this->mPieMenuControl = kAlienCombatMenu;
 				}
-				else if(theIsNSMode)
+				else /*if(theIsNSMode) */
 				{
 					this->mPieMenuControl = kAlienMenu;
 				}

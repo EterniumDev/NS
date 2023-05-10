@@ -4635,6 +4635,7 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 {
 	// This is point cost or energy cost in NS, or number of levels in Combat
 	int	cost = 0;
+	bool theGameStarted = GetGameRules()->GetGameStarted();
 
 	if(this->GetIsCombatMode())
     {
@@ -4686,6 +4687,18 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 			break;
         }
     }
+	else if (!theGameStarted)
+	{
+		switch (inMessageID)
+		{
+		case ALIEN_LIFEFORM_TWO:
+		case ALIEN_LIFEFORM_THREE:
+		case ALIEN_LIFEFORM_FOUR:
+		case ALIEN_LIFEFORM_FIVE:
+			cost = 0;
+			break;
+		}
+	}
     else
 	{
 		switch(inMessageID)

@@ -266,28 +266,34 @@ float AvHMUGetWalkSpeedFactor(AvHUser3 inUser3)
 	{
 	case AVH_USER3_MARINE_PLAYER:
 		//theMoveSpeed = .095f;
-		theMoveSpeed = .238f;
+		//theMoveSpeed = .238f;
+		theMoveSpeed = .095f;
 		break;
 	case AVH_USER3_ALIEN_PLAYER1:
 		//theMoveSpeed = .04f;
 		//theMoveSpeed = .14f;
-		theMoveSpeed = .25f;
+		//theMoveSpeed = .25f;
+		theMoveSpeed = .14f;
 		break;
 	case AVH_USER3_ALIEN_PLAYER2:
 		//theMoveSpeed = .08f;
-		theMoveSpeed = .2f;
+		//theMoveSpeed = .2f;
+		theMoveSpeed = .08f;
 		break;
 	case AVH_USER3_ALIEN_PLAYER3:
 		//theMoveSpeed = .11f;
-		theMoveSpeed = .275f;
+		//theMoveSpeed = .275f;
+		theMoveSpeed = .11f;
 		break;
 	case AVH_USER3_ALIEN_PLAYER4:
 		//theMoveSpeed = .09f;
-		theMoveSpeed = .225f;
+		//theMoveSpeed = .225f;
+		theMoveSpeed = .09f;
 		break;
 	case AVH_USER3_ALIEN_PLAYER5:
 		//theMoveSpeed = .09f;
-		theMoveSpeed = .225f;
+		//theMoveSpeed = .225f;
+		theMoveSpeed = .09f;
 		break;
 	}
 	
