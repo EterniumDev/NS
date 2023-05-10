@@ -10387,9 +10387,9 @@ void AvHPlayer::UpdateSoundNames()
         {
             const char* theSoundNameToSend = theSoundNameList[theNumberOfSoundsOnClient].c_str();
             //if(GetGameRules()->GetIsTesting())
-            {
-                this->SendMessage(theSoundNameToSend);
-            }
+            //{
+            //    this->SendMessage(theSoundNameToSend);
+            //}
             ASSERT( strlen(theSoundNameToSend) < 50);
 			NetMsg_SetSoundNames( this->pev, false, theSoundNameToSend);
             
