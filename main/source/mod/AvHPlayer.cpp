@@ -2226,7 +2226,11 @@ int AvHPlayer::GetPointValue(void) const
     }
     else if(this->GetIsMarine())
     {
-        if(this->GetHasJetpack())
+		if (this->GetHasJetpack() && this->GetHasHeavyArmor()) //sv_heavyjp allows HeavyJetpackers
+		{
+			thePointValue = 5;
+		}
+        else if(this->GetHasJetpack())
         {
             thePointValue = BALANCE_VAR(kScoringKillPlayerJetpack);
         }

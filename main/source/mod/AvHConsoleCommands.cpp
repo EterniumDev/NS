@@ -263,7 +263,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	theIsDebug = true;
 	#endif
 
-	if(theAvHPlayer)
+	if (theAvHPlayer)
 	{
 		theTeam = theAvHPlayer->GetTeamPointer();
 		theIsDeveloper = theAvHPlayer->GetIsMember(PLAYERAUTH_DEVELOPER);
