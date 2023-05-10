@@ -208,9 +208,11 @@ std::string ChatPanel::UTF8toASCII(unsigned char* multibyte)
 	return ASCIIValue;
 }
 
-void ChatPanel::KeyEvent()
+void ChatPanel::KeyEvent(int iKeydown)
 {
 	const Uint8 *state = SDL_GetKeyboardState(NULL);	
+	bool bTextinput;
+	bTextinput = false;
 
 	while (SDL_PollEvent(&event)) {
 
@@ -220,6 +222,7 @@ void ChatPanel::KeyEvent()
 			buffer = (unsigned char*)event.text.text;
 
 			mText += UTF8toASCII(buffer);
+			bTextinput = true;
 		}
 
 	}
@@ -230,10 +233,13 @@ void ChatPanel::KeyEvent()
 	}
 	if (state[SDL_SCANCODE_BACKSPACE])
 	{
-		if (mText.length() > 0)
+		if (iKeydown && !bTextinput)
 		{
-			mText.erase(mText.length() - 1, mText.length());
-		}		
+			if (mText.length() > 0)
+			{
+				mText.erase(mText.length() - 1, mText.length());
+			}
+		}
 	}
 	if (state[SDL_SCANCODE_RETURN])
 	{
