@@ -1319,9 +1319,8 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 				//do we have REDEMPTION and are an Alien currently AND vampirism is turned on
 				if (avh_modvampirism.value != 0 && GetHasUpgrade(atkPlayer->pev->iuser4, MASK_UPGRADE_3) && (atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER1 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER2 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER3 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5))
 				{
-					int theVampirismLevel = AvHGetAlienUpgradeLevel(this->pev->iuser4, MASK_UPGRADE_3);
-					vamp = 0.0f + ((float)theVampirismLevel*0.1f);
-					
+					int theVampirismLevel = AvHGetAlienUpgradeLevel(atkPlayer->pev->iuser4, MASK_UPGRADE_3);
+					vamp = 0.0f + ((float)theVampirismLevel*0.3f);
 				}
 
 				float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(atkPlayer->pev->iuser4, atkPlayer->GetUser3(), atkPlayer->GetExperienceLevel());
