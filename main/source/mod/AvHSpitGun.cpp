@@ -231,8 +231,11 @@ void AvHSpitGun::FireProjectiles(void)
 	float theFocusScalar = 1.0f;
 	if (AvHSHUGetIsWeaponFocusable(AvHWeaponID(this->m_iId)))
 	{
-		theFocusScalar = AvHPlayerUpgrade::GetFocusDamageUpgrade(this->m_pPlayer->pev->iuser4);
+		int theFocusLevel = AvHGetAlienUpgradeLevel(this->m_pPlayer->pev->iuser4, MASK_UPGRADE_8);
+		theFocusScalar = 1.0f + ((float)theFocusLevel * 0.25f);
 	}
+
+	
 
 
 	// This needs to be the same as in EV_SpitGun
@@ -252,6 +255,12 @@ void AvHSpitGun::FireProjectiles(void)
 
 	// Set amount of damage it will do
     
+	if (theFocusScalar > 1.0f)
+	{ //gain 50/100/150% damage per up of focus instead of 33/66/99 for gorge spit
+		theFocusScalar -= 1.0f;
+		theFocusScalar *= 1.5f;
+		theFocusScalar += 1.0f;
+	}
 
 	float theDamage = this->mDamage*AvHPlayerUpgrade::GetAlienRangedDamageUpgrade(this->m_pPlayer->pev->iuser4)*theFocusScalar;
 	theSpit->SetDamage(theDamage);
