@@ -1242,12 +1242,12 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 	{
 		inDamage = 0.0f;
 	}
-	if (inBitsDamageType & DMG_SLASH)
-	{
-		float theLethality = 1 + (1 - (this->pev->health / this->pev->max_health));
-		inDamage = inDamage * theLethality;
-		ALERT(at_console, "LETHALITY PROC BUILDING bonus damage percent=%f \n", theLethality);
-	}
+	//if (inBitsDamageType & DMG_SLASH)
+	//{
+	//	float theLethality = 1 + (1 - (this->pev->health / this->pev->max_health));
+	//	inDamage = inDamage * theLethality;
+	//	ALERT(at_console, "LETHALITY PROC BUILDING bonus damage percent=%f \n", theLethality);
+	//}
 	//Knife has LETHALITY damage meaning it's more effective against lower health targets
 	//
 

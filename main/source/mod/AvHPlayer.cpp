@@ -9472,14 +9472,14 @@ int AvHPlayer::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 		
 
-		if (bitsDamageType & DMG_SLASH)
-		{
+		//if (bitsDamageType & DMG_SLASH)
+		//{
 			//if (this->pev->health / this->pev->max_health < 0.5f) {
-				float theLethality = 1 + (1 - (this->pev->health / this->pev->max_health));
-				flDamage = flDamage * theLethality;
-				ALERT(at_console, "LETHALITY PROC bonus damage percent=%f \n",theLethality);
+			//	float theLethality = 1 + (1 - (this->pev->health / this->pev->max_health));
+			//	flDamage = flDamage * theLethality;
+			//	ALERT(at_console, "LETHALITY PROC bonus damage percent=%f \n",theLethality);
 			//}
-		}
+		//}
 		//Knife has LETHALITY damage meaning it's more effective against lower health targets
 		//
 

@@ -283,11 +283,12 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&avh_autoswap);
 	CVAR_REGISTER (&avh_killrewards);
 	CVAR_REGISTER (&avh_turretupgradesound);
-	CVAR_REGISTER (&avh_modrtupgrade);
-	CVAR_REGISTER (&avh_modnuke);
-	CVAR_REGISTER (&avh_modipelectrify);
-	CVAR_REGISTER (&avh_modmotiontracking);
-	CVAR_REGISTER (&avh_modvampirism);
+	CVAR_REGISTER(&avh_modrtupgrade);
+	CVAR_REGISTER(&avh_modnuke);
+	CVAR_REGISTER(&avh_modipelectrify);
+	CVAR_REGISTER(&avh_modmotiontracking);
+	CVAR_REGISTER(&avh_modvampirism);
+
 
 	CVAR_REGISTER(&avh_infinite_ammo);
 	CVAR_REGISTER(&avh_infinite_energy);
