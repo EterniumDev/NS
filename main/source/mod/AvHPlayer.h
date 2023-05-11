@@ -207,6 +207,7 @@ public:
 	float				mTimeGestationStarted;
 	int					mAutoSwapValue; //added by alien for cl_autoswap
 	bool				UpdatedCosts;
+	bool				isLocalServerOwner;
 
 	void			AddDebugEnemyBlip(float inX, float inY, float inZ);
 	void			PrintWeaponListToClient(CBaseEntity *theAvHPlayer);

@@ -257,6 +257,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	bool		theIsPlaytest = false;
 	bool		theReportPlayer = false;
 	bool		theIsDedicatedServer = false;
+	bool		theIsLocalServerOwner = false;
 	bool		theIsDebug = false;
 
 	#ifdef DEBUG
@@ -265,6 +266,19 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 
 	if (theAvHPlayer)
 	{
+		//TODO: if the player name matches a CVAR set "ServerLocalName" then that means this is the server's local name and is allowed to use commands
+		//theAvHPlayer->SendMessage(theAvHPlayer->GetPlayerName().c_str());
+		//if (theAvHPlayer->GetPlayerName() == "")
+		if (theAvHPlayer->isLocalServerOwner)
+		{
+			theIsLocalServerOwner = true;
+		}
+		else
+		{
+			//everybody is server owner for now
+			theIsLocalServerOwner = true;
+		}
+
 		theTeam = theAvHPlayer->GetTeamPointer();
 		theIsDeveloper = theAvHPlayer->GetIsMember(PLAYERAUTH_DEVELOPER);
 		theIsGuide = theAvHPlayer->GetIsMember(PLAYERAUTH_GUIDE);
@@ -381,7 +395,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if(FStrEq(pcmd, kcSwitch))
 	{
-		if(this->GetCheatsEnabled() || theIsPlaytest)
+		if(this->GetCheatsEnabled() || theIsPlaytest || theIsLocalServerOwner)
 		{
 			AvHTeamNumber thePlayerTeam = theAvHPlayer->GetTeam();
 			if(thePlayerTeam != TEAM_IND)
@@ -441,7 +455,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if(FStrEq(pcmd, kcRestartRound) || FStrEq(pcmd, kcRestart))
 	{
-		if(!theAvHPlayer || theIsServerOp || theIsPlaytest || theIsDedicatedServer || theIsDebug || this->GetCheatsEnabled())
+		if(!theAvHPlayer || theIsServerOp || theIsPlaytest || theIsDedicatedServer || theIsDebug || this->GetCheatsEnabled() || theIsLocalServerOwner)
 		{
             if(theAvHPlayer)
             {
@@ -513,7 +527,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if(FStrEq(pcmd, kcNSChangeLevel))
 	{
-		if(theIsServerOp || theIsPlaytest)
+		if(theIsServerOp || theIsPlaytest || theIsLocalServerOwner)
 		{
 			char theLevelName[1024];
 			if(sscanf(CMD_ARGV(1), "%s", theLevelName) == 1)
@@ -777,7 +791,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if (FStrEq(pcmd, "setviewheight"))
 	{
-	if (theAvHPlayer && (theIsServerOp || (theAvHPlayer->GetIsInTopDownMode(false) == true) || theIsPlaytest || this->GetCheatsEnabled()))
+	if (theAvHPlayer && (theIsServerOp || theIsLocalServerOwner || (theAvHPlayer->GetIsInTopDownMode(false) == true) || theIsPlaytest || this->GetCheatsEnabled()))
 	{
 		float thenewheight = 0.0f;
 		if (sscanf(CMD_ARGV(1), "%f", &thenewheight) == 1)
@@ -1005,7 +1019,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if (FStrEq(pcmd, "forcerr"))
 	{
-		if (theAvHPlayer && (theIsServerOp || theIsPlaytest || this->GetCheatsEnabled()))
+		if (theAvHPlayer && (theIsServerOp || theIsLocalServerOwner || theIsPlaytest || this->GetCheatsEnabled()))
 		{
 		
 			/*
@@ -1035,7 +1049,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if (FStrEq(pcmd, "forceasgn"))
 	{
-		if (theAvHPlayer && (theIsServerOp || theIsPlaytest || this->GetCheatsEnabled()))
+		if (theAvHPlayer && (theIsServerOp || theIsLocalServerOwner || theIsPlaytest || this->GetCheatsEnabled()))
 		{
 
 			/*
@@ -1065,7 +1079,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if (FStrEq(pcmd, "forceresign"))
 	{
-		if (theAvHPlayer && (theIsServerOp || theIsPlaytest || this->GetCheatsEnabled()))
+		if (theAvHPlayer && (theIsServerOp || theIsLocalServerOwner || theIsPlaytest || this->GetCheatsEnabled()))
 		{
 			FOR_ALL_ENTITIES(kAvHPlayerClassName, AvHPlayer*)
 				if (theEntity && theEntity->GetIsInTopDownMode())

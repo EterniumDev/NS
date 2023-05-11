@@ -923,6 +923,7 @@ BOOL AvHGamerules::ClientConnected( edict_t *pEntity, const char *pszName, const
 	theAllowedToConnect = this->GetIsClientAuthorizedToPlay(pEntity, true, false);
 	#endif
 
+
 	theAllowedToConnect = true;
 	if(theAllowedToConnect)
 	{
@@ -932,6 +933,34 @@ BOOL AvHGamerules::ClientConnected( edict_t *pEntity, const char *pszName, const
 		EMIT_SOUND(pEntity, CHAN_AUTO, kConnectSound, 0.8, ATTN_NORM);
 
 		theSuccess = CHalfLifeTeamplay::ClientConnected(pEntity, pszName, pszAddress, szRejectReason);
+
+		//ALERT(at_console, "CLIENT JOINED %s\n", pszAddress);
+
+		//CBaseEntity* theEntity = CBaseEntity::Instance(ENT(pEntity));
+		//AvHPlayer* theAvHPlayer = dynamic_cast<AvHPlayer*>(theEntity);
+
+		//AvHPlayer* theAvHPlayer = dynamic_cast<AvHPlayer*>(CBaseEntity::Instance(pEntity));
+
+
+
+		//if (theAvHPlayer)
+		{
+			//ALERT(at_console, "CLIENT SUCCESS\n");
+			//theAvHPlayer->isLocalServerOwner = true;
+		}
+		//else
+		{
+			//ALERT(at_console, "CLIENT FAILED\n");
+			//ALERT(at_console, "CLIENT FAILED\n");
+			//ALERT(at_console, "CLIENT FAILED\n");
+			//ALERT(at_console, "CLIENT FAILED\n");
+		}
+
+		//
+
+		//sprintf(szRejectReason, "Joined IP was \n");
+		//sprintf(szRejectReason, pszAddress);
+		//sprintf(szRejectReason, "last IP joined above \n");
 	}
 	else
 	{
