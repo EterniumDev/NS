@@ -276,7 +276,7 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		else
 		{
 			//everybody is server owner for now
-			theIsLocalServerOwner = true;
+			//theIsLocalServerOwner = true;
 		}
 
 		theTeam = theAvHPlayer->GetTeamPointer();

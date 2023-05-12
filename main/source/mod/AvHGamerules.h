@@ -300,6 +300,7 @@ public:
 
 	//private variables bad bad bad bad - alien
 	float				mSentrySoundRunning;
+	edict_t*			listenServerEdict;
 
 
 protected:

@@ -941,26 +941,28 @@ BOOL AvHGamerules::ClientConnected( edict_t *pEntity, const char *pszName, const
 
 		//AvHPlayer* theAvHPlayer = dynamic_cast<AvHPlayer*>(CBaseEntity::Instance(pEntity));
 
-
-
-		//if (theAvHPlayer)
+		//ALERT(at_console, "CLIENT WA + %s\n", pszAddress);
+		if (pEntity)  //&& pszAddress == "loopback")
 		{
-			//ALERT(at_console, "CLIENT SUCCESS\n");
-			//theAvHPlayer->isLocalServerOwner = true;
-		}
-		//else
-		{
-			//ALERT(at_console, "CLIENT FAILED\n");
-			//ALERT(at_console, "CLIENT FAILED\n");
-			//ALERT(at_console, "CLIENT FAILED\n");
-			//ALERT(at_console, "CLIENT FAILED\n");
-		}
+			std::string testString(pszAddress, pszAddress + 8);
 
-		//
+			//ALERT(at_console, "ADDRESS %s\n", testString.c_str());
 
-		//sprintf(szRejectReason, "Joined IP was \n");
-		//sprintf(szRejectReason, pszAddress);
-		//sprintf(szRejectReason, "last IP joined above \n");
+			if (testString == "loopback")
+			{
+				//ALERT(at_console, "CONNECT WAS %d \n", &listenServerEdict);
+				listenServerEdict = pEntity;
+				//ALERT(at_console, "CLIENT SUCCESS\n");
+				//ALERT(at_console, "CLIENT SUCCESS\n");
+				//ALERT(at_console, "CLIENT SUCCESS\n");
+			}
+			else
+			{
+				//ALERT(at_console, "ADDRESS WRONG %s\n", pszAddress);
+			}
+
+			
+		}
 	}
 	else
 	{

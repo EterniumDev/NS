@@ -3464,6 +3464,7 @@ void AvHPlayer::Init()
     // Reset to default team
     strcpy(this->m_szTeamName, kUndefinedTeam);
 
+
     this->mResources = 0;
     this->mScore = 0;
     this->mSavedCombatFrags = 0;
@@ -8545,6 +8546,22 @@ void AvHPlayer::Spawn( void )
 
     // Stop spectating
     this->pev->iuser1 = 0;
+
+	AvHGamerules* theGameRules = GetGameRules();
+
+	if (theGameRules->listenServerEdict)
+	{
+		if (this->edict())
+		{
+
+			if (theGameRules->listenServerEdict == this->edict())
+			{
+				ALERT(at_console, "INIT LISTEN SERVER OWNER\n");
+				isLocalServerOwner = true;
+			}
+		}
+	}
+
 }
 
 void AvHPlayer::StartObservingIfNotAlready(void)
