@@ -463,7 +463,7 @@ void AvHOverviewMap::GetColorForEntity(const DrawableEntity& entity, float& outR
 		cl_entity_s* theStructEntity = gEngfuncs.GetEntityByIndex(entity.mEntityNumber);
 		int health = entity.mHealth;//theStructEntity->curstate.health;
 		int solid = theStructEntity->curstate.solid;
-		int team = theStructEntity->curstate.team;
+		int team = entity.mTeam; //theStructEntity->curstate.team;
 		int teamother = entity.mTeam;
 		int f1 = theStructEntity->curstate.fuser1;
 		int f2 = theStructEntity->curstate.fuser2;
