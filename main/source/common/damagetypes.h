@@ -22,6 +22,7 @@
 #define NS_DMG_NORMAL		DMG_BULLET		// Normal damage against all targets
 #define NS_DMG_PIERCING		DMG_SONIC		// Normal against players, half vs. structures
 #define NS_DMG_BLAST		DMG_BLAST		// Normal vs. players, double vs. structures
+#define NS_DMG_MELT			DMG_IGNITE			// Normal vs. players, triple vs. structures
 #define NS_DMG_ORGANIC		DMG_FREEZE		// Only damages living things (players, living structures)
 #define NS_DMG_STRUCTURAL	DMG_ENERGYBEAM	// Doesn't damage players
 #define NS_DMG_LIGHT		DMG_SHOCK		// Half damage to heavily armored targets

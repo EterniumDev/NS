@@ -325,7 +325,7 @@ int	AvHBileBombGun::GetShootAnimation() const
 // Also change in RadiusDamage below
 int AvHBileBombGun::GetDamageType() const
 {
-	return DMG_IGNITE;// NS_DMG_ACID;//NS_DMG_STRUCTURAL;
+	return NS_DMG_STRUCTURAL;// NS_DMG_ACID;//NS_DMG_STRUCTURAL//;
 }
 
 char* AvHBileBombGun::GetViewModel() const

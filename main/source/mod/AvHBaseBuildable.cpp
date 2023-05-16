@@ -1232,6 +1232,12 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 		inDamage *= 2.0f;
 	}
 
+	// Take triple damage from melt
+	if (inBitsDamageType & NS_DMG_MELT)
+	{
+		inDamage *= 3.0f;
+	}
+
 	
 
 	if (avh_golden_deagle.value == 1) {

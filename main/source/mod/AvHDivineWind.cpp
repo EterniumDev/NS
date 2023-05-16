@@ -163,7 +163,7 @@ void AvHDivineWind::Explode(void)
 
 		// Make sure weapon team is the same as player team so we don't damage friends when friendly fire is off
 		this->pev->team = thePlayer->pev->team;
-		::RadiusDamage(thePlayer->pev->origin, this->pev, thePlayer->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_BLAST);
+		::RadiusDamage(thePlayer->pev->origin, this->pev, thePlayer->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_MELT);
 		
 		// Shake view of those around us!
 		float theShakeAmplitude = 30;

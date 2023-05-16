@@ -1247,7 +1247,7 @@ CBaseEntity* AvHSUGetEntityFromIndex(int inEntityIndex)
 
 CGrenade* AvHSUShootServerGrenade(entvars_t* inOwner, Vector inOrigin, Vector inVelocity, float inTime, bool inHandGrenade)
 {
-	CGrenade* theGrenade = CGrenade::ShootExplosiveTimed(inOwner, inOrigin, inVelocity, inTime, NS_DMG_BLAST); // inHandGrenade ? NS_DMG_NORMAL : NS_DMG_BLAST );
+	CGrenade* theGrenade = CGrenade::ShootExplosiveTimed(inOwner, inOrigin, inVelocity, inTime, NS_DMG_MELT); // inHandGrenade ? NS_DMG_NORMAL : NS_DMG_BLAST );
 	//CGrenade* theGrenade = CGrenade::ShootExplosiveTimed(inOwner, inOrigin, inVelocity, inTime, inHandGrenade ? NS_DMG_NORMAL : NS_DMG_BLAST );
     ASSERT(theGrenade);
     

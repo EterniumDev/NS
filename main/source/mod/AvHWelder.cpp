@@ -184,7 +184,7 @@ void AvHWelder::FireProjectiles(void)
 					AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
 					float theDamage = this->mDamage*theDamageMultiplier*theScalar;
 					
-					theEntity->TakeDamage(this->pev, this->m_pPlayer->pev, theDamage, NS_DMG_BLAST);//DMG_BURN);
+					theEntity->TakeDamage(this->pev, this->m_pPlayer->pev, theDamage, NS_DMG_MELT);//DMG_BURN);
 				}
 			}
 		}

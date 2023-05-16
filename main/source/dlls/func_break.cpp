@@ -578,6 +578,9 @@ int CBreakable :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, f
 	if (bitsDamageType & NS_DMG_BLAST)
 		flDamage *= 4;
 
+	if (bitsDamageType & NS_DMG_MELT)
+		flDamage *= 6;
+
 	if (bitsDamageType & NS_DMG_LETHALITY) //DMG_SLASH
 		flDamage *= 2;
 
