@@ -4,7 +4,7 @@
 #include "../dlls/util.h"
 #include "../util/Balance.h"
 
-#define kTheFadedCloak 0.07f
+#define kTheFadedCloak 0.08f
 
 AvHCloakable::AvHCloakable()
 {

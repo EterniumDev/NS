@@ -3543,6 +3543,23 @@ void AvHGamerules::SetGameStarted(bool inGameStarted)
 	this->mGameStarted = inGameStarted;
 	this->mTimeGameStarted = gpGlobals->time;
 
+	if (avh_fadedgamemode.value == 1)
+	{
+		FOR_ALL_ENTITIES(kwsTeamCommand, AvHCommandStation*)
+			if (theEntity)
+			{
+				theEntity->Killed(theEntity->pev, GIB_RECYCLED);
+			}
+		END_FOR_ALL_ENTITIES(kwsTeamCommand)
+
+		FOR_ALL_ENTITIES(kwsInfantryPortal, AvHInfantryPortal*)
+			if (theEntity)
+			{
+				theEntity->Killed(theEntity->pev, GIB_RECYCLED);
+			}
+		END_FOR_ALL_ENTITIES(kwsInfantryPortal)
+	}
+
 	// Choose a random defending team in Combat
 	if(this->GetIsCombatMode())
 	{
