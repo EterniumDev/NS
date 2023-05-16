@@ -1316,7 +1316,7 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 			//vampirism factor
 			if (avh_vampire_factor.value != 0 || (avh_fadedgamemode.value == 1 && atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4) || (avh_modvampirism.value != 0 && GetHasUpgrade(atkPlayer->pev->iuser4, MASK_UPGRADE_3)))
 			{
-				float vamp = 0.2f;
+				float vamp = 0.0f;
 				if (avh_vampire_factor.value > 0)
 				{
 					vamp  = avh_vampire_factor.value;
@@ -1329,16 +1329,19 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 					vamp = 0.0f + (((float)theVampirismLevel)*0.1f);
 				}
 
-				float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(atkPlayer->pev->iuser4, atkPlayer->GetUser3(), atkPlayer->GetExperienceLevel());
-				if (atkPlayer->pev->health < thePlayerMaxHealth)
+				if (vamp > 0)
 				{
-					float thePointsGiven = min((inDamage*vamp), (thePlayerMaxHealth - atkPlayer->pev->health));
-
-					atkPlayer->pev->health += thePointsGiven;
-
-					if (ns_cvar_float(&avh_drawdamage))
+					float thePlayerMaxHealth = AvHPlayerUpgrade::GetMaxHealth(atkPlayer->pev->iuser4, atkPlayer->GetUser3(), atkPlayer->GetExperienceLevel());
+					if (atkPlayer->pev->health < thePlayerMaxHealth)
 					{
-						atkPlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, thePointsGiven);
+						float thePointsGiven = min((inDamage*vamp), (thePlayerMaxHealth - atkPlayer->pev->health));
+
+						atkPlayer->pev->health += thePointsGiven;
+
+						if (ns_cvar_float(&avh_drawdamage))
+						{
+							atkPlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, thePointsGiven);
+						}
 					}
 				}
 			}
