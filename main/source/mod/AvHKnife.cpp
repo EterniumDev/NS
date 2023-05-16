@@ -166,14 +166,9 @@ void AvHKnife::FireProjectiles(void)
 	// TODO: Check team
 	
 	// Do trace hull here
-	//float theDamage = this->mDamage;
-
-
 	float theDamageMultiplier;
 	AvHPlayerUpgrade::GetWeaponUpgrade(this->m_pPlayer->pev->iuser3, this->m_pPlayer->pev->iuser4, &theDamageMultiplier);
-	float theDamage = this->mDamage*((2.0f*(theDamageMultiplier - 1.0f)) + 1.0f);
-	//float theDamage = this->mDamage*theDamageMultiplier;
-	//float theDamage = this->mDamage*theDamageMultiplier*theDamageMultiplier;
+	float theDamage = this->mDamage*theDamageMultiplier;
 
 	CBaseEntity* pHurt = this->m_pPlayer->CheckTraceHullAttack(this->mRange, theDamage, DMG_SLASH);
 	if(pHurt)
@@ -266,8 +261,7 @@ void AvHKnife::Spawn()
 #ifdef AVH_SERVER
 	if (avh_balance_mvm.value == 1)
 	{
-		this->mDamage *= 1.25f; //25% more damage
-		//this->mRange *= 50.0f; //50x more range lmao
+		this->mDamage *= 1.3f; //30% more damage
 	}
 #endif
 
