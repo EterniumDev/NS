@@ -8083,21 +8083,35 @@ void AvHPlayer::SetPlayMode(AvHPlayMode inPlayMode, bool inForceSpawn)
 					if (testTeam->GetPlayerCount() <= 8) {
 						GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_ONE, testTeam->GetTeamNumber(), 0, true);
 						GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_ONE, testTeam->GetTeamNumber(), 0, true);
-						//this->GiveTeamUpgrade(RESEARCH_WEAPONS_ONE);
-						//this->GiveTeamUpgrade(RESEARCH_ARMOR_ONE);
+
 						if (testTeam->GetPlayerCount() <= 5) {
 							GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_TWO, testTeam->GetTeamNumber(), 0, true);
 							GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_TWO, testTeam->GetTeamNumber(), 0, true);
-
 							GetGameRules()->ProcessTeamUpgrade(RESEARCH_HEALTH, testTeam->GetTeamNumber(), 0, true);
-							//this->GiveTeamUpgrade(RESEARCH_WEAPONS_TWO);
-							//this->GiveTeamUpgrade(RESEARCH_ARMOR_TWO);
+
 							this->GiveNamedItem("weapon_shotgun");
+
 							if (testTeam->GetPlayerCount() <= 3) {
 								GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_THREE, testTeam->GetTeamNumber(), 0, true);
 								GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_THREE, testTeam->GetTeamNumber(), 0, true);
 							}
+							else
+							{
+								GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_THREE, testTeam->GetTeamNumber(), 0, false);
+								GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_THREE, testTeam->GetTeamNumber(), 0, false);
+							}
 						}
+						else
+						{
+							GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_TWO, testTeam->GetTeamNumber(), 0, false);
+							GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_TWO, testTeam->GetTeamNumber(), 0, false);
+							GetGameRules()->ProcessTeamUpgrade(RESEARCH_HEALTH, testTeam->GetTeamNumber(), 0, false);
+						}
+					}
+					else
+					{
+						GetGameRules()->ProcessTeamUpgrade(RESEARCH_WEAPONS_ONE, testTeam->GetTeamNumber(), 0, false);
+						GetGameRules()->ProcessTeamUpgrade(RESEARCH_ARMOR_ONE, testTeam->GetTeamNumber(), 0, false);
 					}
 					
 					//this->GiveTeamUpgrade(RESEARCH_ELECTRICAL);
