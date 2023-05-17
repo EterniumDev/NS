@@ -1365,7 +1365,7 @@ CBaseEntity* CBaseMonster :: CheckTraceHullAttack( float flDist, float& ioDamage
 					AvHPlayer* hitPlayer = dynamic_cast<AvHPlayer*>(pEntity);
 					if ((hitPlayer) && (theDrawDamage))
 					{
-						hitPlayer->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-ioDamage));
+						AvHSUPlayNumericEvent(-ioDamage, hitPlayer->edict(), hitPlayer->pev->origin, 0, kNumericalInfoHealthEvent, 0);
 					}
 
 

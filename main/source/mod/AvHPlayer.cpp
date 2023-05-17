@@ -9603,7 +9603,11 @@ int AvHPlayer::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
                 
                 if(theDrawDamage)
                 {
-                    this->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-flDamage));
+                    //this->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-flDamage));
+					//ALERT(at_console, "player %d, %d, %d \n", this->pev->origin.x, this->pev->origin.y, this->pev->origin.z);
+
+					// Draw for everyone (team is 0 after inDamage parameter)
+					AvHSUPlayNumericEvent(-flDamage, this->edict(), this->pev->origin, 0, kNumericalInfoHealthEvent, 0);
                 }
             
                 this->Uncloak();
@@ -9669,8 +9673,8 @@ void AvHPlayer::PlaybackNumericalEvent(int inEventID, int inNumber)
     
     Vector theStartPos = this->pev->origin;
     theStartPos.z += theMaxSize.z;
-    
-    // Draw for everyone (team = 0 after flDamage parameter)
+
+    // Draw for only our team
     AvHSUPlayNumericEvent(inNumber, this->edict(), theStartPos, 0, inEventID, this->pev->team);
 }
 
