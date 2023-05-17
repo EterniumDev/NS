@@ -9459,30 +9459,39 @@ int AvHPlayer::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 			if (GetGameRules()->GetFriendlyFireEnabled())
 			{
-				//bool bileBombMelt = true;
-				ALERT(at_console, "DO BILE BOMB FF \n");
 				if (this->pev->armorvalue > 0) {
-					this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
-					ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", (flDamage / 10.0f));
+					//this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
+					flDamage = min((flDamage / 9.0f), this->pev->armorvalue);
+					this->pev->armorvalue = max(0.0f, this->pev->armorvalue - flDamage);
+					ALERT(at_console, "BILE BOMB FF ACID PROC armor damage=%f \n", flDamage);
 				}
-				if (theEDrawDamage)
+				else
 				{
-					this->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-flDamage / 10.0f));
+					flDamage = 0.0f;
+				}
+
+				if (theEDrawDamage && flDamage > 0.0f)
+				{
+					AvHSUPlayNumericEvent(-flDamage, this->edict(), this->pev->origin, 0, kNumericalInfoArmorEvent, 0);
 				}
 				flDamage = 0.0f;
 				return 0;
 			} 
 			else if (pevAttacker->team != this->pev->team)
 			{
-				//bool bileBombMelt = true;
-				ALERT(at_console, "DO BILE BOMB ENEMY \n");
 				if (this->pev->armorvalue > 0) {
-					this->pev->armorvalue = max(0.0f, this->pev->armorvalue - (flDamage / 10.0f));
-					ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", (flDamage / 10.0f));
+					flDamage = min((flDamage / 9.0f), this->pev->armorvalue);
+					this->pev->armorvalue = max(0.0f, this->pev->armorvalue - flDamage);
+					ALERT(at_console, "BILE BOMB ACID PROC armor damage=%f \n", flDamage );
 				}
-				if (theEDrawDamage)
+				else
 				{
-					this->PlaybackNumericalEvent(kNumericalInfoHealthEvent, (int)(-flDamage / 10.0f));
+					flDamage = 0.0f;
+				}
+
+				if (theEDrawDamage && flDamage > 0.0f)
+				{
+					AvHSUPlayNumericEvent(-flDamage, this->edict(), this->pev->origin, 0, kNumericalInfoArmorEvent, 0);
 				}
 				flDamage = 0.0f;
 				return 0;

@@ -1001,7 +1001,7 @@ const int		kNumericalInfoResourcesEvent			= 0;
 const int		kNumericalInfoHealthEvent				= 1;
 const int		kNumericalInfoResourcesDonatedEvent		= 2;
 const int		kNumericalInfoAmmoEvent					= 3;
-//const int		kNumericalInfoArmorEvent				= 4; //was gonna add an extra numerical event for bilebomb dealing armor-only damage
+const int		kNumericalInfoArmorEvent				= 4; //was gonna add an extra numerical event for bilebomb dealing armor-only damage
 
 const int		kGameStatusReset						= 0;
 const int		kGameStatusResetNewMap					= 1;

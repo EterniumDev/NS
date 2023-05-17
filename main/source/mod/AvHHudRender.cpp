@@ -3307,8 +3307,11 @@ void AvHHud::RenderCommonUI()
 						    thePostPendStringToTranslate = kNumericalEventResources;
 						    break;
 					    case kNumericalInfoHealthEvent:
-						    thePostPendStringToTranslate = kNumericalEventHealth;
+							thePostPendStringToTranslate = kNumericalEventHealth;
 						    break;
+						case kNumericalInfoArmorEvent:
+							thePostPendStringToTranslate = "armor";
+							break;
 					    case kNumericalInfoResourcesDonatedEvent:
 						    thePostPendStringToTranslate = kNumericalEventResourcesDonated;
 						    break;
