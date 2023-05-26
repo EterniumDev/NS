@@ -36,6 +36,7 @@
 #include "common/cl_entity.h"
 #include "common/dlight.h"
 #include "common/triangleapi.h"
+#include "AvHServerVariables.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -374,6 +375,11 @@ void FadingImageLabel::paint()
         float theTextX = (theWidth - theFont.GetStringWidth(mText.c_str())) / 2;
         float theTextY = (theHeight - theFont.GetStringHeight()) / 2;
 
+		if (mText.substr(0, 10) == "Redemption" && gHUD.GetServerVariableFloat(kvModVampirism) > 0)
+		{
+			mText = "Vampirism";
+		}
+
         theFont.DrawString(theTextX, theTextY, mText.c_str(), r, g, b);
     
     }
@@ -543,7 +549,9 @@ void FadingImageLabel::setText(const char* inText)
 		else
 		{
 			this->mTextImage.setText(inText);
+			
 			this->mText = inText;
+
 			this->RecalculateTextPosition();
 		}
 	//}

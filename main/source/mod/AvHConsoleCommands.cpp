@@ -1090,11 +1090,11 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 
 			if (theSuccess)
 			{
-				UTIL_SayText("Force Resign was successful", theAvHPlayer);
+				UTIL_SayText("Force Resign was successful\n", theAvHPlayer);
 			}
 			else
 			{
-				UTIL_SayText("Force Resign failed (nobody was commander)", theAvHPlayer);
+				UTIL_SayText("Force Resign failed (nobody was commander)\n", theAvHPlayer);
 			}
 
 			theSuccess = true;
