@@ -717,6 +717,7 @@ private:
 	AVHHSPRITE				mAlienUICloakSprite;
 
 	AVHHSPRITE				mVampirismSprite;
+	AVHHSPRITE				mVampirismBackupSprite;
 
 
 	AVHHSPRITE				mMembraneSprite;

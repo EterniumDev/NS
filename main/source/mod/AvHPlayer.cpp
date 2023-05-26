@@ -8563,14 +8563,12 @@ void AvHPlayer::Spawn( void )
 
 	AvHGamerules* theGameRules = GetGameRules();
 
-	if (theGameRules->listenServerEdict)
+	if (theGameRules && theGameRules->listenServerEdict)
 	{
 		if (this->edict())
 		{
-
 			if (theGameRules->listenServerEdict == this->edict())
 			{
-				ALERT(at_console, "INIT LISTEN SERVER OWNER\n");
 				isLocalServerOwner = true;
 			}
 		}

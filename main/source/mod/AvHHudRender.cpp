@@ -4425,9 +4425,16 @@ void AvHHud::RenderAlienUI()
                 float y2 = y1 + theUpgradeHeight;
 
 				//New vampirism icon added through extremely hacky means
-				if (mVampirismSprite && theUpgradeMask == MASK_UPGRADE_3 && gHUD.GetServerVariableFloat(kvModVampirism) > 0)
+				if ((mVampirismSprite || mVampirismBackupSprite) && theUpgradeMask == MASK_UPGRADE_3 && gHUD.GetServerVariableFloat(kvModVampirism) > 0)
 				{
-					AvHSpriteDraw(mVampirismSprite, 0, x1, y1, x2, y2, 0, 0, 1, 1);
+					if (mVampirismSprite)
+					{
+						AvHSpriteDraw(mVampirismSprite, 0, x1, y1, x2, y2, 0, 0, 1, 1);
+					}
+					else if (mVampirismBackupSprite)
+					{
+						AvHSpriteDraw(mVampirismBackupSprite, 0, x1, y1, x2, y2, 0, 0, 1, 1);
+					}
 				}
 				else
 				{
@@ -4914,6 +4921,7 @@ void AvHHud::VidInit(void)
 	//this->mTopDownBottomSprite = SPR_Load("sprites/distorttest.spr");
 
 	this->mVampirismSprite = SPR_Load(kAlienVampirismSprite);
+	this->mVampirismBackupSprite = SPR_Load(kAlienVampirismBackupSprite);
 
 	// Load overlays
 	this->mMembraneSprite = SPR_Load(kMembraneSprite);

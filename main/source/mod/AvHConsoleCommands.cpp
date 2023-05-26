@@ -269,15 +269,13 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		//TODO: if the player name matches a CVAR set "ServerLocalName" then that means this is the server's local name and is allowed to use commands
 		//theAvHPlayer->SendMessage(theAvHPlayer->GetPlayerName().c_str());
 		//if (theAvHPlayer->GetPlayerName() == "")
+
+		//this correctly identifies players who are the local server owner
 		if (theAvHPlayer->isLocalServerOwner)
 		{
 			theIsLocalServerOwner = true;
 		}
-		else
-		{
-			//everybody is server owner for now
-			//theIsLocalServerOwner = true;
-		}
+
 
 		theTeam = theAvHPlayer->GetTeamPointer();
 		theIsDeveloper = theAvHPlayer->GetIsMember(PLAYERAUTH_DEVELOPER);
@@ -1096,8 +1094,10 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 			}
 			else
 			{
-				UTIL_SayText("Force Resign was unsuccessful", theAvHPlayer);
+				UTIL_SayText("Force Resign failed (nobody was commander)", theAvHPlayer);
 			}
+
+			theSuccess = true;
 
 		}
 	}
