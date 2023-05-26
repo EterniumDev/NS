@@ -4386,6 +4386,8 @@ void AvHHud::RenderAlienUI()
 	int theNumDrawnInCategory[ALIEN_UPGRADE_CATEGORY_MAX_PLUS_ONE + 1];
 	memset(theNumDrawnInCategory, 0, sizeof(int)*(ALIEN_UPGRADE_CATEGORY_MAX_PLUS_ONE + 1));
 	
+	//
+
 	AvHUpgradeMask theUpgradeMasks[kNumAlienUpgrades] = {MASK_UPGRADE_1, MASK_UPGRADE_2, MASK_UPGRADE_3, MASK_NONE, MASK_NONE, MASK_NONE, MASK_UPGRADE_4, MASK_UPGRADE_5, MASK_UPGRADE_6, MASK_UPGRADE_7, MASK_UPGRADE_8, MASK_UPGRADE_9};
 	for(int i = 0; i < kNumAlienUpgrades; i++)
 	{
@@ -4422,7 +4424,15 @@ void AvHHud::RenderAlienUI()
                 float x2 = x1 + theUpgradeWidth;
                 float y2 = y1 + theUpgradeHeight;
 
-                AvHSpriteDraw(mAlienUIUpgrades, i, x1, y1, x2, y2, 0, 0, 1, 1);
+				//New vampirism icon added through extremely hacky means
+				if (mVampirismSprite && theUpgradeMask == MASK_UPGRADE_3 && gHUD.GetServerVariableFloat(kvModVampirism) > 0)
+				{
+					AvHSpriteDraw(mVampirismSprite, 0, x1, y1, x2, y2, 0, 0, 1, 1);
+				}
+				else
+				{
+					AvHSpriteDraw(mAlienUIUpgrades, i, x1, y1, x2, y2, 0, 0, 1, 1);
+				}
             }
 		}
 		else
@@ -4902,6 +4912,8 @@ void AvHHud::VidInit(void)
 	//this->mTopDownBottomSprite = SPR_Load("sprites/distorttest.spr");
 	//this->mTopDownBottomSprite = SPR_Load("sprites/ns.spr");
 	//this->mTopDownBottomSprite = SPR_Load("sprites/distorttest.spr");
+
+	this->mVampirismSprite = SPR_Load(kAlienVampirismSprite);
 
 	// Load overlays
 	this->mMembraneSprite = SPR_Load(kMembraneSprite);

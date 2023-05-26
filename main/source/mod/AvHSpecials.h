@@ -152,12 +152,12 @@ typedef enum
 	MASK_BUILDABLE		= 0x00000004,	// This entity is buildable
 	MASK_UPGRADE_1		= 0x00000008,	// Marine weapons 1, armor, marine basebuildable slot #0
 	MASK_UPGRADE_2		= 0x00000010,	// Marine weapons 2, regen, marine basebuildable slot #1
-	MASK_UPGRADE_3		= 0x00000020,	// Marine weapons 3, redemption, marine basebuildable slot #2
+	MASK_UPGRADE_3		= 0x00000020,	// Marine weapons 3, redemption/vampirism, marine basebuildable slot #2
 	MASK_UPGRADE_4		= 0x00000040,	// Marine armor 1, speed, marine basebuildable slot #3
 	MASK_UPGRADE_5		= 0x00000080,	// Marine armor 2, adrenaline, marine basebuildable slot #4
 	MASK_UPGRADE_6		= 0x00000100,	// Marine armor 3, silence, marine basebuildable slot #5
 	MASK_UPGRADE_7		= 0x00000200,	// Marine jetpacks, Cloaking, marine basebuildable slot #6
-	MASK_UPGRADE_8		= 0x00000400,	// Pheromone, motion-tracking, marine basebuildable slot #7
+	MASK_UPGRADE_8		= 0x00000400,	// Focus/Pheromone, motion-tracking, marine basebuildable slot #7
 	MASK_UPGRADE_9		= 0x00000800,	// Scent of fear, exoskeleton
 	MASK_UPGRADE_10		= 0x00001000,	// Defensive level 2, power armor/now cybernetics upgrade
 	MASK_UPGRADE_11		= 0x00002000,	// Defensive level 3, electrical defense

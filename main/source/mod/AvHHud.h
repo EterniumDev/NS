@@ -716,6 +716,9 @@ private:
 	AVHHSPRITE				mAlienUIEnergySprite;
 	AVHHSPRITE				mAlienUICloakSprite;
 
+	AVHHSPRITE				mVampirismSprite;
+
+
 	AVHHSPRITE				mMembraneSprite;
 	AVHHSPRITE				mDigestingSprite;
 	AVHHSPRITE				mBackgroundSprite;

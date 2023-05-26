@@ -62,6 +62,7 @@
 //#define		kHiveSprite			"hive"
 //#define		kLifeformSprite		"alien"
 #define		kAlienUpgradeSprite			"alienupgrades"
+#define		kAlienVampirismSprite		"sprites/alienvampirism.spr"
 #define		kAlienUpgradeSpriteNL		"sprites/nl/640alienupgrades.spr"
 #define		kAlienUpgradeCategory		"alienupgradecategories"
 
