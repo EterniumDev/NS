@@ -348,6 +348,7 @@ AvHGamerules::AvHGamerules() : mTeamA(TEAM_ONE), mTeamB(TEAM_TWO)
 	RegisterServerVariable(&avh_modipelectrify);
 	RegisterServerVariable(&avh_modmotiontracking);
 	RegisterServerVariable(&avh_modvampirism);
+	RegisterServerVariable(&avh_modalienrespawn);
 
 	RegisterServerVariable(&avh_infinite_ammo);
 	RegisterServerVariable(&avh_infinite_energy);

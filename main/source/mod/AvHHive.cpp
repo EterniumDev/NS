@@ -888,6 +888,13 @@ float AvHHive::GetReinforceTime() const
 
 	theRespawnTime = min(max(theRespawnTime, 0.0f), kMaxRespawnTime);
 
+	if (avh_modalienrespawn.value == 1)
+	{
+		//reduces respawn time to 3 seconds if its more
+		theRespawnTime = min(max(theRespawnTime, 0.0f), 3.0f);
+	}
+
+
 	return theRespawnTime;
 }
 

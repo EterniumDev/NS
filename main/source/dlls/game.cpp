@@ -139,6 +139,7 @@ cvar_t  avh_modnuke					= { kvModNuke, "0", FCVAR_SERVER };
 cvar_t  avh_modipelectrify			= { kvModIPElectrify, "0", FCVAR_SERVER };
 cvar_t  avh_modmotiontracking		= { kvModMotionTracking, "0", FCVAR_SERVER };
 cvar_t  avh_modvampirism			= { kvModVampirism, "0", FCVAR_SERVER };
+cvar_t  avh_modalienrespawn			= { kvModAlienRespawn, "0", FCVAR_SERVER };
 cvar_t  avh_turretupgradesound		= {"sv_turretupgradesound", "1", FCVAR_SERVER};
 cvar_t  avh_infinite_ammo			= {"sv_infinite_ammo", "0", FCVAR_SERVER };
 cvar_t  avh_infinite_energy			= {"sv_infinite_energy", "0", FCVAR_SERVER };
@@ -288,7 +289,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&avh_modipelectrify);
 	CVAR_REGISTER(&avh_modmotiontracking);
 	CVAR_REGISTER(&avh_modvampirism);
-
+	CVAR_REGISTER(&avh_modalienrespawn);
 
 	CVAR_REGISTER(&avh_infinite_ammo);
 	CVAR_REGISTER(&avh_infinite_energy);

@@ -88,6 +88,7 @@ extern cvar_t avh_modnuke;
 extern cvar_t avh_modipelectrify;
 extern cvar_t avh_modmotiontracking;
 extern cvar_t avh_modvampirism;
+extern cvar_t avh_modalienrespawn;
 
 extern cvar_t avh_infinite_ammo;
 extern cvar_t avh_infinite_energy;
@@ -200,5 +201,6 @@ float	ns_cvar_float(const cvar_t *cvar);
 #define kvModIPElectrify			"sv_modipelectrify"
 #define kvModMotionTracking			"sv_modmotiontracking"
 #define kvModVampirism				"sv_modvampirism"
+#define kvModAlienRespawn			"sv_modalienrespawn"
 
 #endif
