@@ -196,6 +196,9 @@ void AvHPieMenuHandler::OpenPieMenu(void)
 				if (CVAR_GET_FLOAT("m_rawinput") != 0)
 				{
 					SDL_SetRelativeMouseMode(SDL_FALSE);
+
+					//TODO: this is the part that can cause issues for certain mice when using rawinput mode
+					//perhaps add an extra option to turn this on and off
 					gEngfuncs.pfnSetMousePos(gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY());
 				}
 				//App::getInstance()->setCursorOveride(App::getInstance()->getScheme()->getCursor(Scheme::scu_none));

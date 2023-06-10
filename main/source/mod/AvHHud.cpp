@@ -2442,6 +2442,7 @@ int AvHHud::MsgFunc_IssueOrder(const char* pszName, int iSize, void* pbuf)
 			string temp;
 			string nameFormat;
 			// fetch from titles.txt
+			//TODO: the order go to %s bug with EVOBOTs is caused from this here
 			sprintf(temp, "TeammateOrder%d", ordertype);
 			LocalizeString(temp.c_str(), nameFormat);
 			sprintf(temp, nameFormat.c_str(), info.name);

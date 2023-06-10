@@ -457,6 +457,11 @@ void CAM_ToThirdPerson(void)
 	gEngfuncs.Cvar_SetValue( "cam_command", 0 );
 }
 
+void CAM_EterniumExit(void)
+{
+	exit(0);
+}
+
 void CAM_ToFirstPerson(void) 
 { 
 	cam_thirdperson = 0;
@@ -490,6 +495,7 @@ void CAM_Init( void )
 	gEngfuncs.pfnAddCommand( "+camdistance", CAM_StartDistance );
 	gEngfuncs.pfnAddCommand( "-camdistance", CAM_EndDistance );
 	gEngfuncs.pfnAddCommand( "snapto", CAM_ToggleSnapto );
+	gEngfuncs.pfnAddCommand( "eterniumexit", CAM_EterniumExit);
 
 	cam_command				= gEngfuncs.pfnRegisterVariable ( "cam_command", "0", 0 );	 // tells camera to go to thirdperson
 	cam_snapto				= gEngfuncs.pfnRegisterVariable ( "cam_snapto", "0", 0 );	 // snap to thirdperson view
