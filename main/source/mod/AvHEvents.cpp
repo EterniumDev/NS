@@ -1470,7 +1470,7 @@ void EV_SpitGun(struct event_args_s* inArgs)
 			int theIndex = inArgs->entindex;
 			cl_entity_t* thePlayer = GetEntity(theIndex);
 			int theFocusLevel = AvHGetAlienUpgradeLevel(thePlayer->curstate.iuser4, MASK_UPGRADE_8);
-			float theFocusScalar = 1.0f + ((float)theFocusLevel * 0.25f);
+			float theFocusScalar = 1.0f + ((float)theFocusLevel * 0.05f);
 
 			// Temp entities interpret baseline origin as velocity.
 			Vector theBaseVelocity;

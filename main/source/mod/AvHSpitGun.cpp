@@ -228,11 +228,17 @@ void AvHSpitGun::FireProjectiles(void)
 	UTIL_SetOrigin(theSpit->pev, vecSrc);
 
 	//gorge spit moves faster from focus
-	float theFocusScalar = 1.0f;
+	float theFocusScalar = 1.0f, theFocusSpeedScalar = 1.0f;
 	if (AvHSHUGetIsWeaponFocusable(AvHWeaponID(this->m_iId)))
 	{
 		int theFocusLevel = AvHGetAlienUpgradeLevel(this->m_pPlayer->pev->iuser4, MASK_UPGRADE_8);
-		theFocusScalar = 1.0f + ((float)theFocusLevel * 0.25f);
+		theFocusSpeedScalar = 1.0f + ((float)theFocusLevel * 0.05f);
+
+
+		//theFocusScalar = AvHPlayerUpgrade::GetFocusDamageUpgrade(this->m_pPlayer->pev->iuser4);
+		
+		theFocusScalar = 1.0f + ((float)theFocusLevel * 0.60f);
+
 	}
 
 	
@@ -243,7 +249,7 @@ void AvHSpitGun::FireProjectiles(void)
 	VectorScale(this->pev->velocity, kSpitParentVelocityScalar, theBaseVelocity);
 	
 	Vector theStartVelocity;
-	VectorMA(theBaseVelocity, kSpitVelocity*theFocusScalar, vecAiming, theStartVelocity);
+	VectorMA(theBaseVelocity, kSpitVelocity*theFocusSpeedScalar, vecAiming, theStartVelocity);
 
 	VectorCopy(theStartVelocity, theSpit->pev->velocity);
 
@@ -254,14 +260,6 @@ void AvHSpitGun::FireProjectiles(void)
 	theSpit->pev->team = this->m_pPlayer->pev->team;
 
 	// Set amount of damage it will do
-    
-	if (theFocusScalar > 1.0f)
-	{ //gain 50/100/150% damage per up of focus instead of 33/66/99 for gorge spit
-		theFocusScalar -= 1.0f;
-		theFocusScalar *= 1.5f;
-		theFocusScalar += 1.0f;
-	}
-
 	float theDamage = this->mDamage*AvHPlayerUpgrade::GetAlienRangedDamageUpgrade(this->m_pPlayer->pev->iuser4)*theFocusScalar;
 	theSpit->SetDamage(theDamage);
 
