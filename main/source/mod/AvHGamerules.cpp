@@ -4736,18 +4736,6 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 			break;
         }
     }
-	else if (!theGameStarted)
-	{
-		switch (inMessageID)
-		{
-		case ALIEN_LIFEFORM_TWO:
-		case ALIEN_LIFEFORM_THREE:
-		case ALIEN_LIFEFORM_FOUR:
-		case ALIEN_LIFEFORM_FIVE:
-			cost = 0;
-			break;
-		}
-	}
     else
 	{
 		switch(inMessageID)
@@ -4819,11 +4807,11 @@ int	AvHGamerules::GetCostForMessageID(AvHMessageID inMessageID) const
 			case ALIEN_EVOLUTION_TWELVE:		cost = BALANCE_VAR(kEvolutionCost); break;
 		
 			// Alien Lifeforms
-			case ALIEN_LIFEFORM_ONE:			cost = BALANCE_VAR(kSkulkCost); break;
-			case ALIEN_LIFEFORM_TWO:			cost = BALANCE_VAR(kGorgeCost); break;
-			case ALIEN_LIFEFORM_THREE:			cost = BALANCE_VAR(kLerkCost); break;
-			case ALIEN_LIFEFORM_FOUR:			cost = BALANCE_VAR(kFadeCost); break;
-			case ALIEN_LIFEFORM_FIVE:			cost = BALANCE_VAR(kOnosCost); break;
+			case ALIEN_LIFEFORM_ONE:			cost = BALANCE_VAR(kSkulkCost) * theGameStarted; break;
+			case ALIEN_LIFEFORM_TWO:			cost = BALANCE_VAR(kGorgeCost) * theGameStarted; break;
+			case ALIEN_LIFEFORM_THREE:			cost = BALANCE_VAR(kLerkCost) * theGameStarted; break;
+			case ALIEN_LIFEFORM_FOUR:			cost = BALANCE_VAR(kFadeCost) * theGameStarted; break;
+			case ALIEN_LIFEFORM_FIVE:			cost = BALANCE_VAR(kOnosCost) * theGameStarted; break;
 
 			// Energy Costs
 			case BUILD_SCAN:					cost = BALANCE_VAR(kScanEnergyCost); break;
