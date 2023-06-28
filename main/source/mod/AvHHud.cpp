@@ -5431,15 +5431,13 @@ bool AvHHud::GetEntityInfoString(int inEntityID, string& outEntityInfoString, bo
 				}
 			}
 
+
 			if(thePlayerInfo.name)
 			{
-				outEntityInfoString += thePlayerInfo.name;// + thePostPendString;
-				//me bugging the game out
-				string extrastuffString;
-				//sprintf(extrastuffString, " (health: %d)", theEntity->curstate.health);
-				//outEntityInfoString += extrastuffString;
+				outEntityInfoString += thePlayerInfo.name;
 
-				//if marines
+				string extrastuffString;
+
 				if ((CVAR_GET_FLOAT("cl_showups") != 0)&& (theEntity->curstate.team != theTeam ||CVAR_GET_FLOAT("cl_showups") == 1)) {
 					if (theEntity->curstate.iuser3 == AVH_USER3_MARINE_PLAYER)
 					{
@@ -5487,7 +5485,14 @@ bool AvHHud::GetEntityInfoString(int inEntityID, string& outEntityInfoString, bo
 						}
 						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_3))
 						{
-							sprintf(extrastuffString, " [Redemption]");
+							if (gHUD.GetServerVariableFloat(kvModVampirism) > 0)
+							{
+								sprintf(extrastuffString, " [Vampirism]");
+							}
+							else
+							{
+								sprintf(extrastuffString, " [Redemption]");
+							}
 							outEntityInfoString += extrastuffString;
 						}
 						if (GetHasUpgrade(theEntity->curstate.iuser4, MASK_UPGRADE_4))
@@ -5530,17 +5535,8 @@ bool AvHHud::GetEntityInfoString(int inEntityID, string& outEntityInfoString, bo
 						sprintf(extrastuffString, " [Parasited]");
 						outEntityInfoString += extrastuffString;
 					}
-				}
-				//if aliens
-				//iuser4
-				
+				}			
 				//if(GetHasUpgrade(inEntity->iuser4, MASK_VIS_SIGHTED))
-				
-				//outEntityInfoString += " hp ";
-				//outEntityInfoString += theEntity->curstate.health;//theEntity->curstate.health;
-				//theEntity->curstate.health;
-				//outEntityInfoString += " ";
-				//strcat(*outEntityInfoString, ".txt");
 				
 
 
@@ -5554,9 +5550,6 @@ bool AvHHud::GetEntityInfoString(int inEntityID, string& outEntityInfoString, bo
 				outIsEnemy = theIsEnemy;
 				theSuccess = true;
 			}
-			
-			//	sprintf(thePlayerName, "%s (health: %d)", thePlayerInfo.name, thePlayer->curstate.health);
-			//}
 		}
 		else
 		{

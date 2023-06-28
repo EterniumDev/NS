@@ -28,7 +28,7 @@
 #define kArmoryHealth 2400
 #define kArmoryUpgradeCost 30
 #define kArmoryUpgradeTime 160
-#define kArmsLabBuildTime 15
+#define kArmsLabBuildTime 17
 #define kArmsLabCost 20
 #define kArmsLabHealth 2200
 #define kBalanceAverageTeamSize 6
@@ -93,7 +93,7 @@
 #define kDivineWindDamage 200
 #define kDivineWindRadius 500
 #define kElectricalDamage 20
-#define kElectricalMaxTargets 3
+#define kElectricalMaxTargets 2
 #define kElectricalRange 200
 #define kElectricalUpgradeResearchCost 30
 #define kElectricalUpgradeResearchTime 30
@@ -156,7 +156,7 @@
 #define kHeavyArmorAbsorbPercent 95
 #define kHeavyArmorCost 15
 #define kHeavyArmorResearchCost 40
-#define kHeavyArmorResearchTime 90
+#define kHeavyArmorResearchTime 110
 #define kHiveBuildTime 180
 #define kHiveCost 40
 #define kHiveHealRadius 500
@@ -237,7 +237,7 @@
 #define kPointsPerHealth 50
 #define kPointsPerArmouryHealth 10
 #define kPrimalScreamRange 500
-#define kPrototypeLabBuildTime 15
+#define kPrototypeLabBuildTime 20
 #define kPrototypeLabCost 40
 #define kPrototypeLabHealth 4000
 #define kRecycleTime 20
@@ -270,12 +270,12 @@
 #define kScoringTurretValue 2
 #define kSensoryChamberBuildTime 14
 #define kSensoryChamberCost 10
-#define kSensoryChamberHealth 800
+#define kSensoryChamberHealth 900
 #define kSensoryChamberRange 750
-#define kSentryBuildTime 6
+#define kSentryBuildTime 7
 #define kSentryCost 10
 #define kSentryDamage 8
-#define kSentryHealth 1500
+#define kSentryHealth 1400
 #define kShotgunCost 10
 #define kSiegeBuildTime 10
 #define kSiegeCost 15
@@ -289,7 +289,7 @@
 #define kSkulkCost 0
 #define kSkulkGestateTime 3
 #define kSkulkHealth 70
-#define kSpikeDamage 13
+#define kSpikeDamage 14
 #define kSpitGDamage 30
 #define kSporeCloudRadius 225
 #define kSporeCloudTime 6
@@ -457,7 +457,7 @@
 #define kTouchDamageInterval 0.05
 #define kTurretBaseRateOfFire 0.70
 #define kTurretTrackingRate 1.60
-#define kUmbraEnergyCost 0.36
+#define kUmbraEnergyCost 0.25
 #define kUmbraROF 1.00
 #define kUncloakTime 0.50
 #define kWeaponDamageLevelOne 0.10
