@@ -135,9 +135,9 @@ There is an updated version of metamod called [metamodp](http://metamod-p.source
  - [rcbot without dlls](http://filebase.bots-united.com/index.php?act=download&id=210)
  - [rcbot linux dlls](http://filebase.bots-united.com/index.php?act=download&id=428)
 
-### Usefull links
+### Useful links
 
-* [Usefull collection of ns files server addons, maps and everything ](http://www.brywright.co.uk/downloads/files/index.php?dir=natural-selection/)
+* [Useful collection of ns files server addons, maps and everything ](http://www.brywright.co.uk/downloads/files/index.php?dir=natural-selection/)
 * [Great collection of ns guides/tutorials](http://www.naturalns.clanservers.com/forums/index.php?topic=5.0)
 *  [rcbot downloads](http://filebase.bots-united.com/index.php?act=category&id=19)
 *  [dillinger.io markdown editor](http://dillinger.io/)
@@ -147,10 +147,6 @@ There is an updated version of metamod called [metamodp](http://metamod-p.source
    [Steam]: <http://store.steampowered.com/about/>
    [hlds]:<https://developer.valvesoftware.com/wiki/Half-Life_Dedicated_Server>
    [rcbot]:<http://filebase.bots-united.com/index.php?act=category&id=19>
-
-
-Many thanks to GiGaBiTe.
-
 
 Half Life 1 SDK LICENSE
 =======================
@@ -183,7 +179,4 @@ EXCLUDED CODE AND LIBRARIES
 - Lua 5.0 (http://lua.org)
 - Particle system library by David McAllister (http://www.cs.unc.edu/techreports/00-007.pdf).
 
-Original code and design by Charlie Cleveland (charlie@unknownworlds.com, @flayra).
-
-Many contributions from Karl Patrick (karl.patrick@gmail.com), Petter Rønningen <tankefugl@gmail.com>, Harry Walsh <harry.walsh@gmail.com>, and probably lots of people I forgot.
-
+Original code and design by Flayra.
