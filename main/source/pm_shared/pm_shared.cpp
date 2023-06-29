@@ -5102,19 +5102,16 @@ void PM_LadderMove( physent_t *pLadder )
         vec3_t vpn, v_right;
 
         AngleVectors( pmove->angles, vpn, v_right, NULL );
-//#ifdef AVH_SERVER
+
+//need separate values for when playing on ENSL or official
         if ( pmove->cmd.buttons & IN_BACK )
-            //forward -= MAX_CLIMB_SPEED;
-			forward -= pmove->maxspeed*0.75f;
+			forward -= max((float)MAX_CLIMB_SPEED, pmove->maxspeed*0.65f);
         if ( pmove->cmd.buttons & IN_FORWARD )
-            //forward += MAX_CLIMB_SPEED;
-			forward += pmove->maxspeed*0.75f;
+			forward += max((float)MAX_CLIMB_SPEED, pmove->maxspeed*0.65f);
         if ( pmove->cmd.buttons & IN_MOVELEFT )
-            //right -= MAX_CLIMB_SPEED;
-			right -= pmove->maxspeed*0.75f;
+			right -= max((float)MAX_CLIMB_SPEED, pmove->maxspeed*0.65f);
         if ( pmove->cmd.buttons & IN_MOVERIGHT )
-            //right += MAX_CLIMB_SPEED;
-			right += pmove->maxspeed*0.75f;
+			right += max((float)MAX_CLIMB_SPEED, pmove->maxspeed*0.65f);
 //#endif
 		//ensl friendly ladder speeds
 		
