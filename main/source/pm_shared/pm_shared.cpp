@@ -5504,14 +5504,6 @@ void PM_PreventMegaCrazyLerkPancakage() {
     float fraction;
 	float maxbasespeed=BALANCE_VAR(kLerkBaseSpeedMax) + (BALANCE_VAR(kAlienCelerityBonus)*2) * PM_GetCelerityLevel();
 
-	/*
-#ifdef AVH_SERVER
-	if (avh_heavyjp.value == 1) {
-		maxbasespeed = BALANCE_VAR(kLerkBaseSpeedMax)*2 + (BALANCE_VAR(kAlienCelerityBonus)*2) * PM_GetCelerityLevel();
-	}
-#endif
-	*/
-
 	//this allows me to set the lerk speed max differently when playing on ENSL/tournament servers
 	//playing with tournament mode in LANs is unlikely so i consider this acceptable
 	//a better solution would be to use a ensl variable that only exists in their version
