@@ -4656,7 +4656,7 @@ bool PM_FlapMove()
 
 #ifdef AVH_CLIENT
 		//playing on ensl?
-		AvHMUDeductAlienEnergy(pmove->fuser3, 0.025f);
+		//AvHMUDeductAlienEnergy(pmove->fuser3, 0.025f);
 #endif
 		
         // Added by mmcguire.
@@ -6459,7 +6459,8 @@ qboolean PM_CanFlap()
             if(AvHMUHasEnoughAlienEnergy(pmove->fuser3, kAlienEnergyFlap * (1.0f + Length(pmove->velocity) / 600.0f)))
 #else
 			//playing on ensl?
-			if (AvHMUHasEnoughAlienEnergy(pmove->fuser3, 0.025f))
+			//if (AvHMUHasEnoughAlienEnergy(pmove->fuser3, 0.025f)) //ENSL value
+			if (AvHMUHasEnoughAlienEnergy(pmove->fuser3, kAlienEnergyFlap * (1.0f + Length(pmove->velocity) / 600.0f)))
 #endif
             {
                 // Can't hold the button down
