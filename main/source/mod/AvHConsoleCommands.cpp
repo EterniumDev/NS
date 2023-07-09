@@ -789,24 +789,24 @@ BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if (FStrEq(pcmd, "setviewheight"))
 	{
-	if (theAvHPlayer && (theIsServerOp || theIsLocalServerOwner || (theAvHPlayer->GetIsInTopDownMode(false) == true) || theIsPlaytest || this->GetCheatsEnabled()))
-	{
-		float thenewheight = 0.0f;
-		if (sscanf(CMD_ARGV(1), "%f", &thenewheight) == 1)
+		if (theAvHPlayer && (theIsServerOp || theIsLocalServerOwner || (theAvHPlayer->GetIsInTopDownMode(false) == true) || theIsPlaytest || this->GetCheatsEnabled()))
 		{
-			//GetGameRules()->GetMapExtents().SetMaxViewHeight(thenewheight);
-			this->mMapExtents.SetMaxViewHeight(thenewheight);
+			float thenewheight = 0.0f;
+			if (sscanf(CMD_ARGV(1), "%f", &thenewheight) == 1)
+			{
+				//GetGameRules()->GetMapExtents().SetMaxViewHeight(thenewheight);
+				this->mMapExtents.SetMaxViewHeight(thenewheight);
 			
 
-			avh_commheight.value = thenewheight;
-			avh_commcustomcam.value = 1;
-			CVAR_SET_FLOAT("sv_commheight", avh_commheight.value);
-			CVAR_SET_FLOAT("sv_commcustomcam", avh_commcustomcam.value);
+				avh_commheight.value = thenewheight;
+				avh_commcustomcam.value = 1;
+				CVAR_SET_FLOAT("sv_commheight", avh_commheight.value);
+				CVAR_SET_FLOAT("sv_commcustomcam", avh_commcustomcam.value);
+			}
+			char* theMessage = UTIL_VarArgs("view height is %f\n", this->mMapExtents.GetMaxViewHeight());
+			theSuccess = true;
+			UTIL_SayText(theMessage, theAvHPlayer);
 		}
-		char* theMessage = UTIL_VarArgs("view height is %f\n", this->mMapExtents.GetMaxViewHeight());
-		theSuccess = true;
-		UTIL_SayText(theMessage, theAvHPlayer);
-	}
 	}	
 	else if (FStrEq(pcmd, kcSetGamma))
 	{
