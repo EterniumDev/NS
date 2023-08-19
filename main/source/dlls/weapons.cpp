@@ -896,20 +896,14 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
 
-	
-	ALERT(at_console, "autopick \n");
 	if (pPlayer)
 	{
 		AvHPlayer* thePlayer = dynamic_cast<AvHPlayer*>(pPlayer);
 		if (thePlayer) {
-			ALERT(at_console, "player's auto pickup is %d \n", thePlayer->mAutoSwapValue);
-
+			//ALERT(at_console, "player's auto pickup is %d \n", thePlayer->mAutoSwapValue);
 			ItemInfo ii;
 			this->GetItemInfo(&ii);
 
-
-			//kDefaultPrimaryWeaponWeight = 6
-			//g_pGameRules
 			AvHGamerules* theAvHRules = dynamic_cast<AvHGamerules*>(g_pGameRules);
 			if (thePlayer->mAutoSwapValue == 2 && thePlayer->m_pActiveItem && !theAvHRules->GetIsCombatMode() && ii.iWeight >= 6 && ii.iSlot == 0 && thePlayer->m_rgpPlayerItems[this->iItemSlot()] != 0) //added by alien for cl_autoswap
 			//auto pickup regardless if the player doesn't have a weapon out
