@@ -426,6 +426,10 @@ void AvHHive::ProcessHealing()
         float theHiveRegenAmount = BALANCE_VAR(kHiveRegenerationAmount);
         float theCombatModeScalar = /*GetGameRules()->GetIsCombatMode() ? (1.0f/BALANCE_VAR(kCombatModeTimeScalar)) :*/ 1.0f;
 
+		if (avh_fadedgamemode.value == 1) {
+			theHiveRegenAmount /= 2.0f;
+		}
+
 		this->pev->health = min((float)this->mMaxHitPoints, this->pev->health + theHiveRegenAmount*theCombatModeScalar);
 		theDidHeal = true;
 	}

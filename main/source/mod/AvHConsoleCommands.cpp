@@ -236,6 +236,7 @@ void ReportPlayer(CBasePlayer* inPlayer, const char* inCommand)
 	#endif
 }
 
+
 BOOL AvHGamerules::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
 //adding Nexus TunnelToClient functionality up here...

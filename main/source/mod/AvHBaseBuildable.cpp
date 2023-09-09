@@ -133,6 +133,7 @@ void AvHBaseBuildable::Init()
 	{
 		InitializeBuildable(this->pev->iuser3, this->pev->iuser4, this->pev->fuser1, this->mSelectID);
 	}
+
 	
 	this->mTimeAnimationDone = 0;
 	this->mLastAnimationPlayed = -1;
