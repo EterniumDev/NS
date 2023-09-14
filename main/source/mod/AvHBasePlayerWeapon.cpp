@@ -106,6 +106,8 @@ extern int				gWelderConstEventID;
 extern playermove_t*	pmove;
 extern cvar_t			weaponstay;
 
+
+
 Vector UTIL_GetRandomSpreadDir(unsigned int inSeed, int inShotNumber, const Vector& inBaseDirection, const Vector& inRight, const Vector& inUp, const Vector& inSpread)
 {
 	// Use player's random seed.
@@ -304,10 +306,10 @@ BOOL AvHBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay,
 		return FALSE;
 
 	// Don't reload while we're resupplying
-	if(this->mTimeOfLastResupply > 0)
-	{
-		return FALSE;
-	}
+	//if(this->mTimeOfLastResupply > 0)
+	//{
+	//	return FALSE;
+	//}
 
 	int j = min(iClipSize - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);	
 	
@@ -1141,8 +1143,23 @@ bool AvHBasePlayerWeapon::Resupply()
 
         const float theDelay = 1.0f;
 		//bugfix - don't let resupply shorten reload time
-        this->m_pPlayer->m_flNextAttack = max(this->m_pPlayer->m_flNextAttack,UTIL_WeaponTimeBase() + theDelay);
-        //this->mTimeOfLastResupply = UTIL_WeaponTimeBase() + theDelay;
+        //this->m_pPlayer->m_flNextAttack = max(this->m_pPlayer->m_flNextAttack,UTIL_WeaponTimeBase() + theDelay);
+
+		/*
+		if (this->m_iId != AVH_WEAPON_SONIC && this->m_iId != AVH_WEAPON_GRENADE_GUN)
+		{
+			this->m_flNextPrimaryAttack = max(this->m_flNextPrimaryAttack, (UTIL_WeaponTimeBase() + (theDelay * 2)));// Delay*2 because nextprimary attack gets decremented twice.
+		}
+		else
+		{
+			bool startingReload = (this->m_pPlayer->pev->button & IN_RELOAD && (this->m_iClip < this->GetClipSize()));
+			//Some edge cases here but it allows staged reload to start or continue while resupplying and adds resupply delay if not reloading.
+			if ((this->m_fInSpecialReload == 0 && !startingReload) || (this->m_fInSpecialReload >= 2 && this->m_iClip >= (this->GetClipSize() - 1)))
+				this->m_flNextPrimaryAttack = max(this->m_flNextPrimaryAttack, (UTIL_WeaponTimeBase() + (theDelay * 2)));
+		}
+		*/
+
+        this->mTimeOfLastResupply = UTIL_WeaponTimeBase() + theDelay;
 	}
 
 	return theResupplied;

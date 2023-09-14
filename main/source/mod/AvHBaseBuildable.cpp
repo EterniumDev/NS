@@ -638,11 +638,11 @@ void AvHBaseBuildable::UpdateOnRecycle()
 
 Vector AvHBaseBuildable::EyePosition( ) {
 
-	if ( this->pev->iuser3 == AVH_USER3_HIVE )
+	if ( this->pev->iuser3 == AVH_USER3_HIVE || this->pev->iuser3 == AVH_USER3_TURRET || this->pev->iuser3 == AVH_USER3_SIEGETURRET || this->pev->iuser3 == AVH_USER3_OFFENSE_CHAMBER)
 		return CBaseEntity::EyePosition();
 
 	vec3_t position=AvHSHUGetRealLocation(this->pev->origin, this->pev->mins, this->pev->maxs);
-	position[2]+=45; //pretty sure this was 10 in previous versions and thats why ocs and turrets shot from their bases
+	//position[2]+=45; //pretty sure this was 10 in previous versions and thats why ocs and turrets shot from their bases
 	return position;
 }
 void AvHBaseBuildable::StartRecycle()
