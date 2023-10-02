@@ -3275,7 +3275,7 @@ bool AvHSHUClientTraceWaypoint(const vec3_t& inStartPos, const vec3_t& inEndPos,
 					{
 						// and if surface isn't under water, lava, in the sky, etc.
 						int thePointContents = gEngfuncs.PM_PointContents(tr.endpos, NULL);
-						if(thePointContents == CONTENTS_EMPTY)
+						if(thePointContents == CONTENTS_EMPTY || thePointContents == 0)
 						{
 							// and if there's enough room to build
 
