@@ -101,6 +101,9 @@ extern cvar_t avh_last_stand;
 extern cvar_t avh_self_weld;
 extern cvar_t avh_golden_deagle;
 extern cvar_t avh_fadedgamemode;
+extern cvar_t avh_marinepassiveincome;
+extern cvar_t avh_alienpassiveincome;
+
 extern cvar_t avh_commheight;
 extern cvar_t avh_commcustomcam;
 extern cvar_t avh_heavyjp;

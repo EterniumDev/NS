@@ -361,6 +361,8 @@ AvHGamerules::AvHGamerules() : mTeamA(TEAM_ONE), mTeamB(TEAM_TWO)
 	RegisterServerVariable(&avh_self_weld);
 	RegisterServerVariable(&avh_golden_deagle);
 	RegisterServerVariable(&avh_fadedgamemode);
+	RegisterServerVariable(&avh_marinepassiveincome);
+	RegisterServerVariable(&avh_alienpassiveincome);
 	RegisterServerVariable(&avh_commheight);
 	RegisterServerVariable(&avh_commcustomcam);
 	RegisterServerVariable(&avh_heavyjp);
@@ -3700,6 +3702,15 @@ void AvHGamerules::Think(void)
 			this->mTeamB.SetTeamResources(this->mTeamB.GetTeamResources() + 1);
 		}
 
+		if (avh_marinepassiveincome.value > 0 && GetGameStarted())
+		{
+			this->mTeamA.SetTeamResources(this->mTeamA.GetTeamResources() + avh_marinepassiveincome.value);
+		}
+
+		if (avh_alienpassiveincome.value > 0 && GetGameStarted())
+		{
+			this->mTeamB.SetTeamResources(this->mTeamB.GetTeamResources() + avh_alienpassiveincome.value);
+		}
 	}
 
 	this->mMiniMap.Process();

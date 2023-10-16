@@ -152,6 +152,8 @@ cvar_t  avh_last_stand				= {"sv_last_stand", "0", FCVAR_SERVER };
 cvar_t  avh_self_weld				= {"sv_self_weld", "1", FCVAR_SERVER };
 cvar_t  avh_golden_deagle			= {"sv_golden_deagle", "0", FCVAR_SERVER };
 cvar_t  avh_fadedgamemode           = {"sv_fadedgamemode", "0", FCVAR_SERVER };
+cvar_t  avh_marinepassiveincome		= {"sv_marinepassiveincome", "0", FCVAR_SERVER };
+cvar_t  avh_alienpassiveincome		= {"sv_alienpassiveincome", "0", FCVAR_SERVER };
 cvar_t  avh_commheight				= {"sv_commheight", "300", FCVAR_SERVER };
 cvar_t  avh_commcustomcam			= {"sv_commcustomcam", "0", FCVAR_SERVER };
 cvar_t  avh_heavyjp					= {"sv_heavyjp", "0", FCVAR_SERVER };
@@ -302,6 +304,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&avh_self_weld);
 	CVAR_REGISTER(&avh_golden_deagle);
 	CVAR_REGISTER(&avh_fadedgamemode);
+	CVAR_REGISTER(&avh_marinepassiveincome);
+	CVAR_REGISTER(&avh_alienpassiveincome);
 	CVAR_REGISTER(&avh_commheight);
 	CVAR_REGISTER(&avh_commcustomcam);
 	CVAR_REGISTER(&avh_heavyjp);
