@@ -755,7 +755,8 @@ private:
 
 	float				mLastTimeInCommandStation;
 	float				mLastTimeCheckedRedemption;
-	float				mLastTimeRedemptionTriggered;
+	public: float		mLastTimeRedemptionTriggered;
+	private:
 
 	float				mLastTimeStartedPlaying;
 

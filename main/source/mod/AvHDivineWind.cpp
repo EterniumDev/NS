@@ -145,9 +145,37 @@ void AvHDivineWind::Explode(void)
 		// Explode!
 		EMIT_SOUND(thePlayer->edict(), CHAN_AUTO, kDivineWindExplodeSound, 1.0f, ATTN_NORM);
 
-		// Kill ourself (set team to 0 so we always take damage)
-		this->pev->team = 0;
-		thePlayer->TakeDamage(this->pev, this->pev, 1000, NS_DMG_NORMAL | DMG_ALWAYSGIB);
+
+		// Do we have the redemption?
+		int theRedemptionLevel = AvHGetAlienUpgradeLevel(thePlayer->pev->iuser4, MASK_UPGRADE_3);
+		bool haveWeRedeemed = false;
+
+		//Check if VAMPIRISM is not replacing REDEMPTION
+		if (theRedemptionLevel > 0 && avh_modvampirism.value == 0)
+		{
+			if (thePlayer->IsAlive())
+			{
+				const float kPullBackTime = 65.0f;
+				if ((thePlayer->mLastTimeRedemptionTriggered == -1) || (gpGlobals->time > (thePlayer->mLastTimeRedemptionTriggered + kPullBackTime)))
+				{
+					if (thePlayer->Redeem())
+					{
+						thePlayer->mLastTimeRedemptionTriggered = gpGlobals->time;
+						haveWeRedeemed = true;
+
+						this->mPrimed = false;
+					}
+				}
+			}
+		}
+
+		if (haveWeRedeemed == false)
+		{
+			// Kill ourself (set team to 0 so we always take damage)
+			this->pev->team = 0;
+			thePlayer->TakeDamage(this->pev, this->pev, 1000, NS_DMG_NORMAL | DMG_ALWAYSGIB);
+		}
+
 
 		// Add explosive force
 		float theDamage = this->mDamage * AvHPlayerUpgrade::GetAlienRangedDamageUpgrade(this->m_pPlayer->pev->iuser4);
