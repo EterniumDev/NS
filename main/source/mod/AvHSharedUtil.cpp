@@ -1013,7 +1013,8 @@ bool AvHSHUGetAreSpecialBuildingRequirementsMet(AvHMessageID inMessageID, vec3_t
 
 		theFlattenedInLocation[0] = inLocation[0];
 		theFlattenedInLocation[1] = inLocation[1];
-		theFlattenedInLocation[2] = 0;
+		//theFlattenedInLocation[2] = 0;
+		theFlattenedInLocation[2] = inLocation[2];
 
 		theResourceBuildingRadius = 60;
 
@@ -1027,7 +1028,7 @@ bool AvHSHUGetAreSpecialBuildingRequirementsMet(AvHMessageID inMessageID, vec3_t
 				if(AvHSHUGetEntityLocation(*current,theLocation))
 				{
 					//flatten to 2 dimensions
-					theLocation[2] = 0;
+					//theLocation[2] = 0;
 
 					//space = radius of both buildings combined
 					theTotalMinRadius = theResourceBuildingRadius;
