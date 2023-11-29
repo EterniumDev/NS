@@ -83,6 +83,9 @@ Scheme
 		"TitleButtonBgColor"		"ControlBG"
 		"TitleButtonDisabledFgColor"	"TitleDimText"
 		"TitleButtonDisabledBgColor"	"TitleDimBG"
+		
+		"ProportionalBaseWidth" "1920"        // if the display resolution is above this,
+        "ProportionalBaseHeight" "1080"        //  ui elements will be scaled.
 
 		"TextCursorColor"			"BaseText"			// color of the blinking text cursor in text entries
 		"URLTextColor"			"BrightBaseText"	// color that URL's show up in chat window
