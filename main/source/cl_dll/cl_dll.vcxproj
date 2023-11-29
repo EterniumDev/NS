@@ -85,7 +85,7 @@
       <ImportLibrary>$(IntDir)cl_dll.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>
       </TreatLinkerWarningAsErrors>
       <AdditionalOptions>/NODEFAULTLIB:LIBCMT %(AdditionalOptions)</AdditionalOptions>
