@@ -780,7 +780,7 @@ void AvHOverviewMap::DrawMiniMapEntity(const DrawInfo& inDrawInfo, const Drawabl
 			{
 				tFont.Load("sprites/nl/font_arial"); //font_arialsmall
 				//string theText;
-				char bufferb[1024];
+				char bufferb[256];
 
 
 				if ((inEntity.mEntityNumber >= 1) && (inEntity.mEntityNumber <= gEngfuncs.GetMaxClients()))
@@ -811,7 +811,7 @@ void AvHOverviewMap::DrawMiniMapEntity(const DrawInfo& inDrawInfo, const Drawabl
 								text = text.substr(0, max((int)CVAR_GET_FLOAT("cl_showminimapname"),1));
 							}
 
-							tFont.DrawStringCustom(x +12 - text.length()*3, y - 18, text.c_str(), tR, tG, tB, 0);
+							tFont.DrawStringCustom(x +12 - text.length()*3, y - 18, text.c_str(), tR, tG, tB, kRenderTransAdd);
 						}
 						
 					}
