@@ -96,7 +96,10 @@ int			old_mouse_x, old_mouse_y, mx_accum, my_accum;
 float		mouse_x, mouse_y;
 
 static int	restore_spi;
-static int	originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
+//// Previous code from Quake era forced mouse accel. Also adjusted launch params in IN_StartupMouse. See comments in IN_StartupMouse.
+//static int	originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
+////Mouse accel forced off.
+static int	originalmouseparms[3], newmouseparms[3] = { 0, 0, 0 };
 static int	mouseactive = 0;
 int			mouseinitialized;
 static int	mouseparmsvalid;
@@ -387,16 +390,29 @@ void IN_StartupMouse (void)
 
 	if (mouseparmsvalid)
 	{
-		if ( gEngfuncs.CheckParm ("-noforcemspd", NULL ) ) 
-			newmouseparms[2] = originalmouseparms[2];
+		// Original mouse parameter code before disabling forced mouse acceleration.
+		//if ( gEngfuncs.CheckParm ("-noforcemspd", NULL ) ) 
+		//	newmouseparms[2] = originalmouseparms[2];
+		//
+		//if ( gEngfuncs.CheckParm ("-noforcemaccel", NULL ) ) 
+		//{
+		//	newmouseparms[0] = originalmouseparms[0];
+		//	newmouseparms[1] = originalmouseparms[1];
+		//}
+		//
+		//if ( gEngfuncs.CheckParm ("-noforcemparms", NULL ) ) 
+		//{
+		//	newmouseparms[0] = originalmouseparms[0];
+		//	newmouseparms[1] = originalmouseparms[1];
+		//	newmouseparms[2] = originalmouseparms[2];
+		//}
 
-		if ( gEngfuncs.CheckParm ("-noforcemaccel", NULL ) ) 
-		{
-			newmouseparms[0] = originalmouseparms[0];
-			newmouseparms[1] = originalmouseparms[1];
-		}
+		// Legacy default settings behavior for players that got used to it
+		if (gEngfuncs.CheckParm("-forcemaccel", NULL))
+			newmouseparms[2] = 1;
 
-		if ( gEngfuncs.CheckParm ("-noforcemparms", NULL ) ) 
+		// Windows parameters in game. For people with desktop accel that want it in game or people that have custom accel curves from registry edits.
+		if (gEngfuncs.CheckParm("-noforcemparms", NULL))
 		{
 			newmouseparms[0] = originalmouseparms[0];
 			newmouseparms[1] = originalmouseparms[1];
