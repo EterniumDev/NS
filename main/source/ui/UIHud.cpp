@@ -567,10 +567,10 @@ void UIHud::ShutdownMusic(void)
 		this->StopMusic();
 
         this->StopInternetStream();
+		//Commented out to fix the dreaded hang on exit! Let HL and the OS take care of it.
+		//mFMOD->FSOUND_Close();
 
-		mFMOD->FSOUND_Close();
-
-        FMOD_FreeInstance(mFMOD);
+        //FMOD_FreeInstance(mFMOD);
         mFMOD = NULL;
         
         this->mSoundInitialized = false;
