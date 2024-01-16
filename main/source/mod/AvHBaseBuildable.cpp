@@ -1327,7 +1327,7 @@ int	AvHBaseBuildable::TakeDamage(entvars_t* inInflictor, entvars_t* inAttacker, 
 				if (avh_modvampirism.value != 0 && GetHasUpgrade(atkPlayer->pev->iuser4, MASK_UPGRADE_3) && (atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER1 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER2 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER3 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER4 || atkPlayer->pev->iuser3 == AVH_USER3_ALIEN_PLAYER5))
 				{
 					int theVampirismLevel = AvHGetAlienUpgradeLevel(atkPlayer->pev->iuser4, MASK_UPGRADE_3);
-					vamp = 0.0f + (((float)theVampirismLevel)*0.1f);
+					vamp = 0.0f + (((float)theVampirismLevel)*0.15f);
 				}
 
 				if (vamp > 0)
