@@ -7376,6 +7376,16 @@ float AvHHud::GetServerVariableFloat(const char* inName) const
 
 }
 
+bool AvHHud::GetDrawOrderOverlay() const
+{
+	return this->mDrawOrderOverlay;
+}
+
+void AvHHud::SetDrawOrderOverlay(bool drawOverlay)
+{
+	mDrawOrderOverlay = drawOverlay;
+}
+
 
 /**
  * Prints the call stack when an unhandled exception occurs.

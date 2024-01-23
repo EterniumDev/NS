@@ -680,6 +680,7 @@ void AvHNoBuild::Spawn()
 	this->pev->rendermode = kRenderTransAdd;
 	this->pev->renderamt = 0;
 	//this->pev->effects = EF_NODRAW;
+
 }
 
 

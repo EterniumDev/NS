@@ -1265,7 +1265,8 @@ void CL_DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int ac
 			
 			if(!theOverrideImpulse)
 			{
-				if (in_impulse == ORDER_ACK) {
+				if (in_impulse == ORDER_ACK)
+				{
 					gHUD.SetDrawOrderOverlay(false);
 				}
 

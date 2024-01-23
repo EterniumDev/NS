@@ -10661,7 +10661,7 @@ void AvHPlayer::UpdateTopDownMode()
 {
     if((this->mClientInTopDownMode != this->mInTopDownMode) || (this->mSpecialPASOrigin != this->mClientSpecialPASOrigin))
     {
-		vec3_t& angles = this->mInTopDownMode ? this->mSpecialPASOrigin : this->mAnglesBeforeTopDown;
+		vec3_t& angles = this->mInTopDownMode ? this->mSpecialPASOrigin : this->mViewAnglesBeforeTopDown;
 		float position[3] = { angles.x, angles.y, angles.z };
 		NetMsg_SetTopDown_Position( this->pev, this->mInTopDownMode, position );
 
