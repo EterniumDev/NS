@@ -75,6 +75,18 @@ DESCRIPTION INFO_OPTIONS
 		{ "3.000000" }
 	}
 
+	"hud_drawwaypoints"
+	{
+		"Show waypoints on HUD"
+		{
+			LIST
+			"Never" "0"
+			"Always" "1"
+			"Until acknowledged" "2"
+		}
+		{ "2.000000" }
+	}
+
 	"cl_hudmapzoom"
 	{
 		"Marine minimap zoom level"

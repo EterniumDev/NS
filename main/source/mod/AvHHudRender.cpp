@@ -3057,7 +3057,10 @@ void AvHHud::RenderCommonUI()
         DrawInfoLocationText();
         DrawHUDStructureNotification();
 
-        this->DrawOrders();
+		if (CVAR_GET_FLOAT("hud_drawwaypoints") == 1 || (CVAR_GET_FLOAT("hud_drawwaypoints") == 2.0f && this->GetDrawOrderOverlay()))
+		{
+			this->DrawOrders();
+		}
         this->DrawHelpIcons();
 		// : 0000971
 		this->DrawTeammateOrders();

@@ -2806,6 +2806,9 @@ int	AvHHud::MsgFunc_SetOrder(const char* pszName, int iSize, void* pbuf)
 	NetMsg_SetOrder( pbuf, iSize, theNewOrder );
 
 	AvHChangeOrder(this->mOrders, theNewOrder);
+
+	this->mDrawOrderOverlay = true;
+
 	
 	// Give feedback on order
 	this->OrderNotification(theNewOrder);
@@ -3825,6 +3828,7 @@ void AvHHud::Init(void)
     this->mCrosshairB         = 0;
 
 	this->mDrawCombatUpgradeMenu = false;
+	this->mDrawOrderOverlay = true;
 
 	// Initialize viewport
 	this->mViewport[0] = this->mViewport[1] = this->mViewport[2] = this->mViewport[3] = 0;

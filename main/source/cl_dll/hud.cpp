@@ -268,6 +268,8 @@ void CHud :: Init( void )
 	CVAR_CREATE(kvCommSelectionHudGreen, "153", FCVAR_ARCHIVE);
 	CVAR_CREATE(kvCommSelectionHudBlue, "255", FCVAR_ARCHIVE);
 
+	CVAR_CREATE("hud_drawwaypoints", "2", FCVAR_ARCHIVE);
+
 	m_pSpriteList = NULL;
 
 	// Clear any old HUD list
