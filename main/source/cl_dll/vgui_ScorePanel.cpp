@@ -204,7 +204,7 @@ vgui::Color BuildColor( int R, int G, int B, float gamma )
 //-----------------------------------------------------------------------------
 // Purpose: Create the ScoreBoard panel
 //-----------------------------------------------------------------------------
-ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tall)
+ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(0, 0, ScreenWidth(), ScreenHeight())
 {
 	CSchemeManager* pSchemes = gViewPort->GetSchemeManager();
 	SchemeHandle_t hTitleScheme = pSchemes->getSchemeHandle("Scoreboard Title Text");
@@ -214,7 +214,19 @@ ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tal
 	Font* smallfont = pSchemes->getFont(hSmallScheme);
 	Font* tinyfont = pSchemes->getFont(hTinyScheme);
 
-	setBgColor(0, 0, 0, 96);
+	m_BGPanel = new Panel(0, 0, 0, 96);
+
+	m_BGPanel->setBgColor(0, 0, 0, 96);
+	m_BGPanel->setParent(this);
+	m_BGPanel->setPos(x, y);
+	m_BGPanel->setSize(wide, tall);
+	m_BGPanel->setBounds(x, y, wide, tall);
+	m_BGPanel->addInputSignal(this);
+
+
+
+	//setBgColor(0, 0, 0, 96);
+	setBgColor(0, 0, 0, 255);
 	m_pCurrentHighlightLabel = NULL;
 	m_iHighlightRow = -1;
 	// : 0001073
@@ -284,7 +296,7 @@ ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tal
 	}
 	m_TitleLabel.setBounds(xpos, 4, wide, SBOARD_TITLE_SIZE_Y);
 	m_TitleLabel.setContentFitted(false);
-	m_TitleLabel.setParent(this);
+	m_TitleLabel.setParent(m_BGPanel);
 
 	// Setup the header (labels like "name", "class", etc..).
 	m_HeaderGrid.SetDimensions(NUM_COLUMNS, 1);
@@ -347,7 +359,7 @@ ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tal
 
 	m_HeaderGrid.AutoSetRowHeights();
 	m_HeaderGrid.setBounds(X_BORDER, SBOARD_TITLE_SIZE_Y, wide - X_BORDER*2, m_HeaderGrid.GetRowHeight(0));
-	m_HeaderGrid.setParent(this);
+	m_HeaderGrid.setParent(m_BGPanel);
 	m_HeaderGrid.setBgColor(0,0,0,255);
 
 
@@ -356,7 +368,7 @@ ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tal
 	m_HeaderGrid.getBounds(headerX, headerY, headerWidth, headerHeight);
 	m_PlayerList.setBounds(headerX, headerY+headerHeight, headerWidth, tall - headerY - headerHeight - 6);
 	m_PlayerList.setBgColor(0,0,0,255);
-	m_PlayerList.setParent(this);
+	m_PlayerList.setParent(m_BGPanel);
 
 	for(int row=0; row < NUM_ROWS; row++)
 	{
@@ -387,11 +399,11 @@ ScorePanel::ScorePanel(int x, int y, int wide, int tall) : Panel(x, y, wide, tal
 	// Add the hit test panel. It is invisible and traps mouse clicks so we can go into squelch mode.
 	m_HitTestPanel.setBgColor(0,0,0,255);
 	m_HitTestPanel.setParent(this);
-	m_HitTestPanel.setBounds(0, 0, wide, tall);
+	m_HitTestPanel.setBounds(0, 0, ScreenWidth(), ScreenWidth());
 	m_HitTestPanel.addInputSignal(this);
 
 	m_pCloseButton = new CommandButton( "x", wide-XRES(12 + 4), YRES(2), XRES( 12 ) , YRES( 12 ) );
-	m_pCloseButton->setParent( this );
+	m_pCloseButton->setParent(m_BGPanel);
 	m_pCloseButton->addActionSignal( new CMenuHandler_StringCommandWatch( "-showscores", true ) );
 	m_pCloseButton->setBgColor(0,0,0,255);
 	m_pCloseButton->setFgColor( 255, 255, 255, 0 );
