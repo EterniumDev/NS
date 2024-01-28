@@ -60,7 +60,7 @@ private:
 private:
 
 	Label			m_TitleLabel;
-	
+
 	// Here is how these controls are arranged hierarchically.
 	// m_HeaderGrid
 	//     m_HeaderLabels
@@ -73,7 +73,7 @@ private:
 	CLabelHeader	m_HeaderLabels[NUM_COLUMNS];			// Labels above the 
 	CLabelHeader	*m_pCurrentHighlightLabel;
 	int				m_iHighlightRow;
-	
+
 	vgui::CListBox	m_PlayerList;
 	CGrid			m_PlayerGrids[NUM_ROWS];				// The grid with player and team info. 
 	CLabelHeader	m_PlayerEntries[NUM_COLUMNS][NUM_ROWS];	// Labels for the grid entries.
@@ -81,7 +81,7 @@ private:
 	Panel*			m_BGPanel;
 	ScorePanel::HitTestPanel	m_HitTestPanel;
 	CommandButton				*m_pCloseButton;
-	CLabelHeader*	GetPlayerEntry(int x, int y)	{return &m_PlayerEntries[x][y];}
+	CLabelHeader*	GetPlayerEntry(int x, int y) { return &m_PlayerEntries[x][y]; }
 
 	vgui::BitmapTGA *m_pTrackerIcon;
 
@@ -103,7 +103,7 @@ private:
 	std::vector<std::vector<int>> player_colors = {
 	{154,5,102},{199,131,7},{17,59,132},{136,188,6},{203,203,203},{0,0,0,0}
 	};
-	std::list<int> players_marine_team ;
+	std::list<int> players_marine_team;
 	std::list<int> players_alien_team;
 	int m_pColorIndex = -1;
 	// Player Color indicators
@@ -116,7 +116,7 @@ private:
 	unsigned int	m_iLastFrameIncrementTime;
 
 public:
-	
+
 	int				m_iNumTeams;
 	int				m_iPlayerNum;
 	int				m_iShowscoresHeld;
@@ -129,29 +129,29 @@ public:
 	int				m_fLastKillTime;
 public:
 
-	ScorePanel(int x,int y,int wide,int tall);
+	ScorePanel(int x, int y, int wide, int tall);
 
-	void Update( void );
-	
+	void Update(void);
+
 	int GetIconFrame(void);
 
-	void SortTeams( void );
+	void SortTeams(void);
 	void SortActivePlayers(char* inTeam, bool inSortByEntityIndex = false);
-	void SortPlayers( int iTeam, char *team, bool inSortByEntityIndex = false);
-	void RebuildTeams( void );
+	void SortPlayers(int iTeam, char *team, bool inSortByEntityIndex = false);
+	void RebuildTeams(void);
 	bool SetSquelchMode(bool inMode);
 
 	void FillGrid();
 
-	void DeathMsg( int killer, int victim );
+	void DeathMsg(int killer, int victim);
 
-	void Initialize( void );
+	void Initialize(void);
 
-	void Open( void );
+	void Open(void);
 
 	void MouseOverCell(int row, int col);
 
-// InputSignal overrides.
+	// InputSignal overrides.
 public:
 
 	virtual void mousePressed(MouseCode code, Panel* panel);
@@ -161,11 +161,11 @@ public:
 	{
 		vgui::BitmapTGA *pIcon = NULL;
 
-		for (int i = 0; i < m_CustomIconList.size(); i++) 
+		for (int i = 0; i < m_CustomIconList.size(); i++)
 		{
-			if(inIconName == m_CustomIconList[i].second)
+			if (inIconName == m_CustomIconList[i].second)
 			{
-				if(m_CustomIconList[i].first)
+				if (m_CustomIconList[i].first)
 				{
 					pIcon = m_CustomIconList[i].first;
 					break;
@@ -175,11 +175,11 @@ public:
 		return pIcon;
 	}
 
-	void DeleteCustomIcons( void )
+	void DeleteCustomIcons(void)
 	{
-		for (int i = 0; i < m_CustomIconList.size(); i++) 
+		for (int i = 0; i < m_CustomIconList.size(); i++)
 		{
-			if(m_CustomIconList[i].first)
+			if (m_CustomIconList[i].first)
 				delete m_CustomIconList[i].first;
 
 			m_CustomIconList[i].first = NULL;
