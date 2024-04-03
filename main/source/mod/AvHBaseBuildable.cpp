@@ -1416,7 +1416,7 @@ void AvHBaseBuildable::WorldUpdate()
 
 					if(theBaseEntity->TakeDamage(this->pev, theAttacker->pev, ((float)BALANCE_VAR(kElectricalDamage))*(1.0f + theUpgradeLevel* 0.15f), DMG_GENERIC) > 0)
 					{
-
+						/*
 							MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 								WRITE_BYTE(TE_BEAMENTPOINT);
 								WRITE_SHORT(theBaseEntity->entindex());
@@ -1436,6 +1436,27 @@ void AvHBaseBuildable::WorldUpdate()
 								WRITE_BYTE( 200 );	// brightness
 								WRITE_BYTE( 10 );	// speed
 							MESSAGE_END();
+							*/
+						MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+						WRITE_BYTE(TE_BEAMPOINTS);
+						WRITE_COORD(this->pev->origin.x);
+						WRITE_COORD(this->pev->origin.y);
+						WRITE_COORD(this->pev->origin.z);
+						WRITE_COORD(theBaseEntity->pev->origin.x);
+						WRITE_COORD(theBaseEntity->pev->origin.y);
+						WRITE_COORD(theBaseEntity->pev->origin.z);
+						WRITE_SHORT(this->mElectricalSprite);
+						WRITE_BYTE(0); // framestart
+						WRITE_BYTE((int)15); // framerate
+						WRITE_BYTE((int)(2)); // life
+						WRITE_BYTE(60);  // width
+						WRITE_BYTE(15);   // noise
+						WRITE_BYTE((int)this->pev->rendercolor.x);   // r, g, b
+						WRITE_BYTE((int)this->pev->rendercolor.y);   // r, g, b
+						WRITE_BYTE((int)this->pev->rendercolor.z);   // r, g, b
+						WRITE_BYTE(200);    // brightness
+						WRITE_BYTE(10);        // speed
+						MESSAGE_END();
 						
 							gSoundListManager.PlaySoundInList(kElectricSparkSoundList, this, CHAN_AUTO, .7f);
 						
