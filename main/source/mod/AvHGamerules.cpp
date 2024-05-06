@@ -814,7 +814,7 @@ bool AvHGamerules::CanPlayerBeKilled(CBasePlayer* inPlayer)
 void AvHGamerules::CalculateMapGamma()
 {
 	// Set defaults
-	this->mCalculatedMapGamma = kDefaultMapGamma;
+	//this->mCalculatedMapGamma = kDefaultMapGamma;
 
 	// Fetch from map extents entity if the map has one
 	FOR_ALL_ENTITIES(kwsGammaClassName, AvHGamma*)
@@ -822,6 +822,8 @@ void AvHGamerules::CalculateMapGamma()
 	END_FOR_ALL_ENTITIES(kwsGammaClassName)
 
 	this->mCalculatedMapGamma = true;
+	this->mMapGamma = kDefaultMapGamma;
+
 }
 
 // : 0001073
