@@ -908,12 +908,12 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
     { 
         FindNextPlayer( (ButtonPressed & IN_MOVELEFT) ? true:false );
         
-//        if ( g_iUser1 == OBS_ROAMING )
-//        {
-//            gEngfuncs.SetViewAngles( vJumpAngles );
-//            iJumpSpectator = 1;
-//            
-//        }
+        if ( g_iUser1 == OBS_ROAMING )
+        {
+            gEngfuncs.SetViewAngles( vJumpAngles );
+            iJumpSpectator = 1;
+            
+        }
 
         // lease directed mode if player want to see another player
         m_autoDirector->value = 0.0f;
