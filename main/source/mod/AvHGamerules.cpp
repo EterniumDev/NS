@@ -230,6 +230,7 @@ extern cvar_t							avh_gametime;
 extern cvar_t							avh_ironman;
 extern cvar_t                           avh_mapvoteratio;
 extern cvar_t							avh_structurelimit;
+extern cvar_t							avh_freespectatormode;
 
 BOOL IsSpawnPointValid( CBaseEntity *pPlayer, CBaseEntity *pSpot );
 inline int FNullEnt( CBaseEntity *ent ) { return (ent == NULL) || FNullEnt( ent->edict() ); }
@@ -330,6 +331,7 @@ AvHGamerules::AvHGamerules() : mTeamA(TEAM_ONE), mTeamB(TEAM_TWO)
 
     RegisterServerVariable(&avh_blockscripts);
 	RegisterServerVariable(&avh_jumpmode);
+	RegisterServerVariable(&avh_freespectatormode);
 	RegisterServerVariable(&avh_reverselerk);
 	RegisterServerVariable(&avh_fastonoscharge);
 	RegisterServerVariable(&avh_bhoplimit);

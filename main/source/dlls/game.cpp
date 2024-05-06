@@ -122,6 +122,9 @@ cvar_t	avh_combattime				= {kvCombatTime, "10", FCVAR_SERVER};
 cvar_t  avh_mapvoteratio            = {kvMapVoteRatio, ".6", FCVAR_SERVER};
 cvar_t  avh_blockscripts            = {kvBlockScripts, "1", FCVAR_SERVER};
 cvar_t  avh_jumpmode				= {kvJumpMode, "1", FCVAR_SERVER};
+
+cvar_t  avh_freespectatormode = { kvFreeSpectatorMode, "1", FCVAR_SERVER };
+
 cvar_t  avh_reverselerk				= {kvReverseLerk, "0", FCVAR_SERVER};
 cvar_t  avh_fastonoscharge			= {kvFastOnosCharge, "0", FCVAR_SERVER};
 cvar_t  avh_bhoplimit				= {kvBhopLimit, "2", FCVAR_SERVER};
@@ -311,13 +314,13 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&avh_heavyjp);
 	CVAR_REGISTER(&avh_fallsafe);
 	CVAR_REGISTER(&avh_worldlight);
-	
-	
+	CVAR_REGISTER(&avh_freespectatormode);
 
 
     // TODO: Remove
     CVAR_REGISTER (&avh_ironman);
 	CVAR_REGISTER (&avh_ironmantime);
+
 
 #ifdef DEBUG
     CVAR_REGISTER (&avh_spawninvulnerabletime);

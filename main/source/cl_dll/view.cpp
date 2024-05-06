@@ -1792,6 +1792,7 @@ int V_FindViewModelByWeaponModel(int weaponindex, int inUser3, int inUser4)
 						if ( !SafeStrcmp( weaponModel->name, theCurrentPWeapon) )
 						{
 							theViewModelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex( theCurrentVWeapon );
+							return theViewModelIndex;
 						}
 						i++;
 					}
@@ -1806,6 +1807,7 @@ int V_FindViewModelByWeaponModel(int weaponindex, int inUser3, int inUser4)
 						if ( !SafeStrcmp( weaponModel->name, theCurrentPWeapon) )
 						{
 							theViewModelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex( theCurrentVWeapon );
+							return theViewModelIndex;
 						}
 						i++;
 					}
