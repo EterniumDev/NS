@@ -57,6 +57,9 @@ extern int g_weaponselect;
 extern int in_impulse;
 bool sTheDebugBool = false;
 
+extern int g_iVguiSideMouse;
+//extern int g_iVguiSideMouseRelease;
+
 PieNode* AvHPieMenuHandler::sLastNodeHighlighted = NULL;
 string AvHPieMenuHandler::sPieMenuName = "";
 float AvHPieMenuHandler::sTimeLastNodeHighlighted = 0.0f;
@@ -365,6 +368,12 @@ void AvHPieMenuHandler::cursorExited(Panel* panel)
 
 void AvHPieMenuHandler::mousePressed(MouseCode code,Panel* panel)
 {
+	// 2024: Don't register side mouse button clicks.
+	if (code == vgui::MOUSE_LEFT && g_iVguiSideMouse)
+	{
+		return;
+	}
+
 	ClosePieMenu();
 	//CenterPrint("AvHPieMenuHandler::mousePressed.\n");
 }
