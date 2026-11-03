@@ -1837,6 +1837,9 @@
     <ClInclude Include="..\textrep\TRTag.h" />
     <ClInclude Include="..\textrep\TRTagValuePair.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\util\Balance.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

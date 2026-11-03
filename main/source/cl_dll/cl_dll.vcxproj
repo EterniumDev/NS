@@ -950,6 +950,9 @@
   <ItemGroup>
     <Library Include="..\lib\public\game_controls.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\util\Balance.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

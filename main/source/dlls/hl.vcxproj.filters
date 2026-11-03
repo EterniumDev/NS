@@ -905,4 +905,7 @@
       <Filter>textrep</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\util\Balance.txt" />
+  </ItemGroup>
 </Project>
