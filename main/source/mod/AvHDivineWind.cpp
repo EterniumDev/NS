@@ -149,13 +149,19 @@ void AvHDivineWind::Explode(void)
 		// Do we have the redemption?
 		int theRedemptionLevel = AvHGetAlienUpgradeLevel(thePlayer->pev->iuser4, MASK_UPGRADE_3);
 		bool haveWeRedeemed = false;
+		const float kPullBackTime = 65.0f;
+		Vector		explosionSpot = thePlayer->pev->origin;
+		Vector		knockbackSpot = this->pev->origin;
 
+
+		//Check if VAMPIRISM is not replacing REDEMPTION
+		//REDEMPTION WILL TELEPORT US AFTER WE DO THE EXPLOSION
 		//Check if VAMPIRISM is not replacing REDEMPTION
 		if (theRedemptionLevel > 0 && avh_modvampirism.value == 0)
 		{
 			if (thePlayer->IsAlive())
 			{
-				const float kPullBackTime = 65.0f;
+
 				if ((thePlayer->mLastTimeRedemptionTriggered == -1) || (gpGlobals->time > (thePlayer->mLastTimeRedemptionTriggered + kPullBackTime)))
 				{
 					if (thePlayer->Redeem())
@@ -187,20 +193,22 @@ void AvHDivineWind::Explode(void)
 
 		float theForceScalar = .05f*theDamage;
         int theRadius = BALANCE_VAR(kDivineWindRadius);
-		AvHSUExplosiveForce(this->pev->origin, theRadius, theForceScalar, thePlayer);
+		AvHSUExplosiveForce(knockbackSpot, theRadius, theForceScalar, thePlayer);
 
 		// Make sure weapon team is the same as player team so we don't damage friends when friendly fire is off
 		this->pev->team = thePlayer->pev->team;
-		::RadiusDamage(thePlayer->pev->origin, this->pev, thePlayer->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_MELT);
+		::RadiusDamage(explosionSpot, this->pev, thePlayer->pev, theDamage, theRadius, CLASS_NONE, NS_DMG_MELT);
 		
 		// Shake view of those around us!
 		float theShakeAmplitude = 30;
 		float theShakeFrequency = 100;
 		float theShakeDuration = 1.5f;
 		float theShakeRadius = theRadius;
-		UTIL_ScreenShake(thePlayer->pev->origin, theShakeAmplitude, theShakeFrequency, theShakeDuration, theShakeRadius);
+		UTIL_ScreenShake(explosionSpot, theShakeAmplitude, theShakeFrequency, theShakeDuration, theShakeRadius);
 
-		AvHSUPlayParticleEvent(kpsXenocide, this->edict(), this->pev->origin);
+		AvHSUPlayParticleEvent(kpsXenocide, this->edict(), knockbackSpot);
+
+		
 
 		// Increment our score so it doesn't count as suicide
 		//thePlayer->pev->frags++;
